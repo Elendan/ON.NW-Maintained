@@ -498,7 +498,7 @@ namespace OpenNos.GameObject
 
         public void BackToMiniland()
         {
-            if (!IsTeamMember)
+            if (!IsTeamMember || Owner?.MapInstance == null || Owner?.Session == null)
             {
                 return;
             }
