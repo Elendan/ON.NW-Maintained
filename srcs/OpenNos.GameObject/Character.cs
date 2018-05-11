@@ -59,13 +59,7 @@ namespace OpenNos.GameObject
             Mates = new List<Mate>();
             MeditationDictionary = new Dictionary<short, DateTime>();
             Quests = new ConcurrentBag<CharacterQuest>();
-            /*CharacterLog = new CharacterLog
-            {
-                AccountName = Session.Account.Name,
-                AccountId = AccountId,
-                CharacterId = CharacterId,
-                CharacterName = Name
-            };*/
+            MTListTargetQueue = new ConcurrentStack<MTListHitTarget>();
         }
 
         #endregion
@@ -101,6 +95,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public ConcurrentStack<MTListHitTarget> MTListTargetQueue { get; set; }
+
         public bool TriggerAmbush { get; set; }
 
         public CharacterLog CharacterLog { get; }
@@ -113,7 +109,7 @@ namespace OpenNos.GameObject
 
         public AuthorityType Authority { get; set; }
 
-        public Node[,] BrushFire { get; set; }
+        public Node[][] BrushFire { get; set; }
 
         public bool CanFight => !IsSitting && ExchangeInfo == null;
 
@@ -1008,7 +1004,7 @@ namespace OpenNos.GameObject
                 return;
             }
 
-            BrushFire = BestFirstSearch.LoadBrushFire(new GridPos
+            BrushFire = BestFirstSearch.LoadBrushFireJagged(new GridPos
             {
                 X = PositionX,
                 Y = PositionY
@@ -1507,8 +1503,8 @@ namespace OpenNos.GameObject
             type != NosSharp.Enums.SessionType.MateAndNpc && (type != NosSharp.Enums.SessionType.Character || isPvP) &&
             Hp > 0 && !InvisibleGm && !Invisible;
 
-        public Node[,] GetBrushFire() =>
-            BestFirstSearch.LoadBrushFire(new GridPos { X = PositionX, Y = PositionY }, MapInstance.Map.Grid);
+        public Node[][] GetBrushFire() =>
+            BestFirstSearch.LoadBrushFireJagged(new GridPos { X = PositionX, Y = PositionY }, MapInstance.Map.Grid);
 
         public SessionType SessionType() => NosSharp.Enums.SessionType.Character;
 
@@ -4179,66 +4175,6 @@ namespace OpenNos.GameObject
         {
             try
             {
-                /*
-                using (OpenNosContext context = DataAccessHelper.CreateContext())
-                {
-                    DAL.EF.Entities.Account acc = context.Account.First(s => s.AccountId == AccountId);
-                    acc.BankMoney = Session.Account.BankMoney;
-                    acc.Authority = Session.Account.Authority;
-
-                    DAL.EF.Entities.Character charac = context.Character.FirstOrDefault(s => s.CharacterId == CharacterId);
-                    if (charac != null)
-                    {
-                        charac = this.ToEntity();
-                    }
-                    if (Inventory != null)
-                    {
-                        // be sure that noone tries to edit while saving is currently editing
-                        lock (Inventory)
-                        {
-                            // load and concat inventory with equipment
-                            IEnumerable<ItemInstance> inventories = Inventory.Select(s => s.Value);
-                            IEnumerable<Guid> currentlySavedInventoryIds = DaoFactory.IteminstanceDao.LoadSlotAndTypeByCharacterId(CharacterId);
-                            IEnumerable<CharacterDTO> characters = DaoFactory.CharacterDao.LoadByAccount(Session.Account.AccountId);
-                            currentlySavedInventoryIds = characters.Where(s => s.CharacterId != CharacterId).Aggregate(currentlySavedInventoryIds,(current, characteraccount) => current.Concat(DaoFactory.IteminstanceDao.LoadByCharacterId(characteraccount.CharacterId).Where(s => s.Type == InventoryType.Warehouse).Select(i => i.Id)));
-
-                            IEnumerable<MinilandObjectDTO> currentlySavedMinilandObjectEntries = DaoFactory.MinilandObjectDao.LoadByCharacterId(CharacterId).ToList();
-                            foreach (MinilandObjectDTO mobjToDelete in currentlySavedMinilandObjectEntries.Except(Miniland.MapDesignObjects))
-                            {
-                                DaoFactory.MinilandObjectDao.DeleteById(mobjToDelete.MinilandObjectId);
-                            }
-
-                            // remove all which are saved but not in our current enumerable
-                            IEnumerable<ItemInstance> itemInstances = inventories as IList<ItemInstance> ?? inventories.ToList();
-                            DaoFactory.IteminstanceDao.Delete(currentlySavedInventoryIds.Except(itemInstances.Select(i => i.Id)));
-
-                            // create or update all which are new or do still exist
-                            foreach (ItemInstance itemInstance in itemInstances.Where(s => s.Type != InventoryType.Bazaar && s.Type != InventoryType.FamilyWareHouse))
-                            {
-                                DaoFactory.IteminstanceDao.InsertOrUpdate(itemInstance);
-                                if (!(itemInstance is WearableInstance instance))
-                                {
-                                    continue;
-                                }
-                                if (!instance.EquipmentOptions.Any())
-                                {
-                                    continue;
-                                }
-
-                                IEnumerable<EquipmentOption> options = instance.EquipmentOptions.Select(s =>
-                                {
-                                    s.WearableInstanceId = instance.Id;
-                                    return s.ToEntity();
-                                });
-                                context.EquipmentOption.RemoveRange(options);
-                            }
-                        }
-                    }
-
-                    context.SaveChanges();
-                }
-                */
-
                 AccountDTO account = Session.Account;
                 DaoFactory.AccountDao.InsertOrUpdate(ref account);
 

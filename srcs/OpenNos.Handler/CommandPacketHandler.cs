@@ -2295,7 +2295,7 @@ namespace OpenNos.Handler
 
             LogHelper.Instance.InsertCommandLog(Session.Character.CharacterId, positionPacket, Session.IpAddress);
             Session.SendPacket(Session.Character.GenerateSay(
-                $"Map:{Session.CurrentMapInstance.Map.MapId} - X:{Session.Character.PositionX} - Y:{Session.Character.PositionY} - Dir:{Session.Character.Direction} - Grid:{Session.CurrentMapInstance.Map.Grid[Session.Character.PositionX, Session.Character.PositionY].Value}",
+                $"Map:{Session.CurrentMapInstance.Map.MapId} - X:{Session.Character.PositionX} - Y:{Session.Character.PositionY} - Dir:{Session.Character.Direction} - Grid:{Session.CurrentMapInstance.Map.Grid[Session.Character.PositionX][Session.Character.PositionY].Value}",
                 12));
         }
 

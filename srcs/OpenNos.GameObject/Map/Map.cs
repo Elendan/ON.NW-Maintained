@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using ArrayExtensions;
 using OpenNos.Data;
 using OpenNos.Data.Interfaces;
 using OpenNos.DAL;
@@ -78,7 +79,7 @@ namespace OpenNos.GameObject.Map
 
         public RespawnMapTypeDTO DefaultReturn { get; }
 
-        public GridPos[,] Grid { get; private set; }
+        public GridPos[][] Grid { get; private set; }
 
         private ConcurrentBag<MapCell> Cells { get; set; }
 
@@ -162,7 +163,7 @@ namespace OpenNos.GameObject.Map
                     return false;
                 }
 
-                return !Grid[x, y].IsWalkable();
+                return !Grid[x][y].IsWalkable();
             }
             catch
             {
@@ -248,13 +249,13 @@ namespace OpenNos.GameObject.Map
                 YLength = BitConverter.ToInt16(ylength, 0);
                 XLength = BitConverter.ToInt16(xlength, 0);
 
-                Grid = new GridPos[XLength, YLength];
+                Grid = JaggedArrayExtensions.CreateJaggedArray<GridPos>(XLength, YLength);
                 for (short i = 0; i < YLength; ++i)
                 {
                     for (short t = 0; t < XLength; ++t)
                     {
                         stream.Read(bytes, numBytesRead, numBytesToRead);
-                        Grid[t, i] = new GridPos
+                        Grid[t][i] = new GridPos
                         {
                             Value = bytes[0],
                             X = t,

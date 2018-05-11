@@ -344,7 +344,7 @@ namespace OpenNos.GameObject.Helpers
                     if (monster != null)
                     {
                         monster.MoveEvent = evt4;
-                        monster.Path = BestFirstSearch.FindPath(new Node { X = monster.MapX, Y = monster.MapY },
+                        monster.Path = BestFirstSearch.FindPathJagged(new Node { X = monster.MapX, Y = monster.MapY },
                             new Node { X = evt4.X, Y = evt4.Y }, evt.MapInstance?.Map.Grid);
                     }
 

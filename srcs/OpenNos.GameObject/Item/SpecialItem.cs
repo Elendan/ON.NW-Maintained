@@ -611,13 +611,13 @@ namespace OpenNos.GameObject.Item
                         else
                         {
                             CharacterHelper.Instance.RemoveSpecialistWingsBuff(session);
-                            CharacterHelper.Instance.AddSpecialistWingsBuff(session);
                             session.Character.SpInstance.Design = (byte)EffectValue;
                             session.Character.MorphUpgrade2 = EffectValue;
                             session.CurrentMapInstance?.Broadcast(session.Character.GenerateCMode());
                             session.SendPacket(session.Character.GenerateStat());
                             session.SendPacket(session.Character.GenerateStatChar());
                             session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+                            CharacterHelper.Instance.AddSpecialistWingsBuff(session);
                         }
                     }
                     else

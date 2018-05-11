@@ -71,51 +71,21 @@ namespace OpenNos.Handler
             if ((DateTime.Now - Session.Character.LastTransform).TotalSeconds < 3)
             {
                 Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_ATTACKNOW"), 0));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_ATTACK"),
+                    0));
                 return;
             }
 
-            if (Session.Character.IsVehicled)
+            if (mutliTargetListPacket.TargetsAmount > 0
+                && mutliTargetListPacket.TargetsAmount == mutliTargetListPacket.Targets.Count
+                && mutliTargetListPacket.Targets != null)
             {
-                Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
-                return;
-            }
-
-            if (mutliTargetListPacket?.Targets == null)
-            {
-                return;
-            }
-
-            if (mutliTargetListPacket.TargetsAmount <= 0 || mutliTargetListPacket.TargetsAmount != mutliTargetListPacket.Targets.Count)
-            {
-                return;
-            }
-
-            IEnumerable<CharacterSkill> skills = Session.Character.UseSp ? Session.Character.SkillsSp.Select(s => s.Value) : Session.Character.Skills.Select(s => s.Value);
-            CharacterSkill ski = null;
-
-            foreach (MultiTargetListSubPacket subpacket in mutliTargetListPacket.Targets)
-            {
-                IEnumerable<CharacterSkill> characterSkills = skills as IList<CharacterSkill> ?? skills.ToList();
-                characterSkills?.FirstOrDefault(s => s.Skill.CastId == (subpacket.SkillCastId - 1));
-                if (ski == null || !ski.CanBeUsed() || !Session.HasCurrentMapInstance)
+                Session.Character.MTListTargetQueue.Clear();
+                foreach (MultiTargetListSubPacket subpacket in mutliTargetListPacket.Targets)
                 {
-                    continue;
+                    Session.Character.MTListTargetQueue.Push(new MTListHitTarget(subpacket.TargetType,
+                        subpacket.TargetId));
                 }
-
-                MapMonster mon = Session.CurrentMapInstance.GetMonster(subpacket.TargetId);
-                if (mon != null && mon.IsInRange(Session.Character.PositionX, Session.Character.PositionY, ski.Skill.Range) && mon.CurrentHp > 0)
-                {
-                    Session.Character.LastSkillUse = DateTime.Now;
-                    Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SpecialZoneHit, ski.Skill);
-                }
-
-                Observable.Timer(TimeSpan.FromMilliseconds(ski.Skill.Cooldown * 100)).Subscribe(o => { Session.SendPacket($"sr {subpacket.SkillCastId - 1}"); });
-            }
-
-            if (ski != null)
-            {
-                ski.LastUse = DateTime.Now;
             }
         }
 
@@ -175,6 +145,21 @@ namespace OpenNos.Handler
                         if (Session.Character.Hp > 0)
                         {
                             TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                            int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
+                            int random = ServerManager.Instance.RandomNumber();
+                            if (fairyWings[0] > random)
+                            {
+                                Observable.Timer(TimeSpan.FromSeconds(1)).Subscribe(o =>
+                                {
+                                    CharacterSkill ski =
+                                    (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
+                                    if (ski != null)
+                                    {
+                                        ski.LastUse = DateTime.Now.AddMilliseconds(ski.Skill.Cooldown * 100 * -1);
+                                        Session.SendPacket($"sr {useSkillPacket.CastId}");
+                                    }
+                                });
+                            }
                         }
 
                         break;
@@ -189,6 +174,21 @@ namespace OpenNos.Handler
                             else
                             {
                                 TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                            }
+                            int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
+                            int random = ServerManager.Instance.RandomNumber();
+                            if (fairyWings[0] > random)
+                            {
+                                Observable.Timer(TimeSpan.FromSeconds(1)).Subscribe(o =>
+                                {
+                                    CharacterSkill ski =
+                                        (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
+                                    if (ski != null)
+                                    {
+                                        ski.LastUse = DateTime.Now.AddMilliseconds(ski.Skill.Cooldown * 100 * -1);
+                                        Session.SendPacket($"sr {useSkillPacket.CastId}");
+                                    }
+                                });
                             }
                         }
                         else
@@ -268,7 +268,7 @@ namespace OpenNos.Handler
             IEnumerable<CharacterSkill> skills = Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList();
             if (skills != null)
             {
-                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
+                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId); //  && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1)
                 if (castingId != 0)
                 {
                     Session.SendPacket("ms_c 0");
@@ -792,87 +792,105 @@ namespace OpenNos.Handler
                                         Thread.Sleep(ski.Skill.CastTime * 100);
                                     }
 
+
+                                    ComboDTO skillCombo = ski.Skill.Combos.FirstOrDefault(s => ski.Hit == s.Hit);
                                     // check if we will hit mutltiple targets
-                                    if (ski.Skill.TargetRange != 0)
+                                    if (ski.Skill.HitType == 3)
                                     {
-                                        ComboDTO skillCombo = ski.Skill.Combos.FirstOrDefault(s => ski.Hit == s.Hit);
-                                        if (skillCombo != null)
+                                        Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect, skillCombo: skillCombo);
+
+                                        foreach (long id in Session.Character.MTListTargetQueue.Where(s => s.EntityType == UserType.Monster).Select(s => s.TargetId))
                                         {
-                                            if (ski.Skill.Combos.OrderByDescending(s => s.Hit).First().Hit == ski.Hit)
+                                            MapMonster mon = Session.CurrentMapInstance.GetMonster(id);
+                                            if (mon?.CurrentHp > 0)
                                             {
-                                                ski.Hit = 0;
-                                            }
-
-                                            IEnumerable<MapMonster> monstersInAoeRange = Session.CurrentMapInstance
-                                                ?.GetListMonsterInRange(monsterToAttack.MapX, monsterToAttack.MapY, ski.Skill.TargetRange).Where(s => s.IsFactionTargettable(Session.Character.Faction))
-                                                .ToArray();
-                                            if (monstersInAoeRange != null)
-                                            {
-                                                foreach (MapMonster mon in monstersInAoeRange)
-                                                {
-                                                    Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleTargetHitCombo, ski.Skill, skillCombo: skillCombo);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
-                                            }
-
-                                            if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
-                                            {
-                                                Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
+                                                Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect, skillCombo: skillCombo);
                                             }
                                         }
-                                        else
-                                        {
-                                            IEnumerable<MapMonster> monstersInAoeRange = Session.CurrentMapInstance
-                                                ?.GetListMonsterInRange(monsterToAttack.MapX, monsterToAttack.MapY, ski.Skill.TargetRange).Where(s => s.IsFactionTargettable(Session.Character.Faction))
-                                                .ToList();
 
-                                            //hit the targetted monster
-                                            Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect,
-                                                showTargetAnimation: true);
-
-                                            //hit all other monsters
-                                            if (monstersInAoeRange != null)
-                                            {
-                                                foreach (MapMonster mon in monstersInAoeRange.Where(m => m.MapMonsterId != monsterToAttack.MapMonsterId)) //exclude targetted monster
-                                                {
-                                                    Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect);
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
-                                            }
-
-                                            if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
-                                            {
-                                                Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
-                                            }
-                                        }
                                     }
                                     else
                                     {
-                                        if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
+                                        if (ski.Skill.TargetRange != 0)
                                         {
-                                            Session.SendPacket($"cancel 2 0");
-                                            return;
-                                        }
-
-                                        ComboDTO skillCombo = ski.Skill.Combos.FirstOrDefault(s => ski.Hit == s.Hit);
-                                        if (skillCombo != null)
-                                        {
-                                            if (ski.Skill.Combos.OrderByDescending(s => s.Hit).First().Hit == ski.Hit)
+                                            if (skillCombo != null)
                                             {
-                                                ski.Hit = 0;
-                                            }
+                                                if (ski.Skill.Combos.OrderByDescending(s => s.Hit).First().Hit == ski.Hit)
+                                                {
+                                                    ski.Hit = 0;
+                                                }
 
-                                            Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleTargetHitCombo, ski.Skill, skillCombo: skillCombo);
+                                                IEnumerable<MapMonster> monstersInAoeRange = Session.CurrentMapInstance
+                                                    ?.GetListMonsterInRange(monsterToAttack.MapX, monsterToAttack.MapY, ski.Skill.TargetRange).Where(s => s.IsFactionTargettable(Session.Character.Faction))
+                                                    .ToArray();
+                                                if (monstersInAoeRange != null)
+                                                {
+                                                    foreach (MapMonster mon in monstersInAoeRange)
+                                                    {
+                                                        Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleTargetHitCombo, ski.Skill, skillCombo: skillCombo);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
+                                                }
+
+                                                if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
+                                                {
+                                                    Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
+                                                }
+                                            }
+                                            else
+                                            {
+                                                IEnumerable<MapMonster> monstersInAoeRange = Session.CurrentMapInstance
+                                                    ?.GetListMonsterInRange(monsterToAttack.MapX, monsterToAttack.MapY, ski.Skill.TargetRange).Where(s => s.IsFactionTargettable(Session.Character.Faction))
+                                                    .ToList();
+
+                                                //hit the targetted monster
+                                                Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect,
+                                                    showTargetAnimation: true);
+
+                                                //hit all other monsters
+                                                if (monstersInAoeRange != null)
+                                                {
+                                                    foreach (MapMonster mon in monstersInAoeRange.Where(m => m.MapMonsterId != monsterToAttack.MapMonsterId)) //exclude targetted monster
+                                                    {
+                                                        Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleAOETargetHit, ski.Skill, characterSkillInfo?.Skill.Effect ?? ski.Skill.Effect);
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
+                                                }
+
+                                                if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
+                                                {
+                                                    Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
+                                                }
+                                            }
                                         }
                                         else
                                         {
-                                            Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleTargetHit, ski.Skill);
+                                            if (!monsterToAttack.IsAlive || !monsterToAttack.IsFactionTargettable(Session.Character.Faction))
+                                            {
+                                                Session.SendPacket($"cancel 2 0");
+                                                return;
+                                            }
+
+                                            skillCombo = ski.Skill.Combos.FirstOrDefault(s => ski.Hit == s.Hit);
+                                            if (skillCombo != null)
+                                            {
+                                                if (ski.Skill.Combos.OrderByDescending(s => s.Hit).First().Hit == ski.Hit)
+                                                {
+                                                    ski.Hit = 0;
+                                                }
+
+                                                Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleTargetHitCombo, ski.Skill, skillCombo: skillCombo);
+                                            }
+                                            else
+                                            {
+                                                Session.Character.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleTargetHit, ski.Skill);
+                                            }
                                         }
                                     }
                                 }
@@ -885,6 +903,11 @@ namespace OpenNos.Handler
                             {
                                 Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
                             }
+                        }
+
+                        if (ski.Skill.HitType == 3)
+                        {
+                            Session.Character.MTListTargetQueue.Clear();
                         }
                     }
                     else
@@ -944,10 +967,11 @@ namespace OpenNos.Handler
                         Session.CurrentMapInstance?.Broadcast(
                             $"bs 1 {Session.Character.CharacterId} {x} {y} {characterSkill.Skill.SkillVNum} {characterSkill.Skill.Cooldown} {characterSkill.Skill.AttackAnimation} {characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
 
-                        IEnumerable<MapMonster> monstersInRange = Session.CurrentMapInstance?.GetListMonsterInRange(x, y, characterSkill.Skill.TargetRange).ToList();
-                        if (monstersInRange != null)
+                        foreach (long id in Session.Character.MTListTargetQueue
+                            .Where(s => s.EntityType == UserType.Monster).Select(s => s.TargetId))
                         {
-                            foreach (MapMonster mon in monstersInRange.Where(s => s.CurrentHp > 0))
+                            MapMonster mon = Session.CurrentMapInstance?.GetMonster(id);
+                            if (mon?.CurrentHp > 0)
                             {
                                 foreach (BCard bcard in characterSkill.Skill.BCards)
                                 {
@@ -959,7 +983,6 @@ namespace OpenNos.Handler
                                             break;
                                     }
                                 }
-
                                 Session.Character.BattleEntity.TargetHit(mon, TargetHitType.ZoneHit, characterSkill.Skill, mapX: x, mapY: y);
                             }
                         }
@@ -981,10 +1004,10 @@ namespace OpenNos.Handler
                             Session.Character.TeleportOnMap(x, y);
                         }
 
-                        foreach (ClientSession character in ServerManager.Instance.Sessions.Where(s =>
-                            s.CurrentMapInstance == Session.CurrentMapInstance && s.Character.CharacterId != Session.Character.CharacterId &&
-                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange)))
+                        foreach (long id in Session.Character.MTListTargetQueue
+                            .Where(s => s.EntityType == UserType.Player).Select(s => s.TargetId))
                         {
+                            ClientSession character = ServerManager.Instance.GetSessionByCharacterId(id);
                             if (Session.CurrentMapInstance == null || !Session.CurrentMapInstance.IsPvp)
                             {
                                 continue;
@@ -995,6 +1018,8 @@ namespace OpenNos.Handler
                                 Session.Character.BattleEntity.TargetHit(character.Character, TargetHitType.ZoneHit, characterSkill.Skill, mapX: x, mapY: y, isPvp: true);
                             }
                         }
+
+                        Session.Character.MTListTargetQueue.Clear();
                     });
 
                     Observable.Timer(TimeSpan.FromMilliseconds(characterSkill.Skill.Cooldown * 100)).Subscribe(o =>

@@ -159,6 +159,7 @@
     <Compile Include="Battle\Args\MoveArgs.cs" />
     <Compile Include="Battle\BattleEntity.cs" />
     <Compile Include="Battle\IBattleEntity.cs" />
+    <Compile Include="Battle\MTListHitTarget.cs" />
     <Compile Include="Buff\Buff.cs" />
     <Compile Include="Buff\BCard.cs" />
     <Compile Include="Buff\Card.cs" />

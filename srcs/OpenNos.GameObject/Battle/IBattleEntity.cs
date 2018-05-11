@@ -25,7 +25,7 @@ namespace OpenNos.GameObject.Battle
 
         #region Methods
 
-        Node[,] GetBrushFire();
+        Node[][] GetBrushFire();
 
         MapCell GetPos();
 

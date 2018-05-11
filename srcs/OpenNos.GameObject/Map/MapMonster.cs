@@ -293,7 +293,7 @@ namespace OpenNos.GameObject.Map
                 return;
             }
 
-            Path = BestFirstSearch.FindPath(new Node { X = MapX, Y = MapY }, new Node { X = FirstX, Y = FirstY },
+            Path = BestFirstSearch.FindPathJagged(new Node { X = MapX, Y = MapY }, new Node { X = FirstX, Y = FirstY },
                 MapInstance.Map.Grid); // Path To origins
         }
 
@@ -317,7 +317,7 @@ namespace OpenNos.GameObject.Map
 
             if (!Path.Any() && Target.MapInstance != null)
             {
-                Path = BestFirstSearch.TracePath(new Node { X = MapX, Y = MapY }, Target.GetBrushFire(),
+                Path = BestFirstSearch.TracePathJagged(new Node { X = MapX, Y = MapY }, Target.GetBrushFire(),
                     MapInstance.Map.Grid);
             }
 
@@ -539,8 +539,8 @@ namespace OpenNos.GameObject.Map
         public bool IsTargetable(SessionType type, bool isPvP = false) =>
             type != NosSharp.Enums.SessionType.Monster && IsAlive && CurrentHp > 0;
 
-        public Node[,] GetBrushFire() =>
-            BestFirstSearch.LoadBrushFire(new GridPos { X = MapX, Y = MapY }, MapInstance.Map.Grid);
+        public Node[][] GetBrushFire() =>
+            BestFirstSearch.LoadBrushFireJagged(new GridPos { X = MapX, Y = MapY }, MapInstance.Map.Grid);
 
         public SessionType SessionType() => NosSharp.Enums.SessionType.Monster;
 
@@ -552,7 +552,6 @@ namespace OpenNos.GameObject.Map
             {
                 return;
             }
-
             canKill = !IsInvicible && canKill; // Act4 Guardians
             CurrentHp -= damage;
             CurrentHp = CurrentHp <= 0 ? !canKill ? 1 : 0 : CurrentHp;

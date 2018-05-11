@@ -114,7 +114,7 @@ namespace OpenNos.GameObject
 
         public ItemInstance BootsInstance { get; set; }
 
-        public Node[,] BrushFire { get; set; }
+        public Node[][] BrushFire { get; set; }
 
         public int CurrentHp
         {
@@ -200,7 +200,7 @@ namespace OpenNos.GameObject
 
         public void UpdateBushFire()
         {
-            BrushFire = BestFirstSearch.LoadBrushFire(new GridPos
+            BrushFire = BestFirstSearch.LoadBrushFireJagged(new GridPos
             {
                 X = PositionX,
                 Y = PositionY
@@ -586,8 +586,8 @@ namespace OpenNos.GameObject
         public bool IsTargetable(SessionType type, bool isPvP = false) =>
             type == NosSharp.Enums.SessionType.Monster && IsAlive && Hp > 0;
 
-        public Node[,] GetBrushFire() =>
-            BestFirstSearch.LoadBrushFire(new GridPos { X = PositionX, Y = PositionY }, Owner.MapInstance.Map.Grid);
+        public Node[][] GetBrushFire() =>
+            BestFirstSearch.LoadBrushFireJagged(new GridPos { X = PositionX, Y = PositionY }, Owner.MapInstance.Map.Grid);
 
         public SessionType SessionType() => NosSharp.Enums.SessionType.MateAndNpc;
 
