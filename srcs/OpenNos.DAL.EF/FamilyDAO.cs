@@ -70,6 +70,7 @@ namespace OpenNos.DAL.EF
                     }
 
                     family = Update(entity, family, context);
+                    context.SaveChanges();
                     return SaveResult.Updated;
                 }
             }
