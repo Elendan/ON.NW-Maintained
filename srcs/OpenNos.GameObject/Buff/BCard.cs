@@ -561,21 +561,18 @@ namespace OpenNos.GameObject.Buff
 
                                 if (SkillVNum.HasValue)
                                 {
-                                    character.LastSkillCombo = DateTime.Now;
                                     Skill skill = ServerManager.Instance.GetSkill(SkillVNum.Value);
                                     Skill newSkill = ServerManager.Instance.GetSkill((short)SecondData);
                                     Observable.Timer(TimeSpan.FromMilliseconds(100)).Subscribe(observer =>
                                     {
-                                        foreach (QuicklistEntryDTO qe in character.QuicklistEntries.Where(s =>
-                                            s.Pos.Equals(skill.CastId)))
+                                        foreach (QuicklistEntryDTO quicklistEntry in character.QuicklistEntries.Where(s => s.Pos.Equals(skill.CastId)))
                                         {
-                                            character.Session.SendPacket(
-                                                $"qset {qe.Q1} {qe.Q2} {qe.Type}.{qe.Slot}.{newSkill.CastId}.0");
+                                            character.Session.SendPacket($"qset {quicklistEntry.Q1} {quicklistEntry.Q2} {quicklistEntry.Type}.{quicklistEntry.Slot}.{newSkill.CastId}.0");
                                         }
-
                                         character.Session.SendPacket($"mslot {newSkill.CastId} -1");
                                     });
-
+                                    character.SkillComboCount++;
+                                    character.LastSkillCombo = DateTime.Now;
                                     if (skill.CastId > 10)
                                     {
                                         // HACK this way

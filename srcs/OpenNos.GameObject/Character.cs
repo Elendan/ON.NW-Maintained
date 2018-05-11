@@ -99,6 +99,8 @@ namespace OpenNos.GameObject
 
         public bool TriggerAmbush { get; set; }
 
+        public byte SkillComboCount { get; set; }
+
         public CharacterLog CharacterLog { get; }
 
         public DateTime LastSkillCombo { get; set; }
@@ -1161,6 +1163,13 @@ namespace OpenNos.GameObject
                         MeditationDictionary.Remove(i);
                     }
                 }
+            }
+
+            if (SkillComboCount > 0 && LastSkillCombo.AddSeconds(10) < DateTime.Now)
+            {
+                SkillComboCount = 0;
+                Session.SendPackets(GenerateQuicklist());
+                Session.SendPacket("mslot 0 -1");
             }
 
             if (!UseSp || LastSkillUse.AddSeconds(15) < DateTime.Now ||
