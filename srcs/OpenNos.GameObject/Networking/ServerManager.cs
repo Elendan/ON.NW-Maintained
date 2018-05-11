@@ -124,6 +124,8 @@ namespace OpenNos.GameObject.Networking
 
         public int DropRate { get; set; }
 
+        public int FamilyExpRate { get; set; }
+
         public bool ReputOnMonsters { get; set; }
 
         public bool SingleRaidPortal { get; set; }
@@ -1482,6 +1484,7 @@ namespace OpenNos.GameObject.Networking
             ReputRate = int.Parse(ConfigurationManager.AppSettings["RateReput"]);
             DropRate = int.Parse(ConfigurationManager.AppSettings["RateDrop"]);
             QuestDropRate = int.Parse(ConfigurationManager.AppSettings["RateQuestDrop"]);
+            FamilyExpRate = int.Parse(ConfigurationManager.AppSettings["FamilyExpRate"]);
             MaxGold = long.Parse(ConfigurationManager.AppSettings["MaxGold"]);
             GoldDropRate = int.Parse(ConfigurationManager.AppSettings["GoldRateDrop"]);
             GoldRate = int.Parse(ConfigurationManager.AppSettings["RateGold"]);

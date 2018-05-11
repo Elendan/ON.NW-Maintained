@@ -437,24 +437,25 @@ namespace OpenNos.GameObject.Helpers
                                         UserInterfaceHelper.Instance.GenerateMsg(
                                             string.Format(Language.Instance.GetMessageFromKey("TELEPORTED_IN"), 10),
                                             0)));
+                                int fxpReward = instance.Fxp * ServerManager.Instance.FamilyExpRate;
                                 foreach (ClientSession cli in evt.MapInstance.Sessions)
                                 {
                                     if (DaoFactory.RaidLogDao.LoadByFamilyId(cli.Character.Family.FamilyId).Any(s =>
                                         s.RaidId == instance.Id && s.Time.AddHours(24) <= DateTime.Now))
                                     {
                                         // Raid has not been done in the last 24 hours
-                                        cli.Character.GenerateFamilyXp(instance.Fxp / evt.MapInstance.Sessions.Count());
+                                        cli.Character.GenerateFamilyXp(fxpReward / evt.MapInstance.Sessions.Count());
                                     }
                                     else
                                     {
                                         // Raid has already been done in the last 24 hours
                                         cli.Character.GenerateFamilyXp(
-                                            instance.Fxp / 5 / evt.MapInstance.Sessions.Count());
+                                            fxpReward / 5 / evt.MapInstance.Sessions.Count());
                                     }
 
                                     cli.SendPacket(cli.Character.GenerateSay(
                                         string.Format(Language.Instance.GetMessageFromKey("FXP_INCREASE"),
-                                            instance.Fxp), 11));
+                                            fxpReward), 11));
                                     cli.Character.IncrementQuests(QuestType.WinRaid, instance.Id);
                                     if (evt.MapInstance.Sessions.Count(s => s.IpAddress.Equals(cli.IpAddress)) > 2 ||
                                         instance.GiftItems == null)
@@ -567,12 +568,13 @@ namespace OpenNos.GameObject.Helpers
                                         continue;
                                     }
 
+                                    int fxpReward = grp.Raid.Fxp * ServerManager.Instance.FamilyExpRate;
                                     LogHelper.Instance.InsertRaidLog(sess.Character.CharacterId, grp.Raid.Id,
                                         DateTime.Now);
-                                    sess.Character.GenerateFamilyXp(grp.Raid.Fxp);
+                                    sess.Character.GenerateFamilyXp(fxpReward);
                                     sess.SendPacket(sess.Character.GenerateSay(
                                         string.Format(Language.Instance.GetMessageFromKey("FXP_INCREASE"),
-                                            grp.Raid.Fxp), 11));
+                                            fxpReward), 11));
                                 }
 
                                 // Remove monster when raid is over
@@ -613,7 +615,7 @@ namespace OpenNos.GameObject.Helpers
 
                                     ServerManager.Instance.GroupList.RemoveAll(s => s.GroupId == grp.GroupId);
                                     ServerManager.Instance._groups.TryRemove(grp.GroupId, out Group _);
-                                    grp.Raid.MapInstanceDictionary.Values.ToList().ForEach(m => m.Dispose());
+                                    grp?.Raid?.MapInstanceDictionary?.Values?.ToList().ForEach(m => m?.Dispose());
                                 });
                             break;
                         case MapInstanceType.CaligorInstance:
@@ -640,7 +642,7 @@ namespace OpenNos.GameObject.Helpers
                                 }
 
                                 player.Character.GiftAdd(5959, 1);
-                                player.Character.GenerateFamilyXp(500);
+                                player.Character.GenerateFamilyXp(500 * ServerManager.Instance.FamilyExpRate);
                             }
 
                             break;

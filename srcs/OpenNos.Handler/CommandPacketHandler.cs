@@ -2221,7 +2221,7 @@ namespace OpenNos.Handler
                     mutePacket.Duration = 60;
                 }
 
-                AccountDTO targetAccount = DaoFactory.AccountDao.LoadById(DaoFactory.CharacterDao.LoadByName(mutePacket.CharacterName).AccountId);
+                AccountDTO targetAccount = DaoFactory.AccountDao.LoadById(DaoFactory.CharacterDao.LoadByName(mutePacket?.CharacterName).AccountId);
                 if (targetAccount != null && targetAccount.Authority > Session.Account.Authority)
                 {
                     Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(string.Format(Language.Instance.GetMessageFromKey("WEAKEST_AUTHORITY"), mutePacket.CharacterName), 0));

@@ -624,6 +624,11 @@ namespace OpenNos.Handler
                         return;
                     }
 
+                    if (targetSession.Character?.FamilyCharacter == null)
+                    {
+                        return;
+                    }
+
                     if (targetSession.Character.FamilyCharacter.Authority == FamilyAuthority.Head)
                     {
                         Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("HEAD_UNDEMOTABLE")));

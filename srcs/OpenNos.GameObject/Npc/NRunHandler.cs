@@ -65,7 +65,7 @@ namespace OpenNos.GameObject.Npc
                     }
 
                     if (packet.Type == (byte)session.Character.Class ||
-                        packet.Type > 3 && session.Account.Authority < AuthorityType.GameMaster || packet.Type < 0)
+                        packet.Type > 4 && session.Account.Authority < AuthorityType.GameMaster || packet.Type < 0)
                     {
                         return;
                     }
@@ -384,7 +384,7 @@ namespace OpenNos.GameObject.Npc
                     tp = npc?.Teleporters?.FirstOrDefault(s => s.Index == packet.Type);
                     if (tp != null)
                     {
-                        if (session.Character.Gold >= 5000 * packet.Type && packet.Type > 0)
+                        if (session.Character.Gold >= 5000 * packet.Type)
                         {
                             session.Character.Gold -= 5000 * packet.Type;
                             ServerManager.Instance.ChangeMap(session.Character.CharacterId, tp.MapId, tp.MapX, tp.MapY);
@@ -570,6 +570,13 @@ namespace OpenNos.GameObject.Npc
                             UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("NEED_FAMILY"),
                                 0));
                         break;
+                    }
+
+                    if (session.Character.Family?.LandOfDeath == null)
+                    {
+                        session.Character.Family.LandOfDeath =
+                            ServerManager.Instance.GenerateMapInstance(150, MapInstanceType.LodInstance,
+                                new InstanceBag());
                     }
 
                     if (session.Character?.Family?.LandOfDeath != null)

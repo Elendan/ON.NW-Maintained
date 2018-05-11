@@ -31,6 +31,11 @@ namespace OpenNos.GameObject.Event.LOD
 
         public static void GenerateLod(int lodtime = 60)
         {
+            if (!ServerManager.Instance.LodTimes)
+            {
+                return;
+            }
+
             const int hornTime = 30;
             const int hornRepawn = 4;
             const int hornStay = 1;

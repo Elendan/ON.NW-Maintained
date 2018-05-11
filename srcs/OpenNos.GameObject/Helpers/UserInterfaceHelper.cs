@@ -619,13 +619,17 @@ namespace OpenNos.GameObject.Helpers
         public string GenerateRl(byte type)
         {
             string str = $"rl {type}";
-            ServerManager.Instance.GroupList?.ForEach(s =>
+
+            lock(ServerManager.Instance.GroupList)
             {
-                ClientSession leader = s.Characters.OrderBy(m => m.Character.LastGroupJoin).ElementAt(0);
-                str +=
-                    $" {s.Raid.Id}.{s.Raid?.LevelMinimum}.{s.Raid?.LevelMaximum}.{leader.Character.Name}.{leader.Character.Level}.{(leader.Character.UseSp ? leader.Character.Morph : -1)}.{(byte)leader.Character.Class}.{(byte)leader.Character.Gender}.{s.CharacterCount}.{leader.Character.HeroLevel}";
-            });
-            return str;
+                ServerManager.Instance.GroupList?.ForEach(s =>
+                {
+                    ClientSession leader = s.Characters.OrderBy(m => m.Character.LastGroupJoin).ElementAt(0);
+                    str +=
+                        $" {s.Raid.Id}.{s.Raid?.LevelMinimum}.{s.Raid?.LevelMaximum}.{leader.Character.Name}.{leader.Character.Level}.{(leader.Character.UseSp ? leader.Character.Morph : -1)}.{(byte)leader.Character.Class}.{(byte)leader.Character.Gender}.{s.CharacterCount}.{leader.Character.HeroLevel}";
+                });
+                return str;
+            }
         }
 
         private string GenerateRemovePacket(short slot) => $"{slot}.-1.0.0.0";
