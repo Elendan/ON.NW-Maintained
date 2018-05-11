@@ -815,6 +815,11 @@ namespace OpenNos.Handler
                     return;
                 }
 
+                if (mviPacket.InventoryType == InventoryType.Wear)
+                {
+                    return;
+                }
+
                 // check if the destination slot is out of range
                 if (mviPacket.DestinationSlot > 48 + (Session.Character.HaveBackpack() ? 1 : 0) * 12)
                 {
@@ -1616,6 +1621,11 @@ namespace OpenNos.Handler
         public void Wear(WearPacket wearPacket)
         {
             if (Session.Character.ExchangeInfo != null && Session.Character.ExchangeInfo.ExchangeList.Any() || Session.Character.Speed == 0)
+            {
+                return;
+            }
+
+            if (wearPacket.Type != 0)
             {
                 return;
             }
