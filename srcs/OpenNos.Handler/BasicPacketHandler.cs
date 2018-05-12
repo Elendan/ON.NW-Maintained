@@ -1534,6 +1534,8 @@ namespace OpenNos.Handler
             {
                 Session.SendPacket(Session.Character.GenerateQuestsPacket());
             }
+
+            Session.Character.GeneratePairy();
         }
 
         /// <summary>

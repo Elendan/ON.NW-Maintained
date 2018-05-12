@@ -76,16 +76,16 @@ namespace OpenNos.Handler
                 return;
             }
 
-            if (mutliTargetListPacket.TargetsAmount > 0
-                && mutliTargetListPacket.TargetsAmount == mutliTargetListPacket.Targets.Count
-                && mutliTargetListPacket.Targets != null)
+            if (mutliTargetListPacket.TargetsAmount <= 0 || mutliTargetListPacket.TargetsAmount != mutliTargetListPacket.Targets.Count || mutliTargetListPacket.Targets == null)
             {
-                Session.Character.MTListTargetQueue.Clear();
-                foreach (MultiTargetListSubPacket subpacket in mutliTargetListPacket.Targets)
-                {
-                    Session.Character.MTListTargetQueue.Push(new MTListHitTarget(subpacket.TargetType,
-                        subpacket.TargetId));
-                }
+                return;
+            }
+
+            Session.Character.MTListTargetQueue.Clear();
+            foreach (MultiTargetListSubPacket subpacket in mutliTargetListPacket.Targets)
+            {
+                Session.Character.MTListTargetQueue.Push(new MTListHitTarget(subpacket.TargetType,
+                    subpacket.TargetId));
             }
         }
 
@@ -971,7 +971,10 @@ namespace OpenNos.Handler
                         Session.Character.LastSkillUse = DateTime.Now;
 
                         Session.CurrentMapInstance?.Broadcast(
-                            $"bs 1 {Session.Character.CharacterId} {x} {y} {characterSkill.Skill.SkillVNum} {characterSkill.Skill.Cooldown} {characterSkill.Skill.AttackAnimation} {characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
+                            $"bs 1 {Session.Character.CharacterId}" +
+                            $" {x} {y} {characterSkill.Skill.SkillVNum}" +
+                            $" {characterSkill.Skill.Cooldown} {characterSkill.Skill.AttackAnimation} " +
+                            $"{characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
 
                         IEnumerable<MapMonster> monstersInRange = Session.CurrentMapInstance?.GetListMonsterInRange(x, y, characterSkill.Skill.TargetRange).ToList();
                         if (monstersInRange != null)
