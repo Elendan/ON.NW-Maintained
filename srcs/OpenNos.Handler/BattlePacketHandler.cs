@@ -268,7 +268,7 @@ namespace OpenNos.Handler
             IEnumerable<CharacterSkill> skills = Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList();
             if (skills != null)
             {
-                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId); //  && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1)
+                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
                 if (castingId != 0)
                 {
                     Session.SendPacket("ms_c 0");
@@ -973,23 +973,25 @@ namespace OpenNos.Handler
                         Session.CurrentMapInstance?.Broadcast(
                             $"bs 1 {Session.Character.CharacterId} {x} {y} {characterSkill.Skill.SkillVNum} {characterSkill.Skill.Cooldown} {characterSkill.Skill.AttackAnimation} {characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
 
-                        foreach (long id in Session.Character.MTListTargetQueue
-                            .Where(s => s.EntityType == UserType.Monster).Select(s => s.TargetId))
+                        IEnumerable<MapMonster> monstersInRange = Session.CurrentMapInstance?.GetListMonsterInRange(x, y, characterSkill.Skill.TargetRange).ToList();
+                        if (monstersInRange != null)
                         {
-                            MapMonster mon = Session.CurrentMapInstance?.GetMonster(id);
-                            if (mon?.CurrentHp > 0)
+                            foreach (MapMonster mon in monstersInRange.Where(s => s.CurrentHp > 0))
                             {
-                                foreach (BCard bcard in characterSkill.Skill.BCards)
+                                if (mon?.CurrentHp > 0)
                                 {
-                                    var bf = new Buff(bcard.SecondData);
-                                    switch (bf.Card?.BuffType)
+                                    foreach (BCard bcard in characterSkill.Skill.BCards)
                                     {
-                                        case BuffType.Bad:
-                                            bcard.ApplyBCards(mon, Session.Character);
-                                            break;
+                                        var bf = new Buff(bcard.SecondData);
+                                        switch (bf.Card?.BuffType)
+                                        {
+                                            case BuffType.Bad:
+                                                bcard.ApplyBCards(mon, Session.Character);
+                                                break;
+                                        }
                                     }
+                                    Session.Character.BattleEntity.TargetHit(mon, TargetHitType.ZoneHit, characterSkill.Skill, mapX: x, mapY: y);
                                 }
-                                Session.Character.BattleEntity.TargetHit(mon, TargetHitType.ZoneHit, characterSkill.Skill, mapX: x, mapY: y);
                             }
                         }
 
@@ -1010,10 +1012,10 @@ namespace OpenNos.Handler
                             Session.Character.TeleportOnMap(x, y);
                         }
 
-                        foreach (long id in Session.Character.MTListTargetQueue
-                            .Where(s => s.EntityType == UserType.Player).Select(s => s.TargetId))
+                        foreach (ClientSession character in ServerManager.Instance.Sessions.Where(s =>
+                            s.CurrentMapInstance == Session.CurrentMapInstance && s.Character.CharacterId != Session.Character.CharacterId &&
+                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange)))
                         {
-                            ClientSession character = ServerManager.Instance.GetSessionByCharacterId(id);
                             if (Session.CurrentMapInstance == null || !Session.CurrentMapInstance.IsPvp)
                             {
                                 continue;
