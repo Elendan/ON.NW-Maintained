@@ -4921,6 +4921,22 @@ namespace NosSharp.Parser
                                 break;
                         }
 
+                        switch (item.VNum)
+                        {
+                                case 4046:
+                                case 4047:
+                                case 4048:
+                                case 4049:
+                                case 4050:
+                                case 4051:
+                                case 4052:
+                                case 4053:
+                                case 4054:
+                                case 4055:
+                                    item.ItemValidTime = 10800;
+                                break;
+                        }
+
                         if (item.Type == InventoryType.Miniland)
                         {
                             item.MinilandObjectPoint = int.Parse(currentLine[2]);
