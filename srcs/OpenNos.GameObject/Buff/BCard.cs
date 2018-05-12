@@ -175,6 +175,45 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DrainAndSteal:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.DrainAndSteal.LeechEnemyHP:
+                            if (session is MapMonster toDrain && caster is Character drainer)
+                            {
+                                if (ServerManager.Instance.RandomNumber() > FirstData)
+                                {
+                                    return;
+                                }
+
+                                int heal = drainer.Level * SecondData;
+                                drainer.Hp = (int)(heal > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
+                                drainer.Session.SendPacket(drainer.GenerateRc(drainer.Level * SecondData));
+                                toDrain.CurrentHp -= heal;
+                                if (toDrain.CurrentHp < 0)
+                                {
+                                    toDrain.IsAlive = false;
+                                    toDrain.GenerateDeath(drainer);
+                                }
+                            }
+                            else if (session is Character characterDrained && caster is Character drainerCharacter)
+                            {
+                                if (ServerManager.Instance.RandomNumber() > FirstData)
+                                {
+                                    return;
+                                }
+
+                                int heal = drainerCharacter.Level * SecondData;
+                                drainerCharacter.Hp = (int)(heal > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
+                                drainerCharacter.Session.SendPacket(drainerCharacter.GenerateRc(drainerCharacter.Level * SecondData));
+                                if (characterDrained.Hp <= 0)
+                                {
+                                    characterDrained.GenerateDeath(drainerCharacter);
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.HealingBurningAndCasting:
