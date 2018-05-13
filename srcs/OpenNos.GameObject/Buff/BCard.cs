@@ -188,7 +188,7 @@ namespace OpenNos.GameObject.Buff
                                 {
                                     int heal = drainer.Level * SecondData;
                                     drainer.Hp = (int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
-                                    drainer.Session.SendPacket(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
+                                    drainer.MapInstance.Broadcast(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
                                     toDrain.CurrentHp -= heal;
                                     if (toDrain.CurrentHp <= 0)
                                     {
@@ -202,7 +202,7 @@ namespace OpenNos.GameObject.Buff
                                 {
                                     int heal = drainerCharacter.Level * SecondData;
                                     drainerCharacter.Hp = (int)(heal + drainerCharacter.HpLoad() > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
-                                    drainerCharacter.Session.SendPacket(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
+                                    drainerCharacter.MapInstance.Broadcast(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
                                     if (characterDrained.Hp <= 0)
                                     {
                                         characterDrained.GenerateDeath(drainerCharacter);
