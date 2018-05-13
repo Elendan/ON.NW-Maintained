@@ -1091,7 +1091,7 @@ namespace OpenNos.GameObject.Battle
                         ushort damaged = (ushort)(damage > tmon.CurrentHp * 50 ? tmon.CurrentHp * 50 : damage);
 
                         mapInstance.Broadcast(
-                            $"su 1 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
+                            $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
                         charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
                     }
