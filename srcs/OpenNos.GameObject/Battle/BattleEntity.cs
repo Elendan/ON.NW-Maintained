@@ -342,6 +342,18 @@ namespace OpenNos.GameObject.Battle
 
             #region Get Weapon Stats
 
+            if (targetEntity is Character tChar)
+            {
+                //TODO: Fix reflection buffs !!!!!
+                if (tChar.Buff.Any(s => s.Card.CardId == 663))
+                {
+                    if (ServerManager.Instance.RandomNumber() <= 20)
+                    {
+                        tChar.AddBuff(new Buff.Buff(664));
+                    }
+                }
+            }
+
             if (Session is Character character)
             {
                 if (skill == null)
@@ -1084,6 +1096,7 @@ namespace OpenNos.GameObject.Battle
                         mapInstance.Broadcast(
                             $"su 1 {tchar.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tchar.Hp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
+                        charact.Session.SendPacket(charact.GenerateStat());
                         charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
                     }
                     else if (target is MapMonster tmon)

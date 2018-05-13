@@ -551,6 +551,8 @@ namespace OpenNos.GameObject
 
         #region Methods
 
+        public string GenerateDm(ushort dmg) => $"dm 1 {CharacterId} {dmg}";
+
         public string GeneratePetskill(int VNum = -1) => $"petski {VNum}";
 
         public void AddQuest(long questId, bool isMain = false)
