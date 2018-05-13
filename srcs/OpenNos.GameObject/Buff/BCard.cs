@@ -189,7 +189,7 @@ namespace OpenNos.GameObject.Buff
                                 drainer.Hp = (int)(heal > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
                                 drainer.Session.SendPacket(drainer.GenerateRc(drainer.Level * SecondData));
                                 toDrain.CurrentHp -= heal;
-                                if (toDrain.CurrentHp < 0)
+                                if (toDrain.CurrentHp <= 0)
                                 {
                                     toDrain.IsAlive = false;
                                     toDrain.GenerateDeath(drainer);
