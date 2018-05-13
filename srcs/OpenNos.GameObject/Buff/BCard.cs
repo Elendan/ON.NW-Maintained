@@ -175,39 +175,40 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DrainAndSteal:
+                    if (ServerManager.Instance.RandomNumber() > FirstData)
+                    {
+                        return;
+                    }
                     switch (SubType)
                     {
                         case (byte)AdditionalTypes.DrainAndSteal.LeechEnemyHP:
-                            if (session is MapMonster toDrain && caster is Character drainer)
+                            switch (session)
                             {
-                                if (ServerManager.Instance.RandomNumber() > FirstData)
+                                case MapMonster toDrain when caster is Character drainer:
                                 {
-                                    return;
-                                }
+                                    int heal = drainer.Level * SecondData;
+                                    drainer.Hp = (int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
+                                    drainer.Session.SendPacket(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
+                                    toDrain.CurrentHp -= heal;
+                                    if (toDrain.CurrentHp <= 0)
+                                    {
+                                        toDrain.IsAlive = false;
+                                        toDrain.GenerateDeath(drainer);
+                                    }
 
-                                int heal = drainer.Level * SecondData;
-                                drainer.Hp = (int)(heal > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
-                                drainer.Session.SendPacket(drainer.GenerateRc(drainer.Level * SecondData));
-                                toDrain.CurrentHp -= heal;
-                                if (toDrain.CurrentHp <= 0)
-                                {
-                                    toDrain.IsAlive = false;
-                                    toDrain.GenerateDeath(drainer);
+                                    break;
                                 }
-                            }
-                            else if (session is Character characterDrained && caster is Character drainerCharacter)
-                            {
-                                if (ServerManager.Instance.RandomNumber() > FirstData)
+                                case Character characterDrained when caster is Character drainerCharacter:
                                 {
-                                    return;
-                                }
+                                    int heal = drainerCharacter.Level * SecondData;
+                                    drainerCharacter.Hp = (int)(heal + drainerCharacter.HpLoad() > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
+                                    drainerCharacter.Session.SendPacket(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
+                                    if (characterDrained.Hp <= 0)
+                                    {
+                                        characterDrained.GenerateDeath(drainerCharacter);
+                                    }
 
-                                int heal = drainerCharacter.Level * SecondData;
-                                drainerCharacter.Hp = (int)(heal > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
-                                drainerCharacter.Session.SendPacket(drainerCharacter.GenerateRc(drainerCharacter.Level * SecondData));
-                                if (characterDrained.Hp <= 0)
-                                {
-                                    characterDrained.GenerateDeath(drainerCharacter);
+                                    break;
                                 }
                             }
                             break;
