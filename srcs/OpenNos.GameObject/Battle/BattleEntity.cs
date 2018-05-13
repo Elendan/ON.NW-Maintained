@@ -1044,33 +1044,58 @@ namespace OpenNos.GameObject.Battle
             bool onyxWings = false;
             ushort damage = GenerateDamage(target, skill, ref hitmode, ref onyxWings);
 
-            if (Session is Character charact && onyxWings && mapInstance != null)
+            if (Session is Character charact && mapInstance != null)
             {
-                short onyxX = (short)(charact.PositionX + 2);
-                short onyxY = (short)(charact.PositionY + 2);
-                int onyxId = mapInstance.GetNextId();
-                var onyx = new MapMonster
+                if (onyxWings)
                 {
-                    MonsterVNum = 2371,
-                    MapX = onyxX,
-                    MapY = onyxY,
-                    MapMonsterId = onyxId,
-                    IsHostile = false,
-                    IsMoving = false,
-                    ShouldRespawn = false
-                };
-                mapInstance.Broadcast($"guri 31 1 {charact.CharacterId} {onyxX} {onyxY}");
-                onyx.Initialize(mapInstance);
-                mapInstance.AddMonster(onyx);
-                mapInstance.Broadcast(onyx.GenerateIn());
-                target.GetDamage(target.DealtDamage / 2, Entity, false);
-                Observable.Timer(TimeSpan.FromMilliseconds(350)).Subscribe(o =>
+                    short onyxX = (short)(charact.PositionX + 2);
+                    short onyxY = (short)(charact.PositionY + 2);
+                    int onyxId = mapInstance.GetNextId();
+                    var onyx = new MapMonster
+                    {
+                        MonsterVNum = 2371,
+                        MapX = onyxX,
+                        MapY = onyxY,
+                        MapMonsterId = onyxId,
+                        IsHostile = false,
+                        IsMoving = false,
+                        ShouldRespawn = false
+                    };
+                    mapInstance.Broadcast($"guri 31 1 {charact.CharacterId} {onyxX} {onyxY}");
+                    onyx.Initialize(mapInstance);
+                    mapInstance.AddMonster(onyx);
+                    mapInstance.Broadcast(onyx.GenerateIn());
+                    target.GetDamage(target.DealtDamage / 2, Entity, false);
+                    Observable.Timer(TimeSpan.FromMilliseconds(350)).Subscribe(o =>
+                    {
+                        mapInstance.Broadcast(
+                            $"su 3 {onyxId} 3 {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage / 2} 0 0");
+                        mapInstance.RemoveMonster(onyx);
+                        mapInstance.Broadcast(onyx.GenerateOut());
+                    });
+                }
+
+                if (target.HasBuff(CardType.TauntSkill, (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
                 {
-                    mapInstance.Broadcast(
-                        $"su 3 {onyxId} 3 {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage / 2} 0 0");
-                    mapInstance.RemoveMonster(onyx);
-                    mapInstance.Broadcast(onyx.GenerateOut());
-                });
+                    if (target is Character tchar)
+                    {
+                        ushort damaged = (ushort)(damage > tchar.Hp * 50 ? tchar.Hp * 50 : damage);
+
+                        mapInstance.Broadcast(
+                            $"su 1 {tchar.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tchar.Hp / (double)target.MaxHp * 100)} {damaged} 0 1");
+                        charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
+                        charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
+                    }
+                    else if (target is MapMonster tmon)
+                    {
+                        ushort damaged = (ushort)(damage > tmon.CurrentHp * 50 ? tmon.CurrentHp * 50 : damage);
+
+                        mapInstance.Broadcast(
+                            $"su 1 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
+                        charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
+                        charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
+                    }
+                }
             }
 
             if (target.GetSession() is Character character)
