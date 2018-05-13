@@ -206,6 +206,7 @@ namespace OpenNos.GameObject.Buff
                                     if (characterDrained.Hp <= 0)
                                     {
                                         characterDrained.GenerateDeath(drainerCharacter);
+                                        ServerManager.Instance.AskRevive(characterDrained.CharacterId, drainerCharacter.Session);
                                     }
 
                                     break;
