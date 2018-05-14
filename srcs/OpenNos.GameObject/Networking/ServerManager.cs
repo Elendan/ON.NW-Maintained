@@ -2123,15 +2123,6 @@ namespace OpenNos.GameObject.Networking
                 s?.HasCurrentMapInstance == true && s.HasSelectedCharacter && s.Character != null))
             {
                 session.Character.Save();
-                Thread.Sleep(500);
-            }
-
-            lock(FamilyList)
-            {
-                foreach (Family fam in FamilyList)
-                {
-                    FamilyRefresh(fam.FamilyId);
-                }
             }
         }
 
@@ -2335,7 +2326,7 @@ namespace OpenNos.GameObject.Networking
 
             Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(x => { RemoveItemProcess(); });
 
-            Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
+            //Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
 
             foreach (Schedule schedule in Schedules)
             {
