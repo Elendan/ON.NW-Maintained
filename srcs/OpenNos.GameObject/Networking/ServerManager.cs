@@ -2126,9 +2126,12 @@ namespace OpenNos.GameObject.Networking
                 Thread.Sleep(500);
             }
 
-            foreach (Family fam in FamilyList)
+            lock(FamilyList)
             {
-                FamilyRefresh(fam.FamilyId);
+                foreach (Family fam in FamilyList)
+                {
+                    FamilyRefresh(fam.FamilyId);
+                }
             }
         }
 

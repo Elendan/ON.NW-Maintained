@@ -404,7 +404,6 @@ namespace OpenNos.GameObject.Battle
 
                 Character toTargetChar = targetEntity is Character ? (Character)targetEntity.GetSession() : null;
                 var mainWeapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
-                var targetCostume = toTargetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeSuit, InventoryType.Wear);
                 var targetHat = toTargetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
 
                 if (mainWeapon != null)
@@ -416,19 +415,6 @@ namespace OpenNos.GameObject.Battle
                         {
                             case CardType.Buff:
                                 bc.ApplyBCards(toTargetChar, character);
-                                break;
-                        }
-                    }
-                }
-
-                if (targetCostume != null)
-                {
-                    foreach (BCard costumeBcard in targetCostume.Item.BCards)
-                    {
-                        switch ((CardType)costumeBcard.Type)
-                        {
-                            case CardType.Buff:
-                                costumeBcard.ApplyBCards(character, toTargetChar);
                                 break;
                         }
                     }
@@ -968,6 +954,40 @@ namespace OpenNos.GameObject.Battle
             #endregion
 
             targetEntity.DealtDamage = totalDamage;
+
+            Character targetChar = targetEntity is Character ? (Character)targetEntity.GetSession() : null;
+
+
+            if (Session is Character currentChar)
+            {
+                var targetCostume = targetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeSuit, InventoryType.Wear);
+
+                if (targetCostume != null)
+                {
+                    foreach (BCard costumeBcard in targetCostume.Item.BCards)
+                    {
+                        switch ((CardType)costumeBcard.Type)
+                        {
+                            case CardType.Buff:
+                                costumeBcard.ApplyBCards(currentChar, targetChar);
+                                break;
+                            case CardType.Block:
+                                switch (costumeBcard.SubType)
+                                {
+                                    case (byte)AdditionalTypes.Block.ChanceAllIncreased:
+                                        if (ServerManager.Instance.RandomNumber() < costumeBcard.FirstData)
+                                        {
+                                            totalDamage = (int)(totalDamage * 0.2);
+                                            targetEntity.DealtDamage = (int)(targetEntity.DealtDamage * 0.2);
+                                        }
+                                        break;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            
 
             while (totalDamage > ushort.MaxValue)
             {
