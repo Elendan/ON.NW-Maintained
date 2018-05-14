@@ -206,6 +206,12 @@ namespace OpenNos.GameObject.Battle
                 return;
             }
 
+            //TODO: add a scripted way to remove debuffs from boss when a monster is killed (475 is laurena's buff)
+            if (indicator.Card.CardId == 475)
+            {
+                return;
+            }
+
             Buffs.RemoveWhere(s => !s.Card.CardId.Equals(indicator.Card.CardId), out ConcurrentBag<Buff.Buff> buffs);
             Buffs = buffs;
             int randomTime = 0;
@@ -219,7 +225,7 @@ namespace OpenNos.GameObject.Battle
                     {
                         if (multiplier.HasValue)
                         {
-                            character.MapInstance.Broadcast(character.GenerateDm((ushort)(character.Level * multiplier.Value))); 
+                            character.MapInstance.Broadcast(character.GenerateDm((ushort)(character.Level * multiplier.Value)));
                             character.Hp = character.Hp - character.Level * multiplier.Value <= 0 ? 1 : character.Hp - character.Level * multiplier.Value;
                             character.GenerateStat();
                         }
@@ -255,6 +261,28 @@ namespace OpenNos.GameObject.Battle
                         string.Format(Language.Instance.GetMessageFromKey("UNDER_EFFECT"), indicator.Card.Name), 20));
                 }
             }
+            else if (Session is MapMonster monster)
+            {
+                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
+                {
+                    if (indicator.Card.CardId != 663)
+                    {
+                        monster.BattleEntity.IsReflecting = true;
+                        monster.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
+                            .FirstOrDefault(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated)?.FirstData;
+                    }
+                }
+
+                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage))
+                {
+                    if (indicator.Card.CardId != 663)
+                    {
+                        monster.BattleEntity.IsReflecting = true;
+                        monster.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
+                            .FirstOrDefault(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage)?.FirstData;
+                    }
+                }
+            }
 
             if (!indicator.StaticBuff)
             {
@@ -281,7 +309,7 @@ namespace OpenNos.GameObject.Battle
                 {
                     RemoveBuff(indicator.Card.CardId);
                     obs?.Dispose();
-                    
+
                     if (indicator.Card.TimeoutBuff != 0 &&
                         ServerManager.Instance.RandomNumber() < indicator.Card.TimeoutBuffChance)
                     {
@@ -296,7 +324,7 @@ namespace OpenNos.GameObject.Battle
         /// <param name="level"></param>
         public void DisableBuffs(List<BuffType> types, int level = 100)
         {
-            lock(Buffs)
+            lock (Buffs)
             {
                 Buffs.Where(s => types.Contains(s.Card.BuffType) && !s.StaticBuff && s.Card.Level <= level).ToList()
                     .ForEach(s => RemoveBuff(s.Card.CardId));
@@ -305,7 +333,7 @@ namespace OpenNos.GameObject.Battle
 
         public bool HasBuff(BuffType type)
         {
-            lock(Buffs)
+            lock (Buffs)
             {
                 return Buffs.Any(s => s.Card.BuffType == type);
             }
@@ -987,7 +1015,7 @@ namespace OpenNos.GameObject.Battle
                     }
                 }
             }
-            
+
 
             while (totalDamage > ushort.MaxValue)
             {
@@ -1086,6 +1114,12 @@ namespace OpenNos.GameObject.Battle
             ObservableBag[(short)id]?.Dispose();
             Buffs.RemoveWhere(s => s.Card.CardId != id, out ConcurrentBag<Buff.Buff> buffs);
             Buffs = buffs;
+
+            if (Session is MapMonster monster)
+            {
+                monster.ReflectiveBuffs.TryRemove((short)id, out _);
+            }
+
             if (!(Session is Character character))
             {
                 return;
@@ -1216,18 +1250,28 @@ namespace OpenNos.GameObject.Battle
                         mapInstance.Broadcast(
                             $"su 1 {tchar.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tchar.Hp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
-                        charact.Session.SendPacket(charact.GenerateStat());
+                        charact.MapInstance.Broadcast(charact.GenerateStat());
                         target.DealtDamage = 0;
                     }
                 }
-                else if (target.HasBuff(CardType.TauntSkill, (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated) && target is MapMonster tmon)
+                else if (target is MapMonster tmon)
                 {
-                    ushort damaged = (ushort)(damage > tmon.CurrentHp * 50 ? tmon.CurrentHp * 50 : damage);
+                    if (tmon.ReflectiveBuffs.Any())
+                    {
+                        int? multiplier = 0;
 
-                    mapInstance.Broadcast(
-                        $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
-                    charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
-                    charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
+                        foreach (KeyValuePair<short, int?> entry in tmon.ReflectiveBuffs)
+                        {
+                            multiplier += entry.Value;
+                        }
+
+                        ushort damaged = (ushort)(damage > tmon.Monster.Level * multiplier ? tmon.Monster.Level * multiplier : damage);
+                        charact.Hp -= charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
+                        charact.MapInstance.Broadcast(charact.GenerateStat());
+                        mapInstance.Broadcast(
+                            $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
+                        target.DealtDamage = 0;
+                    }
                 }
             }
 

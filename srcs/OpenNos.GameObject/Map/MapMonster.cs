@@ -36,7 +36,11 @@ namespace OpenNos.GameObject.Map
     {
         #region Instantiation
 
-        public MapMonster() => OnNoticeEvents = new ConcurrentBag<EventContainer>();
+        public MapMonster()
+        {
+            OnNoticeEvents = new ConcurrentBag<EventContainer>();
+            ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
+        }
 
         #endregion
 
@@ -72,6 +76,8 @@ namespace OpenNos.GameObject.Map
         public int MaxHp => Monster.MaxHP;
 
         #endregion
+
+        public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
 
         public int DealtDamage { get; set; }
 
