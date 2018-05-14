@@ -60,6 +60,8 @@ namespace OpenNos.GameObject
             MeditationDictionary = new Dictionary<short, DateTime>();
             Quests = new ConcurrentBag<CharacterQuest>();
             MTListTargetQueue = new ConcurrentStack<MTListHitTarget>();
+            ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
+            LastMegaTitanBuff = DateTime.Now;
         }
 
         #endregion
@@ -94,6 +96,11 @@ namespace OpenNos.GameObject
         public void DisableBuffs(List<BuffType> types, int level = 100) => BattleEntity.DisableBuffs(types, level);
 
         #endregion
+
+        // <BuffId, BuffReflexion>
+        public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
+
+        public DateTime LastMegaTitanBuff { get; set; }
 
         public ConcurrentStack<MTListHitTarget> MTListTargetQueue { get; set; }
 

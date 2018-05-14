@@ -118,6 +118,8 @@ namespace OpenNos.GameObject.Battle
 
         public byte Level { get; set; }
 
+        public bool IsReflecting { get; set; }
+
         #region Element
 
         public byte Element { get; set; }
@@ -208,6 +210,25 @@ namespace OpenNos.GameObject.Battle
             int randomTime = 0;
             if (Session is Character character)
             {
+                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
+                {
+                    if (indicator.Card.CardId != 663)
+                    {
+                        character.BattleEntity.IsReflecting = true;
+                        character.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
+                            .FirstOrDefault(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated)?.FirstData;
+                    }
+                }
+
+                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage))
+                {
+                    if (indicator.Card.CardId != 663)
+                    {
+                        character.BattleEntity.IsReflecting = true;
+                        character.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
+                            .FirstOrDefault(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage)?.FirstData;
+                    }
+                }
                 randomTime = RandomTimeBuffs(indicator);
 
                 if (!indicator.StaticBuff)
@@ -347,9 +368,10 @@ namespace OpenNos.GameObject.Battle
                 //TODO: Fix reflection buffs !!!!!
                 if (tChar.Buff.Any(s => s.Card.CardId == 663))
                 {
-                    if (ServerManager.Instance.RandomNumber() <= 20)
+                    if (ServerManager.Instance.RandomNumber() <= 20 && tChar.SpInstance?.Upgrade == 15 && tChar.LastMegaTitanBuff.AddMinutes(2) > DateTime.Now)
                     {
                         tChar.AddBuff(new Buff.Buff(664));
+                        tChar.LastMegaTitanBuff = DateTime.Now;
                     }
                 }
             }
@@ -358,6 +380,7 @@ namespace OpenNos.GameObject.Battle
             {
                 if (skill == null)
                 {
+                    targetEntity.DealtDamage = 0;
                     return 0;
                 }
 
@@ -983,10 +1006,17 @@ namespace OpenNos.GameObject.Battle
                 return;
             }
 
+            character.ReflectiveBuffs.TryRemove((short)id, out _);
+
             // Fairy booster
             if (indicator.Card.CardId == 131)
             {
                 character.GeneratePairy();
+            }
+
+            if (!character.ReflectiveBuffs.Any())
+            {
+                IsReflecting = false;
             }
 
             if (indicator.StaticBuff)
@@ -1081,33 +1111,38 @@ namespace OpenNos.GameObject.Battle
                     Observable.Timer(TimeSpan.FromMilliseconds(350)).Subscribe(o =>
                     {
                         mapInstance.Broadcast(
-                            $"su 3 {onyxId} 3 {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage / 2} 0 0");
+                            $"su 3 {onyxId} 3 {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage) / 2} 0 0");
                         mapInstance.RemoveMonster(onyx);
                         mapInstance.Broadcast(onyx.GenerateOut());
                     });
                 }
 
-                if (target.HasBuff(CardType.TauntSkill, (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
+                if (target is Character tchar)
                 {
-                    if (target is Character tchar)
+                    if (tchar.ReflectiveBuffs.Any())
                     {
-                        ushort damaged = (ushort)(damage > tchar.Hp * 50 ? tchar.Hp * 50 : damage);
+                        int? multiplier = 0;
 
+                        foreach (KeyValuePair<short, int?> entry in tchar.ReflectiveBuffs)
+                        {
+                            multiplier += entry.Value;
+                        }
+                        ushort damaged = (ushort)(damage > tchar.Level * multiplier ? tchar.Level * multiplier : damage);
                         mapInstance.Broadcast(
                             $"su 1 {tchar.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tchar.Hp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
                         charact.Session.SendPacket(charact.GenerateStat());
-                        charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
+                        target.DealtDamage = 0;
                     }
-                    else if (target is MapMonster tmon)
-                    {
-                        ushort damaged = (ushort)(damage > tmon.CurrentHp * 50 ? tmon.CurrentHp * 50 : damage);
+                }
+                else if (target.HasBuff(CardType.TauntSkill, (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated) && target is MapMonster tmon)
+                {
+                    ushort damaged = (ushort)(damage > tmon.CurrentHp * 50 ? tmon.CurrentHp * 50 : damage);
 
-                        mapInstance.Broadcast(
-                            $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
-                        charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
-                        charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
-                    }
+                    mapInstance.Broadcast(
+                        $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
+                    charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
+                    charact.Session.SendPacket($"cancel 2 {charact.GetId()}");
                 }
             }
 
@@ -1146,19 +1181,20 @@ namespace OpenNos.GameObject.Battle
             short? skillEffect = null, short? mapX = null, short? mapY = null, ComboDTO skillCombo = null,
             bool showTargetAnimation = false, bool isPvp = false, bool isRange = false)
         {
-            target.GetDamage(target.DealtDamage, Entity, !(Session is MapMonster mon && mon.IsInvicible));
+            Logger.Log.Warn($"IsReflecting : {target.BattleEntity.IsReflecting}");
+            target.GetDamage(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage, Entity, !(Session is MapMonster mon && mon.IsInvicible));
             string str =
                 $"su {(byte)Entity.SessionType()} {Entity.GetId()} {(byte)target.SessionType()} {target.GetId()} {skill?.SkillVNum ?? 0} {skill?.Cooldown ?? 0}";
             switch (hitType)
             {
                 case TargetHitType.SingleTargetHit:
                     str +=
-                        $" {skill?.AttackAnimation ?? 11} {skill?.Effect ?? skillEffect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} {hitmode} {skill?.SkillType - 1 ?? 0}";
+                        $" {skill?.AttackAnimation ?? 11} {skill?.Effect ?? skillEffect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} {hitmode} {skill?.SkillType - 1 ?? 0}";
                     break;
 
                 case TargetHitType.SingleTargetHitCombo:
                     str +=
-                        $" {skillCombo?.Animation ?? 0} {skillCombo?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} {hitmode} {skill.SkillType - 1}";
+                        $" {skillCombo?.Animation ?? 0} {skillCombo?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} {hitmode} {skill.SkillType - 1}";
                     break;
 
                 case TargetHitType.SingleAOETargetHit:
@@ -1184,7 +1220,7 @@ namespace OpenNos.GameObject.Battle
                     }
 
                     str +=
-                        $" {skill?.AttackAnimation ?? 0} {skill?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} {hitmode} {skill.SkillType - 1}";
+                        $" {skill?.AttackAnimation ?? 0} {skill?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} {hitmode} {skill.SkillType - 1}";
                     break;
 
                 case TargetHitType.AOETargetHit:
@@ -1204,17 +1240,17 @@ namespace OpenNos.GameObject.Battle
                     }
 
                     str +=
-                        $" {skill?.AttackAnimation ?? 0} {skill?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} {hitmode} {skill.SkillType - 1}";
+                        $" {skill?.AttackAnimation ?? 0} {skill?.Effect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} {hitmode} {skill.SkillType - 1}";
                     break;
 
                 case TargetHitType.ZoneHit:
                     str +=
-                        $" {skill?.AttackAnimation ?? 0} {skillEffect ?? 0} {mapX ?? Entity.GetPos().X} {mapY ?? Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} 5 {skill.SkillType - 1}";
+                        $" {skill?.AttackAnimation ?? 0} {skillEffect ?? 0} {mapX ?? Entity.GetPos().X} {mapY ?? Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} 5 {skill.SkillType - 1}";
                     break;
 
                 case TargetHitType.SpecialZoneHit:
                     str +=
-                        $" {skill?.AttackAnimation ?? 0} {skillEffect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {damage} 0 {skill.SkillType - 1}";
+                        $" {skill?.AttackAnimation ?? 0} {skillEffect ?? 0} {Entity.GetPos().X} {Entity.GetPos().Y} {(target.CurrentHp > 0 ? 1 : 0)} {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage)} 0 {skill.SkillType - 1}";
                     break;
             }
 
