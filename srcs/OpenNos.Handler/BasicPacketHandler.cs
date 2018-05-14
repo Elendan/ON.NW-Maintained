@@ -1344,14 +1344,6 @@ namespace OpenNos.Handler
 
             Session.CurrentMapInstance = Session.Character.MapInstance;
 
-            Session.Character.SaveObs = Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x =>
-            {
-                if (Session != null && Session.HasCurrentMapInstance)
-                {
-                    Session.Character.Save();
-                }
-            });
-
             if (ConfigurationManager.AppSettings["SceneOnCreate"].ToLower() == "true" & Session.Character.GeneralLogs.Count(s => s.LogType == "Connection") < 2)
             {
                 Session.SendPacket("scene 40");

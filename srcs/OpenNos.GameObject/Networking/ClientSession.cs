@@ -202,7 +202,6 @@ namespace OpenNos.GameObject.Networking
 
         public void Disconnect()
         {
-            Character?.SaveObs?.Dispose();
             _client.Disconnect();
         }
 
