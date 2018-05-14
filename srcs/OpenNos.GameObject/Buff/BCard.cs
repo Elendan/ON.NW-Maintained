@@ -175,7 +175,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DrainAndSteal:
-                    if (ServerManager.Instance.RandomNumber() > FirstData)
+                    if (ServerManager.Instance.RandomNumber() < FirstData)
                     {
                         return;
                     }
@@ -190,7 +190,7 @@ namespace OpenNos.GameObject.Buff
                                     drainer.Hp = (int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
                                     drainer.MapInstance.Broadcast(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
                                     toDrain.CurrentHp -= heal;
-                                    drainer.Session.SendPacket(drainer.GenerateStat());
+                                    drainer.MapInstance.Broadcast(drainer.GenerateStat());
                                     if (toDrain.CurrentHp <= 0)
                                     {
                                         toDrain.IsAlive = false;
@@ -202,9 +202,12 @@ namespace OpenNos.GameObject.Buff
                                 case Character characterDrained when caster is Character drainerCharacter:
                                 {
                                     int heal = drainerCharacter.Level * SecondData;
-                                    drainerCharacter.Hp = (int)(heal + drainerCharacter.HpLoad() > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
+                                    drainerCharacter.Hp = (int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
                                     drainerCharacter.MapInstance.Broadcast(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
-                                    if (characterDrained.Hp <= 0)
+                                    characterDrained.Hp -= heal;
+                                    characterDrained.MapInstance.Broadcast(characterDrained.GenerateStat());
+                                    drainerCharacter.MapInstance.Broadcast(drainerCharacter.GenerateStat());
+                                        if (characterDrained.Hp <= 0)
                                     {
                                         characterDrained.GenerateDeath(drainerCharacter);
                                         ServerManager.Instance.AskRevive(characterDrained.CharacterId, drainerCharacter.Session);

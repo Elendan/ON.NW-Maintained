@@ -215,7 +215,6 @@ namespace OpenNos.GameObject.Battle
                 {
                     int? multiplier = indicator.Card.BCards.FirstOrDefault(s => s.Type == (byte)CardType.HealingBurningAndCasting && s.SubType == (byte)AdditionalTypes.HealingBurningAndCasting.DecreaseHP)?.FirstData + 1;
 
-
                     obs = Observable.Interval(TimeSpan.FromSeconds(2)).Subscribe(s =>
                     {
                         if (multiplier.HasValue)
@@ -225,6 +224,7 @@ namespace OpenNos.GameObject.Battle
                             character.GenerateStat();
                         }
                     });
+                    Observable.Timer(TimeSpan.FromMilliseconds(indicator.RemainingTime * 100)).Subscribe(s => { obs?.Dispose(); });
                 }
                 if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
                 {
@@ -1196,7 +1196,7 @@ namespace OpenNos.GameObject.Battle
                     Observable.Timer(TimeSpan.FromMilliseconds(350)).Subscribe(o =>
                     {
                         mapInstance.Broadcast(
-                            $"su 3 {onyxId} 3 {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage) / 2} 0 0");
+                            $"su 3 {onyxId} {(target is Character ? "1" : "3")} {target.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(target.CurrentHp / (double)target.MaxHp * 100)} {(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage) / 2} 0 0");
                         mapInstance.RemoveMonster(onyx);
                         mapInstance.Broadcast(onyx.GenerateOut());
                     });
