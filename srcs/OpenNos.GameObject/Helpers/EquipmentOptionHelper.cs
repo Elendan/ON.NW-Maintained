@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using NosSharp.Enums;
 using OpenNos.Data;
@@ -65,8 +66,7 @@ namespace OpenNos.GameObject.Helpers
 
         public BCard ShellToBCards(EquipmentOptionDTO option, short itemVNum)
         {
-            var bCard = new BCard();
-            bCard.ItemVNum = itemVNum;
+            var bCard = new BCard { ItemVNum = itemVNum };
 
             switch ((ShellOptionType)option.Type)
             {
@@ -81,22 +81,35 @@ namespace OpenNos.GameObject.Helpers
                     bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.MinorBleeding:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 189;
                     break;
                 case ShellOptionType.Bleeding:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 190;
                     break;
                 case ShellOptionType.SeriousBleeding:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 191;
                     break;
                 case ShellOptionType.Blackout:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 196;
                     break;
                 case ShellOptionType.Frozen:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 27;
                     break;
                 case ShellOptionType.DeadlyBlackout:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Buff;
+                    bCard.FirstData = option.Value;
+                    bCard.SecondData = 197;
+                    bCard.BCardId = 103;
                     break;
                 case ShellOptionType.IncreaseDamageOnPlants:
                     /* TO BE DONE */

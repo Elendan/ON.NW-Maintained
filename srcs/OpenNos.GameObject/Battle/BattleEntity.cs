@@ -199,6 +199,7 @@ namespace OpenNos.GameObject.Battle
 
         public void AddBuff(Buff.Buff indicator)
         {
+            IDisposable obs = null;
             if (indicator?.Card == null || indicator.Card.BuffType == BuffType.Bad &&
                 Buffs.Any(b => b.Card.CardId == indicator.Card.CardId))
             {
@@ -210,6 +211,21 @@ namespace OpenNos.GameObject.Battle
             int randomTime = 0;
             if (Session is Character character)
             {
+                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.HealingBurningAndCasting && s.SubType == (byte)AdditionalTypes.HealingBurningAndCasting.DecreaseHP))
+                {
+                    int? multiplier = indicator.Card.BCards.FirstOrDefault(s => s.Type == (byte)CardType.HealingBurningAndCasting && s.SubType == (byte)AdditionalTypes.HealingBurningAndCasting.DecreaseHP)?.FirstData + 1;
+
+
+                    obs = Observable.Interval(TimeSpan.FromSeconds(2)).Subscribe(s =>
+                    {
+                        if (multiplier.HasValue)
+                        {
+                            character.MapInstance.Broadcast(character.GenerateDm((ushort)(character.Level * multiplier.Value))); 
+                            character.Hp = character.Hp - character.Level * multiplier.Value <= 0 ? 1 : character.Hp - character.Level * multiplier.Value;
+                            character.GenerateStat();
+                        }
+                    });
+                }
                 if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
                 {
                     if (indicator.Card.CardId != 663)
@@ -251,7 +267,7 @@ namespace OpenNos.GameObject.Battle
 
             if (indicator.Card.EffectId > 0)
             {
-                //Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
+                Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
             }
 
             if (ObservableBag.TryGetValue(indicator.Card.CardId, out IDisposable value))
@@ -264,6 +280,8 @@ namespace OpenNos.GameObject.Battle
                 .Subscribe(o =>
                 {
                     RemoveBuff(indicator.Card.CardId);
+                    obs?.Dispose();
+                    
                     if (indicator.Card.TimeoutBuff != 0 &&
                         ServerManager.Instance.RandomNumber() < indicator.Card.TimeoutBuffChance)
                     {
@@ -383,6 +401,53 @@ namespace OpenNos.GameObject.Battle
                     targetEntity.DealtDamage = 0;
                     return 0;
                 }
+
+                Character toTargetChar = targetEntity is Character ? (Character)targetEntity.GetSession() : null;
+                var mainWeapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                var targetCostume = toTargetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeSuit, InventoryType.Wear);
+                var targetHat = toTargetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
+
+                if (mainWeapon != null)
+                {
+                    List<BCard> weaponCards = EquipmentOptionHelper.Instance.ShellToBCards(mainWeapon.EquipmentOptions.ToList(), mainWeapon.ItemVNum);
+                    foreach (BCard bc in weaponCards)
+                    {
+                        switch ((CardType)bc.Type)
+                        {
+                            case CardType.Buff:
+                                bc.ApplyBCards(toTargetChar, character);
+                                break;
+                        }
+                    }
+                }
+
+                if (targetCostume != null)
+                {
+                    foreach (BCard costumeBcard in targetCostume.Item.BCards)
+                    {
+                        switch ((CardType)costumeBcard.Type)
+                        {
+                            case CardType.Buff:
+                                costumeBcard.ApplyBCards(character, toTargetChar);
+                                break;
+                        }
+                    }
+                }
+
+                if (targetHat != null)
+                {
+                    foreach (BCard hatBcard in targetHat.Item.BCards)
+                    {
+                        switch ((CardType)hatBcard.Type)
+                        {
+                            case CardType.Buff:
+                                hatBcard.ApplyBCards(character, toTargetChar);
+                                break;
+                        }
+                    }
+                }
+
+                //mainWeapon.
 
                 if (character.Buff.Any(s => s.Card.CardId == 559))
                 {
@@ -1181,7 +1246,6 @@ namespace OpenNos.GameObject.Battle
             short? skillEffect = null, short? mapX = null, short? mapY = null, ComboDTO skillCombo = null,
             bool showTargetAnimation = false, bool isPvp = false, bool isRange = false)
         {
-            Logger.Log.Warn($"IsReflecting : {target.BattleEntity.IsReflecting}");
             target.GetDamage(target.BattleEntity.IsReflecting ? 0 : target.DealtDamage, Entity, !(Session is MapMonster mon && mon.IsInvicible));
             string str =
                 $"su {(byte)Entity.SessionType()} {Entity.GetId()} {(byte)target.SessionType()} {target.GetId()} {skill?.SkillVNum ?? 0} {skill?.Cooldown ?? 0}";
