@@ -91,9 +91,7 @@ namespace OpenNos.GameObject.Map
 
         public bool IsAlive { get; set; }
 
-        public bool IsFactionTargettable(FactionType faction) => MonsterVNum == 679 & faction == FactionType.Angel | MonsterVNum == 680 & faction == FactionType.Demon
-            ? false
-            : true;
+        public bool IsFactionTargettable(FactionType faction) => !(MonsterVNum == 679 & faction == FactionType.Angel | MonsterVNum == 680 & faction == FactionType.Demon);
 
         public FactionType Faction { get; set; }
 

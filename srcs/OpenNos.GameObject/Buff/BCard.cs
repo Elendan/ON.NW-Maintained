@@ -714,6 +714,9 @@ namespace OpenNos.GameObject.Buff
                 case BCardType.CardType.StealBuff:
                     break;
 
+                case BCardType.CardType.EffectSummon:
+                    break;
+
                 default:
                     Logger.Error(new ArgumentOutOfRangeException($"Card Type {Type} not defined!"));
                     //throw new ArgumentOutOfRangeException();

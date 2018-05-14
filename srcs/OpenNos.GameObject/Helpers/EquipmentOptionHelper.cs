@@ -232,22 +232,35 @@ namespace OpenNos.GameObject.Helpers
                     bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpEnemyDefenseDecreased:
-                    /* TO BE DONE */
+                    //Todo: find proper BCard, not sure for this one
+                    bCard.Type = (byte)BCardType.CardType.SpecialisationBuffResistance;
+                    bCard.SubType = (byte)AdditionalTypes.SpecialisationBuffResistance.IncreaseDamageAgainst;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpResistanceDecreasedFire:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.EnemyElementResistance;
+                    bCard.SubType = (byte)AdditionalTypes.EnemyElementResistance.FireDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpResistanceDecreasedWater:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.EnemyElementResistance;
+                    bCard.SubType = (byte)AdditionalTypes.EnemyElementResistance.WaterDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpResistanceDecreasedLight:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.EnemyElementResistance;
+                    bCard.SubType = (byte)AdditionalTypes.EnemyElementResistance.LightDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpResistanceDecreasedDark:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.EnemyElementResistance;
+                    bCard.SubType = (byte)AdditionalTypes.EnemyElementResistance.DarkDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpResistanceDecreasedAll:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.EnemyElementResistance;
+                    bCard.SubType = (byte)AdditionalTypes.EnemyElementResistance.AllDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpAlwaysHit:
                     /* TO BE DONE */
@@ -304,61 +317,63 @@ namespace OpenNos.GameObject.Helpers
                     bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedMinorBleeding:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedSeriousBleeding:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedAllBleeding:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedSmallBlackout:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedAllBlackout:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedHandOfDeath:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedFrozenChance:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedBlindChance:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedArrestationChance:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedDefenseReduction:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedShockChance:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReducedRigidityChance:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.SReducedAllNegative:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.OnRestHpRecoveryPercentage:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.NaturalHpRecoveryPercentage:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.OnRestMpRecoveryPercentage:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.NaturalMpRecoveryPercentage:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.SOnAttackRecoveryPercentage:
-                    /* TO BE DONE */
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.ReduceCriticalChance:
-                    /* TO BE DONE */
+                    bCard.Type = (byte)BCardType.CardType.Critical;
+                    bCard.SubType = (byte)AdditionalTypes.Critical.DamageFromCriticalDecreased;
+                    bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.FireResistanceIncrease:
                     bCard.Type = (byte)BCardType.CardType.ElementResistance;
@@ -413,7 +428,6 @@ namespace OpenNos.GameObject.Helpers
                     bCard.FirstData = option.Value;
                     break;
                 case ShellOptionType.PvpDodgeMagic:
-                    /* TO BE DONE */
                     break;
                 case ShellOptionType.SPvpDodgeAll:
                     bCard.Type = (byte)BCardType.CardType.DodgeAndDefencePercent;
