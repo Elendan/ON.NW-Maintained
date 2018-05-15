@@ -499,17 +499,65 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialActions:
-                    if (character == null)
+                    switch (SubType)
                     {
-                        break;
-                    }
+                        case (byte)AdditionalTypes.SpecialActions.Hide:
+                            if (character == null)
+                            {
+                                break;
+                            }
+                            character.Invisible = true;
+                            character.Mates.Where(s => s.IsTeamMember).ToList().ForEach(s =>
+                                character.Session.CurrentMapInstance?.Broadcast(s.GenerateOut()));
+                            character.Session.CurrentMapInstance?.Broadcast(character.GenerateInvisible());
+                            break;
+                        case (byte)AdditionalTypes.SpecialActions.FocusEnemies:
+                            long entityId;
+                            UserType uType;
+                            switch (caster)
+                            {
+                                case Character senderCharacter:
+                                    switch (session)
+                                    {
+                                        case MapMonster receiverMapMonster:
+                                            entityId = receiverMapMonster.MapMonsterId;
+                                            uType = UserType.Monster;
+                                            break;
+                                        case Character receiverCharacter:
+                                            entityId = receiverCharacter.CharacterId;
+                                            uType = UserType.Player;
+                                            break;
+                                        default:
+                                            return;
+                                    }
 
-                    if (SubType.Equals((byte)AdditionalTypes.SpecialActions.Hide))
-                    {
-                        character.Invisible = true;
-                        character.Mates.Where(s => s.IsTeamMember).ToList().ForEach(s =>
-                            character.Session.CurrentMapInstance?.Broadcast(s.GenerateOut()));
-                        character.Session.CurrentMapInstance?.Broadcast(character.GenerateInvisible());
+                                    Observable.Timer(TimeSpan.FromMilliseconds(200)).Subscribe(s =>
+                                    {
+                                        senderCharacter.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderCharacter.PositionX} {senderCharacter.PositionY} 3 {SecondData} 2 -1");
+                                    });
+                                    break;
+                                case MapMonster senderMapMonster:
+                                    switch (session)
+                                    {
+                                        case MapMonster receiverMapMonster:
+                                            entityId = receiverMapMonster.MapMonsterId;
+                                            uType = UserType.Monster;
+                                            break;
+                                        case Character receiverCharacter:
+                                            entityId = receiverCharacter.CharacterId;
+                                            uType = UserType.Player;
+                                            break;
+                                        default:
+                                            return;
+                                    }
+                                    Observable.Timer(TimeSpan.FromMilliseconds(200)).Subscribe(s =>
+                                    {
+                                        senderMapMonster.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderMapMonster.MapX} {senderMapMonster.MapY} 3 {SecondData} 2 -1");
+                                    });
+                                    break;
+                            }
+
+                            break;
                     }
 
                     break;
