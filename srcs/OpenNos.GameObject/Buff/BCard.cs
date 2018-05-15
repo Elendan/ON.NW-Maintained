@@ -531,7 +531,7 @@ namespace OpenNos.GameObject.Buff
                                             return;
                                     }
 
-                                    Observable.Timer(TimeSpan.FromMilliseconds(200)).Subscribe(s =>
+                                    Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(s =>
                                     {
                                         senderCharacter.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderCharacter.PositionX} {senderCharacter.PositionY} 3 {SecondData} 2 -1");
                                     });
@@ -550,7 +550,7 @@ namespace OpenNos.GameObject.Buff
                                         default:
                                             return;
                                     }
-                                    Observable.Timer(TimeSpan.FromMilliseconds(200)).Subscribe(s =>
+                                    Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(s =>
                                     {
                                         senderMapMonster.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderMapMonster.MapX} {senderMapMonster.MapY} 3 {SecondData} 2 -1");
                                     });
