@@ -415,7 +415,7 @@ namespace OpenNos.Handler
                                         {
                                             if (s.Type != (short)BCardType.CardType.Buff)
                                             {
-                                                s.ApplyBCards(target);
+                                                s.ApplyBCards(target, Session.Character);
                                                 continue;
                                             }
 

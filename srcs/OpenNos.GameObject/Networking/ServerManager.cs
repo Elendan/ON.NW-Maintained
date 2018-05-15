@@ -270,6 +270,11 @@ namespace OpenNos.GameObject.Networking
             return _recipeLists.FirstOrDefault(s => s.ItemVNum == itemVNum);
         }
 
+        public Card GetCardByCardId(short cardId)
+        {
+            return Cards.FirstOrDefault(s => s.CardId == cardId);
+        }
+
         public List<Recipe> GetRecipesByItemVNum(short itemVNum)
         {
             List<Recipe> recipes = new List<Recipe>();

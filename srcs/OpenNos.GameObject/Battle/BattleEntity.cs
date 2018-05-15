@@ -197,9 +197,8 @@ namespace OpenNos.GameObject.Battle
             return -1;
         }
 
-        public void AddBuff(Buff.Buff indicator)
+        public void AddBuff(Buff.Buff indicator, IBattleEntity caster = null)
         {
-            IDisposable obs = null;
             if (indicator?.Card == null || indicator.Card.BuffType == BuffType.Bad &&
                 Buffs.Any(b => b.Card.CardId == indicator.Card.CardId))
             {
@@ -217,21 +216,6 @@ namespace OpenNos.GameObject.Battle
             int randomTime = 0;
             if (Session is Character character)
             {
-                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.HealingBurningAndCasting && s.SubType == (byte)AdditionalTypes.HealingBurningAndCasting.DecreaseHP))
-                {
-                    int? multiplier = indicator.Card.BCards.FirstOrDefault(s => s.Type == (byte)CardType.HealingBurningAndCasting && s.SubType == (byte)AdditionalTypes.HealingBurningAndCasting.DecreaseHP)?.FirstData + 1;
-
-                    obs = Observable.Interval(TimeSpan.FromSeconds(2)).Subscribe(s =>
-                    {
-                        if (multiplier.HasValue)
-                        {
-                            character.MapInstance.Broadcast(character.GenerateDm((ushort)(character.Level * multiplier.Value)));
-                            character.Hp = character.Hp - character.Level * multiplier.Value <= 0 ? 1 : character.Hp - character.Level * multiplier.Value;
-                            character.GenerateStat();
-                        }
-                    });
-                    Observable.Timer(TimeSpan.FromMilliseconds(indicator.RemainingTime * 100)).Subscribe(s => { obs?.Dispose(); });
-                }
                 if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
                 {
                     if (indicator.Card.CardId != 663)
@@ -291,11 +275,23 @@ namespace OpenNos.GameObject.Battle
             }
 
             Buffs.Add(indicator);
-            indicator.Card.BCards.ForEach(c => c.ApplyBCards(Entity));
+            if (indicator.Entity != null)
+            {
+                indicator.Card.BCards.ForEach(c => c.ApplyBCards(Entity, indicator.Entity));
+            }
+            else
+            {
+                indicator.Card.BCards.ForEach(c => c.ApplyBCards(Entity));
+            }
 
             if (indicator.Card.EffectId > 0)
             {
-                Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
+                int timer = (int)(indicator.Card.Duration * 0.1);
+                IDisposable effectObservable = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s => 
+                {
+                    Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
+                });
+                Observable.Timer(TimeSpan.FromSeconds(timer)).Subscribe(s => effectObservable.Dispose());
             }
 
             if (ObservableBag.TryGetValue(indicator.Card.CardId, out IDisposable value))
@@ -308,7 +304,6 @@ namespace OpenNos.GameObject.Battle
                 .Subscribe(o =>
                 {
                     RemoveBuff(indicator.Card.CardId);
-                    obs?.Dispose();
 
                     if (indicator.Card.TimeoutBuff != 0 &&
                         ServerManager.Instance.RandomNumber() < indicator.Card.TimeoutBuffChance)

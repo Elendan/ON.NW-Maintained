@@ -149,6 +149,8 @@ namespace OpenNos.GameObject.Map
 
         #region Methods
 
+        public string GenerateDm(ushort damage) => $"dm 3 {MapMonsterId} {damage}";
+
         public EffectPacket GenerateEff(int effectid) => new EffectPacket
         {
             EffectType = 3,

@@ -13,6 +13,7 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reactive.Linq;
@@ -42,7 +43,7 @@ namespace OpenNos.GameObject.Buff
                     if (ServerManager.Instance.RandomNumber() < FirstData)
                     {
                         session?.BattleEntity.AddBuff(new Buff(SecondData,
-                            caster?.BattleEntity.Level ?? session.BattleEntity.Level));
+                            caster?.BattleEntity.Level ?? session.BattleEntity.Level, entity: caster));
                     }
 
                     break;
@@ -358,6 +359,143 @@ namespace OpenNos.GameObject.Buff
                             }
 
                             break;
+                        case AdditionalTypes.HealingBurningAndCasting.DecreaseHP:
+                            int timer = ThirdData + 1;
+                            IDisposable obs = null;
+                            Card card = ServerManager.Instance.GetCardByCardId(CardId ?? -1);
+                            if (card == null)
+                            {
+                                Logger.Log.Warn("CardId was null, can't apply bcard.");
+                                return;
+                            }
+                            if (IsLevelScaled)
+                            {
+                                int scale = FirstData + 1;
+                                ushort damage = 0;
+                                obs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                {
+                                    switch (session)
+                                    {
+                                        case Character receiverCharacter when caster is Character senderCharacter:
+                                            {
+                                                damage = (ushort)(senderCharacter.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                                break;
+                                            }
+                                        case MapMonster receiverMonster when caster is Character senderCharacter:
+                                            {
+                                                damage = (ushort)(senderCharacter.Level * scale);
+                                                receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
+                                                receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                            }
+                                            break;
+                                        case Character receiverCharacter when caster is MapMonster senderMapMonster:
+                                            {
+                                                damage = (ushort)(senderMapMonster.Monster.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            }
+                                            break;
+                                    }
+                                });
+                                Observable.Timer(TimeSpan.FromSeconds(card.Duration * 0.1)).Subscribe(s =>
+                                {
+                                    obs.Dispose();
+                                });
+                            }
+                            else
+                            {
+                                ushort damage = (ushort)FirstData;
+                                obs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                {
+                                    switch (session)
+                                    {
+                                        case Character receiverCharacter when caster is Character senderCharacter:
+                                            damage = senderCharacter.Level;
+                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                        case MapMonster receiverMonster when caster is Character senderCharacter:
+                                            damage = senderCharacter.Level;
+                                            receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
+                                            receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                            break;
+                                        case Character receiverCharacter when caster is MapMonster senderMapMonster:
+                                            damage = senderMapMonster.Monster.Level;
+                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                    }
+                                });
+                                Observable.Timer(TimeSpan.FromSeconds(card.Duration * 0.1)).Subscribe(s => obs.Dispose());
+                            }
+                            break;
+                        case AdditionalTypes.HealingBurningAndCasting.DecreaseMP:
+                            int mpTimer = ThirdData + 1;
+                            IDisposable mpObs = null;
+                            Card mpCard = ServerManager.Instance.GetCardByCardId(CardId ?? -1);
+                            if (mpCard == null)
+                            {
+                                Logger.Log.Warn("CardId was null, can't apply bcard.");
+                                return;
+                            }
+                            if (IsLevelScaled)
+                            {
+                                int scale = FirstData + 1;
+                                ushort damage = 0;
+                                obs = Observable.Interval(TimeSpan.FromSeconds(mpTimer)).Subscribe(s =>
+                                {
+                                    switch (session)
+                                    {
+                                        case Character receiverCharacter when caster is Character senderCharacter:
+                                            damage = (ushort)(senderCharacter.Level * scale);
+                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                        case MapMonster receiverMonster when caster is Character senderCharacter:
+                                            damage = (ushort)(senderCharacter.Level * scale);
+                                            receiverMonster.CurrentMp = receiverMonster.CurrentMp - damage <= 0 ? 1 : receiverMonster.CurrentMp - damage;
+                                            break;
+                                        case Character receiverCharacter when caster is MapMonster senderMapMonster:
+                                            damage = (ushort)(senderMapMonster.Monster.Level * scale);
+                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                    }
+                                });
+                                Observable.Timer(TimeSpan.FromSeconds(mpCard.Duration * 0.1)).Subscribe(s => obs.Dispose());
+                            }
+                            else
+                            {
+                                ushort damage = (ushort)FirstData;
+                                obs = Observable.Interval(TimeSpan.FromSeconds(mpTimer)).Subscribe(s =>
+                                {
+                                    switch (session)
+                                    {
+                                        case Character receiverCharacter when caster is Character senderCharacter:
+                                            damage = senderCharacter.Level;
+                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                        case MapMonster receiverMonster when caster is Character senderCharacter:
+                                            damage = senderCharacter.Level;
+                                            receiverMonster.CurrentMp = receiverMonster.CurrentMp - damage <= 0 ? 1 : receiverMonster.CurrentMp - damage;
+                                            break;
+                                        case Character receiverCharacter when caster is MapMonster senderMapMonster:
+                                            damage = senderMapMonster.Monster.Level;
+                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateStat());
+                                            break;
+                                    }
+                                });
+                                Observable.Timer(TimeSpan.FromSeconds(mpCard.Duration * 0.1)).Subscribe(s => obs.Dispose());
+                            }
+                            break;
                     }
 
                     break;
@@ -578,6 +716,67 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialBehaviour:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.SpecialBehaviour.InflictOnTeam:
+                            int delay = ThirdData + 1;
+                            IDisposable teamObs = null;
+                            if (session is MapMonster inRangeMapMonster)
+                            {
+                                int range = FirstData;
+                                int timer = ThirdData + 1;
+                                Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
+                                IEnumerable entitiesInRange = inRangeMapMonster.MapInstance.GetListMonsterInRange(inRangeMapMonster.MapX, inRangeMapMonster.MapY, (byte)range);
+                                if (entitiesInRange == null || buffCard == null)
+                                {
+                                    return;
+                                }
+
+                                teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                {
+                                    foreach (MapMonster monster in entitiesInRange)
+                                    {
+                                        if (monster.Buffs.All(x => x.Card.CardId != buffCard.CardId))
+                                        {
+                                            monster.AddBuff(new Buff(SecondData, entity: caster));
+                                        }
+                                    }
+                                });
+
+                                Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
+                                {
+                                    teamObs.Dispose();
+                                });
+                            }
+                            else if (session is Character inRangeCharacter)
+                            {
+                                int range = FirstData;
+                                int timer = ThirdData + 1;
+                                Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
+                                IEnumerable entitiesInRange = inRangeCharacter.MapInstance.GetCharactersInRange(inRangeCharacter.MapX, inRangeCharacter.MapY, (byte)range);
+                                if (entitiesInRange == null || buffCard == null)
+                                {
+                                    return;
+                                }
+
+                                teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                {
+                                    foreach (Character characterInRange in entitiesInRange)
+                                    {
+                                        if (characterInRange.Buff.All(x => x.Card.CardId != buffCard.CardId))
+                                        {
+                                            characterInRange.AddBuff(new Buff(SecondData, entity: caster));
+                                        }
+                                    }
+                                });
+
+                                Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
+                                {
+                                    teamObs.Dispose();
+                                });
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Quest:
