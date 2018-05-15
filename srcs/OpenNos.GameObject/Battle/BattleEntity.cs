@@ -286,12 +286,7 @@ namespace OpenNos.GameObject.Battle
 
             if (indicator.Card.EffectId > 0)
             {
-                int timer = (int)(indicator.Card.Duration * 0.1);
-                IDisposable effectObservable = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s => 
-                {
-                    Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
-                });
-                Observable.Timer(TimeSpan.FromSeconds(timer)).Subscribe(s => effectObservable.Dispose());
+                Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
             }
 
             if (ObservableBag.TryGetValue(indicator.Card.CardId, out IDisposable value))
