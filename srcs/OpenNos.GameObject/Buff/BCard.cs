@@ -362,7 +362,7 @@ namespace OpenNos.GameObject.Buff
                         case AdditionalTypes.HealingBurningAndCasting.DecreaseHP:
                             int timer = ThirdData + 1;
                             IDisposable obs = null;
-                            Card card = ServerManager.Instance.GetCardByCardId(CardId ?? -1);
+                            Card card = ServerManager.Instance.GetCardByCardId(CardId);
                             if (card == null)
                             {
                                 Logger.Log.Warn("CardId was null, can't apply bcard.");

@@ -853,7 +853,7 @@ namespace OpenNos.GameObject.Battle
                 - GetBuff(CardType.Critical,
                     (byte)AdditionalTypes.Critical.DamageIncreasedInflictingReduced)[0];
 
-            if (ServerManager.Instance.RandomNumber() <= critChance)
+            if (ServerManager.Instance.RandomNumber() <= critChance || targetEntity.HasBuff(CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
             {
                 if (skill?.Type != 2 && attackType != AttackType.Magical)
                 {
