@@ -243,7 +243,7 @@ namespace OpenNos.GameObject.Battle
                 indicator.Card.BCards.ForEach(c => c.ApplyBCards(Entity));
             }
 
-            if (indicator.Card.EffectId > 0)
+            if (indicator.Card.EffectId > 0 && indicator.Card.EffectId != 7451)
             {
                 Entity.MapInstance?.Broadcast(Entity.GenerateEff(indicator.Card.EffectId));
             }
@@ -363,10 +363,12 @@ namespace OpenNos.GameObject.Battle
                 //TODO: Fix reflection buffs !!!!!
                 if (tChar.Buff.Any(s => s.Card.CardId == 663))
                 {
-                    if (ServerManager.Instance.RandomNumber() <= 20 && tChar.SpInstance?.Upgrade == 15 && tChar.LastMegaTitanBuff.AddMinutes(2) > DateTime.Now)
+                    if (ServerManager.Instance.RandomNumber() <= 20 && tChar.SpInstance?.Upgrade == 15 && tChar.CanTriggerMegaTitan)
                     {
                         tChar.AddBuff(new Buff.Buff(664));
                         tChar.LastMegaTitanBuff = DateTime.Now;
+                        tChar.CanTriggerMegaTitan = false;
+                        Observable.Timer(TimeSpan.FromMinutes(2)).Subscribe(s => { tChar.CanTriggerMegaTitan = true; });
                     }
                 }
             }

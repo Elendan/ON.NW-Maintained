@@ -61,7 +61,7 @@ namespace OpenNos.GameObject
             Quests = new ConcurrentBag<CharacterQuest>();
             MTListTargetQueue = new ConcurrentStack<MTListHitTarget>();
             ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
-            LastMegaTitanBuff = DateTime.Now;
+            CanTriggerMegaTitan = true;
         }
 
         #endregion
@@ -76,6 +76,8 @@ namespace OpenNos.GameObject
         #region Properties
 
         #region BattleEntityProperties
+
+        public bool CanTriggerMegaTitan { get; set; }
 
         public BattleEntity BattleEntity { get; set; }
 

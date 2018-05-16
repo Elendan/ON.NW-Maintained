@@ -1121,11 +1121,12 @@ namespace OpenNos.GameObject.Buff
                             switch (session)
                             {
                                 case Character recevierCharacter:
-                                    recevierCharacter.BattleEntity.IsReflecting = true;
-                                    if (!CardId.HasValue)
+                                    if (!CardId.HasValue || CardId == 663)
                                     {
                                         return;
                                     }
+
+                                    recevierCharacter.BattleEntity.IsReflecting = true;
 
                                     recevierCharacter.ReflectiveBuffs[CardId.Value] = FirstData;
 
@@ -1140,11 +1141,11 @@ namespace OpenNos.GameObject.Buff
                                     receiverMapMonster.ReflectiveBuffs[CardId.Value] = FirstData;
                                     break;
                                 case Mate receiverMate:
-                                    receiverMate.BattleEntity.IsReflecting = true;
-                                    if (!CardId.HasValue)
+                                    if (!CardId.HasValue || CardId == 663)
                                     {
                                         return;
                                     }
+                                    receiverMate.BattleEntity.IsReflecting = true;
 
                                     receiverMate.ReflectiveBuffs[CardId.Value] = FirstData;
                                     break;
@@ -1166,30 +1167,30 @@ namespace OpenNos.GameObject.Buff
                             switch (session)
                             {
                                 case Character recevierCharacter:
-                                    recevierCharacter.BattleEntity.IsReflecting = true;
-                                    if (!CardId.HasValue)
+                                    if (!CardId.HasValue || CardId == 663)
                                     {
                                         return;
                                     }
+                                    recevierCharacter.BattleEntity.IsReflecting = true;
 
                                     recevierCharacter.ReflectiveBuffs[CardId.Value] = FirstData;
 
                                     break;
                                 case MapMonster receiverMapMonster:
-                                    receiverMapMonster.BattleEntity.IsReflecting = true;
-                                    if (!CardId.HasValue)
+                                    if (!CardId.HasValue || CardId == 663)
                                     {
                                         return;
                                     }
+                                    receiverMapMonster.BattleEntity.IsReflecting = true;
 
                                     receiverMapMonster.ReflectiveBuffs[CardId.Value] = FirstData;
                                     break;
                                 case Mate receiverMate:
-                                    receiverMate.BattleEntity.IsReflecting = true;
-                                    if (!CardId.HasValue)
+                                    if (!CardId.HasValue || CardId == 663)
                                     {
                                         return;
                                     }
+                                    receiverMate.BattleEntity.IsReflecting = true;
 
                                     receiverMate.ReflectiveBuffs[CardId.Value] = FirstData;
                                     break;
