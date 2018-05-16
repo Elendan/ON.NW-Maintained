@@ -277,133 +277,182 @@ namespace OpenNos.GameObject.Buff
                     {
                         case AdditionalTypes.HealingBurningAndCasting.RestoreHP:
                         case AdditionalTypes.HealingBurningAndCasting.RestoreHPWhenCasting:
-                            if (character != null)
+                            Card hpCard = ServerManager.Instance.GetCardByCardId(CardId);
+                            IDisposable observable = null;
+                            IDisposable mateObservable = null;
+                            if (hpCard == null)
                             {
-                                int heal = FirstData;
-                                bool change = false;
-                                if (IsLevelScaled)
+                                Logger.Log.Error("Card doesn't exist");
+                                return;
+                            }
+                            if (session is Character receiver)
+                            {
+                                observable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                 {
-                                    if (IsLevelDivided)
+                                    int heal = FirstData;
+                                    bool change = false;
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= character.Level;
+                                        if (IsLevelDivided)
+                                        {
+                                            heal /= receiver.Level;
+                                        }
+                                        else
+                                        {
+                                            heal *= receiver.Level;
+                                        }
+                                    }
+
+                                    if (receiver.Hp + heal < receiver.HpLoad())
+                                    {
+                                        receiver.Hp += heal;
+                                        receiver.Session?.CurrentMapInstance?.Broadcast(receiver.GenerateRc(heal));
+                                        change = true;
                                     }
                                     else
                                     {
-                                        heal *= character.Level;
-                                    }
-                                }
+                                        if (receiver.Hp != (int)receiver.HpLoad())
+                                        {
+                                            receiver.Session?.CurrentMapInstance?.Broadcast(
+                                                receiver.GenerateRc((int)(receiver.HpLoad() - receiver.Hp)));
+                                            change = true;
+                                        }
 
-                                if (character.Hp + heal < character.HpLoad())
-                                {
-                                    character.Hp += heal;
-                                    character.Session?.CurrentMapInstance?.Broadcast(character.GenerateRc(heal));
-                                    change = true;
-                                }
-                                else
-                                {
-                                    if (character.Hp != (int)character.HpLoad())
+                                        receiver.Hp = (int)receiver.HpLoad();
+                                    }
+
+                                    if (change)
                                     {
-                                        character.Session?.CurrentMapInstance?.Broadcast(
-                                            character.GenerateRc((int)(character.HpLoad() - character.Hp)));
-                                        change = true;
+                                        receiver.Session?.SendPacket(receiver.GenerateStat());
                                     }
+                                });
 
-                                    character.Hp = (int)character.HpLoad();
-                                }
-
-                                if (change)
+                                Observable.Timer(TimeSpan.FromSeconds(hpCard.Duration * 0.1)).Subscribe(s =>
                                 {
-                                    character.Session?.SendPacket(character.GenerateStat());
-                                }
+                                    observable?.Dispose();
+                                });
                             }
 
                             if (mate != null)
                             {
-                                int heal = FirstData;
-                                if (IsLevelScaled)
+                                mateObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                 {
-                                    if (IsLevelDivided)
+                                    int heal = FirstData;
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= mate.Level;
+                                        if (IsLevelDivided)
+                                        {
+                                            heal /= mate.Level;
+                                        }
+                                        else
+                                        {
+                                            heal *= mate.Level;
+                                        }
+                                    }
+
+                                    if (mate.Hp + heal < mate.HpLoad())
+                                    {
+                                        mate.Hp += heal;
                                     }
                                     else
                                     {
-                                        heal *= mate.Level;
+                                        mate.Hp = mate.HpLoad();
                                     }
-                                }
+                                });
 
-                                if (mate.Hp + heal < mate.HpLoad())
+                                Observable.Timer(TimeSpan.FromSeconds(hpCard.Duration * 0.1)).Subscribe(s =>
                                 {
-                                    mate.Hp += heal;
-                                }
-                                else
-                                {
-                                    mate.Hp = mate.HpLoad();
-                                }
+                                    mateObservable?.Dispose();
+                                });
                             }
 
                             break;
                         case AdditionalTypes.HealingBurningAndCasting.RestoreMP:
-                            if (character != null)
+                            Card restoreMpCard = ServerManager.Instance.GetCardByCardId(CardId);
+                            IDisposable restoreCharMp;
+                            IDisposable restoreMateMp;
+                            if (restoreMpCard == null)
                             {
-                                int heal = FirstData;
-                                bool change = false;
-                                if (IsLevelScaled)
+                                Logger.Log.Error("can't apply non existing card.");
+                                return;
+                            }
+                            if (session is Character healReceiver)
+                            {
+                                restoreCharMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                 {
-                                    if (IsLevelDivided)
+                                    int heal = FirstData;
+                                    bool change = false;
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= character.Level;
+                                        if (IsLevelDivided)
+                                        {
+                                            heal /= healReceiver.Level;
+                                        }
+                                        else
+                                        {
+                                            heal *= healReceiver.Level;
+                                        }
+                                    }
+
+                                    if (healReceiver.Mp + heal < healReceiver.MpLoad())
+                                    {
+                                        healReceiver.Mp += heal;
+                                        change = true;
                                     }
                                     else
                                     {
-                                        heal *= character.Level;
-                                    }
-                                }
+                                        if (healReceiver.Mp != (int)healReceiver.MpLoad())
+                                        {
+                                            change = true;
+                                        }
 
-                                if (character.Mp + heal < character.MpLoad())
-                                {
-                                    character.Mp += heal;
-                                    change = true;
-                                }
-                                else
-                                {
-                                    if (character.Mp != (int)character.MpLoad())
+                                        healReceiver.Mp = (int)healReceiver.MpLoad();
+                                    }
+
+                                    if (change)
                                     {
-                                        change = true;
+                                        healReceiver.Session?.SendPacket(healReceiver.GenerateStat());
                                     }
+                                });
 
-                                    character.Mp = (int)character.MpLoad();
-                                }
-
-                                if (change)
+                                Observable.Timer(TimeSpan.FromSeconds(restoreMpCard.Duration * 0.1)).Subscribe(s =>
                                 {
-                                    character.Session?.SendPacket(character.GenerateStat());
-                                }
+                                    restoreCharMp?.Dispose();
+                                });
                             }
 
                             if (mate != null)
                             {
-                                int heal = FirstData;
-                                if (IsLevelScaled)
+                                restoreMateMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(x => 
                                 {
-                                    if (IsLevelDivided)
+                                    int heal = FirstData;
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= mate.Level;
+                                        if (IsLevelDivided)
+                                        {
+                                            heal /= mate.Level;
+                                        }
+                                        else
+                                        {
+                                            heal *= mate.Level;
+                                        }
+                                    }
+
+                                    if (mate.Mp + heal < mate.MpLoad())
+                                    {
+                                        mate.Mp += heal;
                                     }
                                     else
                                     {
-                                        heal *= mate.Level;
+                                        mate.Mp = mate.MpLoad();
                                     }
-                                }
+                                });
 
-                                if (mate.Mp + heal < mate.MpLoad())
+                                Observable.Timer(TimeSpan.FromSeconds(restoreMpCard.Duration * 0.1)).Subscribe(s =>
                                 {
-                                    mate.Mp += heal;
-                                }
-                                else
-                                {
-                                    mate.Mp = mate.MpLoad();
-                                }
+                                    restoreMateMp?.Dispose();
+                                });
+
                             }
 
                             break;

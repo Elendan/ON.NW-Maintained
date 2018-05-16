@@ -1053,34 +1053,6 @@ namespace OpenNos.GameObject
             }
 
             bool change = false;
-            if (LastHealth.AddSeconds(2) <= DateTime.Now)
-            {
-                int heal = GetBuff(CardType.HealingBurningAndCasting,
-                    (byte)AdditionalTypes.HealingBurningAndCasting.RestoreHP)[0]; // HEAL
-                if (heal != 0)
-                {
-                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateRc(heal));
-                    change = Hp != (int)HpLoad();
-                    Hp = Hp + heal < HpLoad() ? Hp + heal : (int)HpLoad();
-                }
-
-                heal = GetBuff(CardType.HealingBurningAndCasting,
-                    (byte)AdditionalTypes.HealingBurningAndCasting.RestoreMP)[0];
-                if (heal != 0)
-                {
-                    change = Mp != (int)MpLoad() || change;
-                    Mp = Mp + heal < MpLoad() ? Mp + heal : (int)MpLoad();
-                }
-
-                int debuff = (int)(GetBuff(CardType.RecoveryAndDamagePercent,
-                        (byte)AdditionalTypes.RecoveryAndDamagePercent.HPReduced)[0] *
-                    (HpLoad() / 100)); // DEBUFF HP LOSS
-                if (debuff != 0)
-                {
-                    change = Hp != 1 || change;
-                    Hp = Hp - debuff > 1 ? Hp - debuff : 1;
-                }
-            }
 
             if (LastHealth.AddSeconds(2) <= DateTime.Now || IsSitting && LastHealth.AddSeconds(1.5) <= DateTime.Now)
             {

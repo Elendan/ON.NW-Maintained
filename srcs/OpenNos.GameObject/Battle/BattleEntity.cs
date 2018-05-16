@@ -938,7 +938,6 @@ namespace OpenNos.GameObject.Battle
             if (Session is Character currentChar)
             {
                 var targetCostume = targetChar?.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeSuit, InventoryType.Wear);
-
                 if (targetCostume != null)
                 {
                     foreach (BCard costumeBcard in targetCostume.Item.BCards)
@@ -958,6 +957,12 @@ namespace OpenNos.GameObject.Battle
                                             targetEntity.DealtDamage = (int)(targetEntity.DealtDamage * 0.2);
                                         }
                                         break;
+                                }
+                                break;
+                            case CardType.EffectSummon:
+                                if (ServerManager.Instance.RandomNumber() < costumeBcard.FirstData)
+                                {
+                                    targetChar.AddBuff(new Buff.Buff(costumeBcard.SecondData));
                                 }
                                 break;
                         }
