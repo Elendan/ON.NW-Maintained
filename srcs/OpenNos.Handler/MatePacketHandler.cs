@@ -80,6 +80,10 @@ namespace OpenNos.Handler
                     return;
 
                 case UserType.Npc:
+                    if (attacker.Hp > 0)
+                    {
+                        UseSkill(attacker, mateSkill, upetPacket.TargetId);
+                    }
                     return;
 
                 case UserType.Player:
@@ -145,13 +149,12 @@ namespace OpenNos.Handler
             }
         }
 
-        public void AttackMonster(Mate attacker, NpcMonsterSkill skill, MapMonster target)
+        public void UseSkill(Mate attacker, NpcMonsterSkill skill, long id)
         {
-            if (target == null || attacker == null || !target.IsAlive || skill?.Skill?.MpCost > attacker.Mp)
+            if (attacker == null)
             {
                 return;
             }
-
             if (skill == null)
             {
                 skill = new NpcMonsterSkill
@@ -160,6 +163,31 @@ namespace OpenNos.Handler
                 };
             }
 
+            string st =
+                $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.Skill.SkillVNum} {skill.Skill.Cooldown} {skill.Skill.AttackAnimation} {skill.Skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.Skill.SkillType - 1}";
+            attacker.LastSkillUse = DateTime.Now;
+            attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
+            if (skill?.Skill?.Effect != null)
+            {
+                attacker.MapInstance.Broadcast(attacker.GenerateEff((int)skill?.Skill?.Effect));
+            }
+            Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {id} {skill.Skill?.CastAnimation} {skill.Skill?.CastEffect} {skill.Skill?.SkillVNum}");
+            Session.CurrentMapInstance?.Broadcast(st);
+        }
+
+        public void AttackMonster(Mate attacker, NpcMonsterSkill skill, MapMonster target)
+        {
+            if (target == null || attacker == null || !target.IsAlive || skill?.Skill?.MpCost > attacker.Mp)
+            {
+                return;
+            }
+            if (skill == null)
+            {
+                skill = new NpcMonsterSkill
+                {
+                    SkillVNum = attacker.Monster.BasicSkill
+                };
+            }
             attacker.LastSkillUse = DateTime.Now;
             attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
             target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
