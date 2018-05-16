@@ -224,6 +224,48 @@ namespace OpenNos.GameObject.Buff
                                     break;
                             }
                             break;
+                        case (byte)AdditionalTypes.DrainAndSteal.LeechEnemyMP:
+                            int mpDrain = 0;
+                            switch (session)
+                            {
+                                case MapMonster toDrain when caster is Character drainer:
+                                    mpDrain = drainer.Level * SecondData;
+                                    drainer.Mp = (int)(mpDrain + drainer.Mp > drainer.MpLoad() ? drainer.MpLoad() : drainer.Mp + mpDrain);
+                                    toDrain.CurrentMp -= mpDrain;
+                                    drainer.MapInstance.Broadcast(drainer.GenerateStat());
+                                    if (toDrain.CurrentMp <= 0)
+                                    {
+                                        toDrain.CurrentMp = 1;
+                                    }
+
+                                    break;
+                                case Character characterDrained when caster is Character drainerCharacter:
+                                    mpDrain = drainerCharacter.Level * SecondData;
+                                    drainerCharacter.Mp = (int)(mpDrain + drainerCharacter.Mp > drainerCharacter.MpLoad() ? drainerCharacter.MpLoad() : drainerCharacter.Mp + mpDrain);
+                                    characterDrained.Mp -= mpDrain;
+                                    characterDrained.MapInstance.Broadcast(characterDrained.GenerateStat());
+                                    drainerCharacter.MapInstance.Broadcast(drainerCharacter.GenerateStat());
+                                    if (characterDrained.Mp <= 0)
+                                    {
+                                        characterDrained.Mp = 1;
+                                    }
+
+                                    break;
+                                case Character characterDrained when caster is MapMonster drainerMapMonster:
+                                    // TODO: Add a MaxMp property to MapMonsters
+                                    /*
+                                    mpDrain = drainerMapMonster.Monster.Level * SecondData;
+                                    drainerMapMonster.CurrentMp = (mpDrain + drainerMapMonster.CurrentMp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp : drainerMapMonster.CurrentHp + mpDrain);
+                                    drainerMapMonster.MapInstance.Broadcast(drainerMapMonster.GenerateRc((mpDrain + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp - drainerMapMonster.CurrentHp : mpDrain)));
+                                    characterDrained.Hp -= mpDrain;
+                                    characterDrained.MapInstance.Broadcast(characterDrained.GenerateStat());
+                                    if (characterDrained.Hp <= 0)
+                                    {
+                                        characterDrained.Hp = 1;
+                                    }*/
+                                    break;
+                            }
+                            break;
                         default:
                             break;
                     }
