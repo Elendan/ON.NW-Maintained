@@ -151,6 +151,8 @@ namespace OpenNos.GameObject.Map
 
         public string GenerateDm(ushort damage) => $"dm 3 {MapMonsterId} {damage}";
 
+        public string GenerateRc(int heal) => $"rc 3 {MapMonsterId} {heal} 0";
+
         public EffectPacket GenerateEff(int effectid) => new EffectPacket
         {
             EffectType = 3,

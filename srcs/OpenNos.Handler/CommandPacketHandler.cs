@@ -3397,6 +3397,68 @@ namespace OpenNos.Handler
             }
             itemType.EquipmentOptions.Add(option);
         }
+
+        public void HelpMe(HelpMePacket packet)
+        {
+            int onlineStaff = 0;
+            if (string.IsNullOrWhiteSpace(packet?.Message))
+            {
+                Session.SendPacket(Session.Character.GenerateSay(packet?.ToString(), 10));
+                return;
+            }
+            foreach (ClientSession team in ServerManager.Instance.Sessions.Where(s => s.Account.Authority >= AuthorityType.Moderator && s.Account.Authority <= AuthorityType.SuperGameMaster))
+            {
+                if (!team.HasSelectedCharacter)
+                {
+                    continue;
+                }
+                team.SendPacket(team.Character.GenerateSay($"Le joueur {Session.Character.Name} a besoin d'aide !",
+                    12));
+                team.SendPacket(team.Character.GenerateSay($"Raison: {packet.Message}", 12));
+                team.SendPacket(team.Character.GenerateSay("Dites en canal famille si vous vous en chargez !", 12));
+                team.SendPacket(Session.Character.GenerateSpk("Cliquez ici pour commencer à parler", 5));
+                team.SendPacket(UserInterfaceHelper.Instance.GenerateMsg($"Le joueur {Session.Character.Name} a besoin d'aide !", 0));
+                onlineStaff++;
+            }
+
+            if (onlineStaff > 0)
+            {
+                Session.SendPacket(Session.Character.GenerateSay(
+                    $"{onlineStaff} membres du staff ont été informés, vous devriez recevoir une réponse bientôt !", 10));
+            }
+            else
+            {
+                Session.SendPacket(Session.Character.GenerateSay("Malheureusement, personne n'est disponible actuellement, rejoignez le discord ici :", 10));
+                Session.SendPacket(Session.Character.GenerateSay("https://discord.gg/XXePYpf", 10));
+            }
+        }
+
+        public void ItemRain(ItemRainPacket packet)
+        {
+            if (packet == null)
+            {
+                return;
+            }
+
+            short vnum = packet.VNum;
+            byte amount = packet.Amount;
+            int count = packet.Count;
+            int time = packet.Time;
+
+            MapInstance instance = Session.CurrentMapInstance;
+
+            Observable.Timer(TimeSpan.FromSeconds(0)).Subscribe(s =>
+            {
+                for (int i = 0; i < count; i++)
+                {
+                    MapCell cell = instance.Map.GetRandomPosition();
+                    var droppedItem = new MonsterMapItem(cell.X, cell.Y, vnum, amount);
+                    instance.DroppedList[droppedItem.TransportId] = droppedItem;
+                    instance.Broadcast($"drop {droppedItem.ItemVNum} {droppedItem.TransportId} {droppedItem.PositionX} {droppedItem.PositionY} {(droppedItem.GoldAmount > 1 ? droppedItem.GoldAmount : droppedItem.Amount)} 0 0 -1");
+                    Thread.Sleep(time * 1000 / count);
+                }
+            });
+        }
         #endregion
     }
 }

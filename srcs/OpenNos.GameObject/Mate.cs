@@ -64,6 +64,7 @@ namespace OpenNos.GameObject
             AddTeamMember();
             GenerateMateTransportId();
             StartLife();
+            ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
         }
 
         #endregion
@@ -109,6 +110,8 @@ namespace OpenNos.GameObject
         }
 
         #endregion
+
+        public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
 
         public ItemInstance ArmorInstance { get; set; }
 
@@ -197,6 +200,8 @@ namespace OpenNos.GameObject
         #endregion
 
         #region Methods
+
+        public string GenerateDm(ushort dmg) => $"dm 2 {MateTransportId} {dmg}";
 
         public void UpdateBushFire()
         {

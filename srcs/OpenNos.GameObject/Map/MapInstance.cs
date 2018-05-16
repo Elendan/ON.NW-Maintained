@@ -542,6 +542,31 @@ namespace OpenNos.GameObject.Map
             return characters;
         }
 
+        internal IEnumerable<Mate> GetMatesInRange(short mapX, short mapY, byte distance)
+        {
+            List<Mate> mates = new List<Mate>();
+            List<Mate> matesOnMap = (Sessions.Where(s => s.Character.Mates != null)
+                .SelectMany(s => s.Character.Mates, (s, mate) => new { s, mate })
+                .Where(@t => @t.mate.MapInstance.MapInstanceId == MapInstanceId)
+                .Select(@t => @t.mate)).ToList();
+
+            for (int i = matesOnMap.Count - 1; i >= 0; i--)
+            {
+                if (Map.GetDistance(new MapCell { X = mapX, Y = mapY },
+                        new MapCell
+                        {
+                            X = matesOnMap.ElementAt(i).PositionX,
+                            Y = matesOnMap.ElementAt(i).PositionY
+                        }) <=
+                    distance + 1)
+                {
+                    mates.Add(matesOnMap.ElementAt(i));
+                }
+            }
+
+            return mates;
+        }
+
         public IEnumerable<IBattleEntity> GetBattleEntitiesInRange(MapCell pos, byte distance)
         {
             return BattleEntities.Where(b => Map.GetDistance(b.GetPos(), pos) <= distance);

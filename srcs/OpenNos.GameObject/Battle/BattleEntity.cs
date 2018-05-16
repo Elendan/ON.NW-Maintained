@@ -216,25 +216,6 @@ namespace OpenNos.GameObject.Battle
             int randomTime = 0;
             if (Session is Character character)
             {
-                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
-                {
-                    if (indicator.Card.CardId != 663)
-                    {
-                        character.BattleEntity.IsReflecting = true;
-                        character.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
-                            .FirstOrDefault(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated)?.FirstData;
-                    }
-                }
-
-                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage))
-                {
-                    if (indicator.Card.CardId != 663)
-                    {
-                        character.BattleEntity.IsReflecting = true;
-                        character.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
-                            .FirstOrDefault(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage)?.FirstData;
-                    }
-                }
                 randomTime = RandomTimeBuffs(indicator);
 
                 if (!indicator.StaticBuff)
@@ -243,28 +224,6 @@ namespace OpenNos.GameObject.Battle
                         $"bf 1 {character.CharacterId} {(character.ChargeValue > 7000 ? 7000 : character.ChargeValue)}.{indicator.Card.CardId}.{(indicator.Card.Duration == 0 ? randomTime : indicator.Card.Duration)} {Level}");
                     character.Session.SendPacket(character.GenerateSay(
                         string.Format(Language.Instance.GetMessageFromKey("UNDER_EFFECT"), indicator.Card.Name), 20));
-                }
-            }
-            else if (Session is MapMonster monster)
-            {
-                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated))
-                {
-                    if (indicator.Card.CardId != 663)
-                    {
-                        monster.BattleEntity.IsReflecting = true;
-                        monster.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
-                            .FirstOrDefault(s => s.Type == (byte)CardType.TauntSkill && s.SubType == (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated)?.FirstData;
-                    }
-                }
-
-                if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage))
-                {
-                    if (indicator.Card.CardId != 663)
-                    {
-                        monster.BattleEntity.IsReflecting = true;
-                        monster.ReflectiveBuffs[indicator.Card.CardId] = indicator.Card.BCards
-                            .FirstOrDefault(s => s.Type == (byte)CardType.DamageConvertingSkill && s.SubType == (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage)?.FirstData;
-                    }
                 }
             }
 
