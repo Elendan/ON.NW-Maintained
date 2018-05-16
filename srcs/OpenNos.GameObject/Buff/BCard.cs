@@ -280,14 +280,9 @@ namespace OpenNos.GameObject.Buff
                             Card hpCard = ServerManager.Instance.GetCardByCardId(CardId);
                             IDisposable observable = null;
                             IDisposable mateObservable = null;
-                            if (hpCard == null)
-                            {
-                                Logger.Log.Error("Card doesn't exist");
-                                return;
-                            }
                             if (session is Character receiver)
                             {
-                                observable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                if (hpCard == null)
                                 {
                                     int heal = FirstData;
                                     bool change = false;
@@ -325,12 +320,56 @@ namespace OpenNos.GameObject.Buff
                                     {
                                         receiver.Session?.SendPacket(receiver.GenerateStat());
                                     }
-                                });
 
-                                Observable.Timer(TimeSpan.FromSeconds(hpCard.Duration * 0.1)).Subscribe(s =>
+                                    break;
+                                }
+                                else
                                 {
-                                    observable?.Dispose();
-                                });
+                                    observable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                    {
+                                        int heal = FirstData;
+                                        bool change = false;
+                                        if (IsLevelScaled)
+                                        {
+                                            if (IsLevelDivided)
+                                            {
+                                                heal /= receiver.Level;
+                                            }
+                                            else
+                                            {
+                                                heal *= receiver.Level;
+                                            }
+                                        }
+
+                                        if (receiver.Hp + heal < receiver.HpLoad())
+                                        {
+                                            receiver.Hp += heal;
+                                            receiver.Session?.CurrentMapInstance?.Broadcast(receiver.GenerateRc(heal));
+                                            change = true;
+                                        }
+                                        else
+                                        {
+                                            if (receiver.Hp != (int)receiver.HpLoad())
+                                            {
+                                                receiver.Session?.CurrentMapInstance?.Broadcast(
+                                                    receiver.GenerateRc((int)(receiver.HpLoad() - receiver.Hp)));
+                                                change = true;
+                                            }
+
+                                            receiver.Hp = (int)receiver.HpLoad();
+                                        }
+
+                                        if (change)
+                                        {
+                                            receiver.Session?.SendPacket(receiver.GenerateStat());
+                                        }
+                                    });
+
+                                    Observable.Timer(TimeSpan.FromSeconds(hpCard.Duration * 0.1)).Subscribe(s =>
+                                    {
+                                        observable?.Dispose();
+                                    });
+                                }
                             }
 
                             if (mate != null)
@@ -371,13 +410,45 @@ namespace OpenNos.GameObject.Buff
                             Card restoreMpCard = ServerManager.Instance.GetCardByCardId(CardId);
                             IDisposable restoreCharMp;
                             IDisposable restoreMateMp;
-                            if (restoreMpCard == null)
-                            {
-                                Logger.Log.Error("can't apply non existing card.");
-                                return;
-                            }
                             if (session is Character healReceiver)
                             {
+                                if (restoreMpCard == null)
+                                {
+                                    int heal = FirstData;
+                                    bool change = false;
+                                    if (IsLevelScaled)
+                                    {
+                                        if (IsLevelDivided)
+                                        {
+                                            heal /= healReceiver.Level;
+                                        }
+                                        else
+                                        {
+                                            heal *= healReceiver.Level;
+                                        }
+                                    }
+
+                                    if (healReceiver.Mp + heal < healReceiver.MpLoad())
+                                    {
+                                        healReceiver.Mp += heal;
+                                        change = true;
+                                    }
+                                    else
+                                    {
+                                        if (healReceiver.Mp != (int)healReceiver.MpLoad())
+                                        {
+                                            change = true;
+                                        }
+
+                                        healReceiver.Mp = (int)healReceiver.MpLoad();
+                                    }
+
+                                    if (change)
+                                    {
+                                        healReceiver.Session?.SendPacket(healReceiver.GenerateStat());
+                                    }
+                                    break;
+                                }
                                 restoreCharMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                 {
                                     int heal = FirstData;
