@@ -436,13 +436,13 @@ namespace OpenNos.Handler
                     Session.Character.MapInstance.Broadcast(mate.GenerateOut());
                     Session.Character.MapInstance.Broadcast(mate.GenerateIn());
                     Session.SendPacket(Session.Character.GeneratePinit());
-                    Session.Character.RemoveBuff(3000);
-                    Session.Character.RemoveBuff(3001);
-                    Session.Character.RemoveBuff(3002);
-                    Session.Character.RemoveBuff(3003);
-                    Session.Character.RemoveBuff(3004);
-                    Session.Character.RemoveBuff(3005);
-                    Session.Character.RemoveBuff(3006);
+                    Session.Character.RemoveBuff(3000, true);
+                    Session.Character.RemoveBuff(3001, true);
+                    Session.Character.RemoveBuff(3002, true);
+                    Session.Character.RemoveBuff(3003, true);
+                    Session.Character.RemoveBuff(3004, true);
+                    Session.Character.RemoveBuff(3005, true);
+                    Session.Character.RemoveBuff(3006, true);
                     //psd 30
                 }
                 else
