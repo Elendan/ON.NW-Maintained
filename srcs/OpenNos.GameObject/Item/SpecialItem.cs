@@ -420,6 +420,24 @@ namespace OpenNos.GameObject.Item
                     session.SendPacket(session.Character.GeneratePairy());
                     break;
 
+                case 210:
+                    if (session.Character.Buff.Any(s => s.Card.CardId == 122))
+                    {
+                        session.SendPacket(session.Character.GenerateSay(
+                            string.Format(Language.Instance.GetMessageFromKey("ALREADY_GOT_BUFF"),
+                                session.Character.Buff.FirstOrDefault(s => s.Card.CardId == 122)?.Card.Name), 10));
+                        return;
+                    }
+
+                    session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+                    session.Character.AddStaticBuff(new StaticBuffDTO
+                    {
+                        CardId = 122,
+                        CharacterId = session.Character.CharacterId,
+                        RemainingTime = 3600
+                    });
+                    break;
+
                 case 208:
                     if (session.Character.Buff.Any(s => s.Card.CardId == 121))
                     {
