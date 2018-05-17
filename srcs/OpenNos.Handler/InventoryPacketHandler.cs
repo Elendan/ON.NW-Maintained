@@ -1625,7 +1625,7 @@ namespace OpenNos.Handler
                 return;
             }
 
-            if (wearPacket.Type != 0)
+            if (wearPacket.Type > 1)
             {
                 return;
             }
