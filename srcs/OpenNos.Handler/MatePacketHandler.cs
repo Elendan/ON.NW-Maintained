@@ -393,6 +393,13 @@ namespace OpenNos.Handler
             {
                 attacker.LastSkillUse = DateTime.Now;
                 attacker.Mp -= skill.MpCost;
+                if (skill.TargetRange == 0)
+                {
+                    foreach (BCard selfCard in skill.BCards)
+                    {
+                        attacker.AddBuff(new Buff(selfCard.SecondData));
+                    }
+                }
                 if (skill.HitType == 1)
                 {
                     List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
