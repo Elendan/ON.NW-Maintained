@@ -393,16 +393,127 @@ namespace OpenNos.Handler
             {
                 attacker.LastSkillUse = DateTime.Now;
                 attacker.Mp -= skill.MpCost;
-                List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
-                if (monstersInRange == null)
+                if (skill.HitType == 1)
                 {
-                    return;
+                    List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
+                    if (monstersInRange == null)
+                    {
+                        return;
+                    }
+                    int bonusBuff = 0;
+                    Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(monstersInRange.FirstOrDefault()?.MapMonsterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                    foreach (MapMonster target in monstersInRange)
+                    {
+                        foreach (BCard bc in skill.BCards)
+                        {
+                            Buff bf;
+                            Card cData;
+                            switch (attacker.MateType)
+                            {
+                                case MateType.Pet:
+                                    cData = ServerManager.Instance.GetCardByCardId((short?)bc.SecondData);
+                                    if (cData == null)
+                                    {
+                                        continue;
+                                    }
+                                    bf = new Buff(bc.SecondData, cData.Level);
+                                    target.AddBuff(bf);
+                                    break;
+                                case MateType.Partner:
+                                    if (attacker.SpInstance != null && attacker.IsUsingSp)
+                                    {
+                                        if (skill.SkillVNum == attacker.SpInstance.PartnerSkill1)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank1 - 1;
+                                        }
+                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill2)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank2 - 1;
+                                        }
+                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill3)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank3 - 1;
+                                        }
+                                    }
+                                    cData = ServerManager.Instance.GetCardByCardId((short?)(bc.SecondData + bonusBuff));
+                                    if (cData == null)
+                                    {
+                                        continue;
+                                    }
+                                    bf = new Buff(bc.SecondData + bonusBuff, cData.Level);
+                                    if (cData.BuffType == BuffType.Bad)
+                                    {
+                                        target.AddBuff(bf);
+                                    }
+                                    break;
+                            }
+                        }
+                        target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
+                        attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+                    }
                 }
-                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(monstersInRange.FirstOrDefault()?.MapMonsterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                foreach (MapMonster target in monstersInRange)
+                else if (skill.HitType == 2)
                 {
-                    target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
-                    attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+                    IEnumerable<Character> sessionsInRange = attacker.MapInstance?.GetCharactersInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
+                    if (sessionsInRange == null)
+                    {
+                        return;
+                    }
+
+                    int bonusBuff = 0;
+                    Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(sessionsInRange.FirstOrDefault()?.CharacterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                    foreach (Character target in sessionsInRange)
+                    {
+                        foreach (BCard bc in skill.BCards)
+                        {
+                            Buff bf;
+                            Card cData;
+                            switch (attacker.MateType)
+                            {
+                                case MateType.Pet:
+                                    cData = ServerManager.Instance.GetCardByCardId((short?)bc.SecondData);
+                                    if (cData == null)
+                                    {
+                                        continue;
+                                    }
+                                    bf = new Buff(bc.SecondData, cData.Level);
+                                    target.AddBuff(bf);
+                                    break;
+                                case MateType.Partner:
+                                    if (attacker.SpInstance != null && attacker.IsUsingSp)
+                                    {
+                                        if (skill.SkillVNum == attacker.SpInstance.PartnerSkill1)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank1 - 1;
+                                        }
+                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill2)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank2 - 1;
+                                        }
+                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill3)
+                                        {
+                                            bonusBuff = attacker.SpInstance.SkillRank3 - 1;
+                                        }
+                                    }
+                                    cData = ServerManager.Instance.GetCardByCardId((short?)(bc.SecondData + bonusBuff));
+                                    if (cData == null)
+                                    {
+                                        continue;
+                                    }
+                                    bf = new Buff(bc.SecondData + bonusBuff, cData.Level);
+                                    if (cData.BuffType == BuffType.Good)
+                                    {
+                                        target.AddBuff(bf);
+                                        if (attacker.Buffs.All(s => s.Card.CardId != (bc.SecondData + bonusBuff)))
+                                        {
+                                            attacker.AddBuff(bf);
+                                        }
+                                    }
+                                    break;
+                            }
+                        }
+                        attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+                    }
                 }
             }
         }
