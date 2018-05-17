@@ -3406,7 +3406,7 @@ namespace OpenNos.Handler
                 Session.SendPacket(Session.Character.GenerateSay(packet?.ToString(), 10));
                 return;
             }
-            foreach (ClientSession team in ServerManager.Instance.Sessions.Where(s => s.Account.Authority >= AuthorityType.Moderator && s.Account.Authority <= AuthorityType.SuperGameMaster))
+            foreach (ClientSession team in ServerManager.Instance.Sessions.Where(s => s.Account.Authority >= AuthorityType.Moderator))
             {
                 if (!team.HasSelectedCharacter)
                 {
