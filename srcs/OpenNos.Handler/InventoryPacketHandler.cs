@@ -24,6 +24,7 @@ using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
@@ -1285,6 +1286,82 @@ namespace OpenNos.Handler
             WearableInstance inventory;
             switch (uptype)
             {
+                case 0:
+                    inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
+                    int donaVnum = 1027;
+                    //TODO: Find real gold formula
+                    int price = 20000;
+                    if (inventory != null)
+                    {
+                        if (inventory.Item.EquipmentSlot == EquipmentType.Armor ||
+                            inventory.Item.EquipmentSlot == EquipmentType.MainWeapon)
+                        {
+                            if (Session.Character.Gold < price)
+                            {
+                                // Not enough gold
+                                Session.SendPacket("shop_end 1");
+                                return;
+                            }
+
+                            if (Session.Character.Inventory.CountItem(donaVnum) < inventory.Item.LevelMinimum)
+                            {
+                                // Not enough dona
+                                Session.SendPacket("shop_end 1");
+                                return;
+                            }
+
+                            WearableInstance newItem = inventory;
+                            switch (inventory.Item.EquipmentSlot)
+                            {
+                                case EquipmentType.Armor:
+                                    switch (inventory.Item.Class)
+                                    {
+                                        case 4:
+                                            newItem.ItemVNum = 996;
+                                            break;
+                                        case 2:
+                                            newItem.ItemVNum = 997;
+                                            break;
+                                        case 8:
+                                            newItem.ItemVNum = 995;
+                                            break;
+                                        default:
+                                            Session.SendPacket("shop_end 1");
+                                            return;
+                                    }
+
+                                    break;
+                                case EquipmentType.MainWeapon:
+                                    switch (inventory.Item.Class)
+                                    {
+                                        case 4:
+                                            newItem.ItemVNum = 991;
+                                            break;
+                                        case 2:
+                                            newItem.ItemVNum = 990;
+                                            break;
+                                        case 8:
+                                            newItem.ItemVNum = 992;
+                                            break;
+                                        default:
+                                            Session.SendPacket("shop_end 1");
+                                            return;
+                                    }
+
+                                    break;
+                                default:
+                                    Session.SendPacket("shop_end 1");
+                                    return;
+                            }
+                            Session.Character.Inventory.DeleteFromSlotAndType(slot, inventoryType);
+                            Session.Character.Inventory.AddToInventory(newItem, InventoryType.Equipment);
+                            Session.Character.Inventory.RemoveItemAmount(donaVnum);
+                            Session.Character.Gold -= price;
+                            Session.SendPacket(Session.Character.GenerateGold());
+                            Session.SendPacket("shop_end 1");
+                        }
+                    }
+                    break;
                 case 1:
                     inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
                     if (inventory != null)
