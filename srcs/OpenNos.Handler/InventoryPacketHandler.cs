@@ -1625,11 +1625,6 @@ namespace OpenNos.Handler
                 return;
             }
 
-            if (wearPacket.Type > 1)
-            {
-                return;
-            }
-
             if (!Session.HasCurrentMapInstance || Session.CurrentMapInstance.UserShops.FirstOrDefault(mapshop => mapshop.Value.OwnerId.Equals(Session.Character.CharacterId)).Value != null)
             {
                 return;

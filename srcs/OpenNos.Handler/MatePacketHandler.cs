@@ -163,14 +163,18 @@ namespace OpenNos.Handler
                 };
             }
 
-            string st =
-                $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.Skill.SkillVNum} {skill.Skill.Cooldown} {skill.Skill.AttackAnimation} {skill.Skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.Skill.SkillType - 1}";
+            string st = $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.Skill.SkillVNum} {skill.Skill.Cooldown} {skill.Skill.AttackAnimation} {skill.Skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.Skill.SkillType - 1}";
             attacker.LastSkillUse = DateTime.Now;
             attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
             if (skill?.Skill?.Effect != null)
             {
                 attacker.MapInstance.Broadcast(attacker.GenerateEff((int)skill?.Skill?.Effect));
             }
+            Console.WriteLine($"hittype : {skill.Skill?.HitType}");
+            Console.WriteLine($"range : {skill.Skill?.Range}");
+            Console.WriteLine($"type : {skill.Skill?.Type}");
+            Console.WriteLine($"target type : {skill.Skill?.TargetType}");
+            Console.WriteLine($"target range : {skill.Skill?.TargetRange}");
             Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {id} {skill.Skill?.CastAnimation} {skill.Skill?.CastEffect} {skill.Skill?.SkillVNum}");
             Session.CurrentMapInstance?.Broadcast(st);
         }
@@ -188,6 +192,11 @@ namespace OpenNos.Handler
                     SkillVNum = attacker.Monster.BasicSkill
                 };
             }
+            Console.WriteLine($"hittype : {skill.Skill?.HitType}");
+            Console.WriteLine($"range : {skill.Skill?.Range}");
+            Console.WriteLine($"type : {skill.Skill?.Type}");
+            Console.WriteLine($"target type : {skill.Skill?.TargetType}");
+            Console.WriteLine($"target range : {skill.Skill?.TargetRange}");
             attacker.LastSkillUse = DateTime.Now;
             attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
             target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
