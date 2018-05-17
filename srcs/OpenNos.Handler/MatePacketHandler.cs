@@ -475,7 +475,7 @@ namespace OpenNos.Handler
                     return;
                 }
 
-                int sum = (mate.SpInstance.SkillRank1 + mate.SpInstance.SkillRank1 + mate.SpInstance.SkillRank1) / 3;
+                int sum = (mate.SpInstance.SkillRank1 + mate.SpInstance.SkillRank2 + mate.SpInstance.SkillRank3) / 3;
                 Session.Character.AddBuff(new Buff(3000 + (sum - 1), isPermaBuff: true));
             }
         }
