@@ -291,7 +291,7 @@ namespace OpenNos.GameObject.Item
                         {
                             if (box.HoldingVNum == 0)
                             {
-                                session.SendPacket($"wopen 44 {inv.Slot}");
+                                session.SendPacket($"wopen 44 {inv.Slot} 0");
                             }
                             else
                             {
