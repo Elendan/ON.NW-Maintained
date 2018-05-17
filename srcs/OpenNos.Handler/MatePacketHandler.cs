@@ -82,7 +82,8 @@ namespace OpenNos.Handler
                         break;
                 }
 
-                partnerInTeam.GenerateScPacket();
+                Session.SendPacket(partnerInTeam.GenerateScPacket());
+                Session.SendPacket(partnerInTeam.GeneratePski());
                 partnerInTeam.SpInstance.Agility = 0;
                 Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("COMPETENCE_MASTERED", 1));
             }
