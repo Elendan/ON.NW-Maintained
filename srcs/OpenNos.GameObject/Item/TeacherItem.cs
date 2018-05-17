@@ -46,6 +46,7 @@ namespace OpenNos.GameObject.Item
             switch (Effect)
             {
                 case 11:
+                case 12:
                     if (int.TryParse(packetsplit[3], out x1))
                     {
                         Mate mate = session.Character.Mates.FirstOrDefault(s => s.MateTransportId == x1);
@@ -60,7 +61,6 @@ namespace OpenNos.GameObject.Item
                         session.CurrentMapInstance?.Broadcast(mate.GenerateEff(8), mate.PositionX, mate.PositionY);
                         session.CurrentMapInstance?.Broadcast(mate.GenerateEff(198), mate.PositionX, mate.PositionY);
                     }
-
                     break;
 
                 case 13:
