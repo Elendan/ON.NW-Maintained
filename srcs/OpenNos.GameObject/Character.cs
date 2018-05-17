@@ -1970,6 +1970,35 @@ namespace OpenNos.GameObject
                         s.MapTypeId == null)
                     .ToList();
 
+                #region Partners
+
+                Mate partnerInTeam = Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
+                if (Level < monsterToAttack.Monster.Level + 15)
+                {
+                    if (partnerInTeam?.SpInstance != null && partnerInTeam.SpInstance.Agility < 100)
+                    {
+                        partnerInTeam.SpInstance.Agility += 2;
+                        Session.SendPacket(partnerInTeam.GenerateScPacket());
+                        if (partnerInTeam.SpInstance.Agility == 100)
+                        {
+                            Session.SendPacket(GenerateSay("L'adresse de ton partenaire a atteint les 100%", 10));
+                        }
+                    }
+                }
+                else if (Level < monsterToAttack.Monster.Level + 30)
+                {
+                    if (partnerInTeam?.SpInstance != null && partnerInTeam.SpInstance.Agility < 100)
+                    {
+                        partnerInTeam.SpInstance.Agility += 1;
+                        Session.SendPacket(partnerInTeam.GenerateScPacket());
+                        if (partnerInTeam.SpInstance.Agility == 100)
+                        {
+                            Session.SendPacket(GenerateSay("L'adresse de ton partenaire a atteint les 100%", 10));
+                        }
+                    }
+                }
+                #endregion
+
                 #region Quest
 
                 Quests.Where(q =>
