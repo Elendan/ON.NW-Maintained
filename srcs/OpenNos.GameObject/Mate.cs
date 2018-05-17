@@ -531,11 +531,11 @@ namespace OpenNos.GameObject
             IsAlive = true;
             PositionY = (short)(Owner.PositionY + 1);
             PositionX = (short)(Owner.PositionX + 1);
+            Hp = MaxHp;
+            Mp = MaxMp;
             Owner.MapInstance?.Broadcast(GenerateIn());
             Owner.Session.SendPacket(GenerateCond());
             Owner.Session.SendPacket(Owner.GeneratePinit());
-            Hp = MaxHp;
-            Mp = MaxMp;
         }
 
         public void RefreshStats()
@@ -611,6 +611,7 @@ namespace OpenNos.GameObject
 
         public void GenerateDeath(IBattleEntity killer)
         {
+            bool doll = false;
             if (Hp > 0)
             {
                 return;
@@ -625,27 +626,31 @@ namespace OpenNos.GameObject
 
             if (MateType == MateType.Pet ? Owner.IsPetAutoRelive : Owner.IsPartnerAutoRelive)
             {
-                if (Owner.Inventory.CountItem(1012) < 5)
+                if (Owner.Inventory.CountItem(MateType == MateType.Pet ? 2089 : 2329) >= 1)
                 {
-                    Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
-                        string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_REQUIERED_ITEM"),
-                            ServerManager.Instance.GetItem(1012).Name), 0));
-                    if (MateType == MateType.Pet)
-                    {
-                        Owner.IsPetAutoRelive = false;
-                    }
-                    else
-                    {
-                        Owner.IsPartnerAutoRelive = false;
-                    }
+                    Owner.Inventory.RemoveItemAmount(MateType == MateType.Pet ? 2089 : 2329);
+                    GenerateRevive();
+                    return;
                 }
-                else
+                if (Owner.Inventory.CountItem(1012) >= 5)
                 {
                     Owner.Inventory.RemoveItemAmount(1012, 5);
                     Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
                         string.Format(Language.Instance.GetMessageFromKey("WILL_BE_BACK"), MateType), 0));
                     return;
                 }
+                Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
+                    string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_REQUIERED_ITEM"),
+                        ServerManager.Instance.GetItem(1012).Name), 0));
+                if (MateType == MateType.Pet)
+                {
+                    Owner.IsPetAutoRelive = false;
+                }
+                else
+                {
+                    Owner.IsPartnerAutoRelive = false;
+                }
+
             }
 
             Owner.Session.SendPacket(
