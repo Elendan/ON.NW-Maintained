@@ -1186,7 +1186,7 @@ namespace OpenNos.GameObject.Buff
                                     receiverMapMonster.ReflectiveBuffs[CardId.Value] = FirstData;
                                     break;
                                 case Mate receiverMate:
-                                    if (!CardId.HasValue || CardId == 663)
+                                    if (!CardId.HasValue || CardId == 663 || receiverMate == null)
                                     {
                                         return;
                                     }

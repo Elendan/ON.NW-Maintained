@@ -43,6 +43,7 @@ namespace OpenNos.GameObject
 
         public Mate()
         {
+            ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
         }
 
         public Mate(Character owner, NpcMonster npcMonster, byte level, MateType matetype)
@@ -274,6 +275,12 @@ namespace OpenNos.GameObject
             if (isAct4)
             {
                 faction = (byte)Owner.Faction + 2;
+            }
+
+            if (SpInstance != null && IsUsingSp)
+            {
+                string spName = SpInstance.Item.Name.Replace(' ', '^');
+                return $"in 2 {NpcMonsterVNum} {MateTransportId} {(IsTeamMember ? PositionX : MapX)} {(IsTeamMember ? PositionY : MapY)} {Direction} {(int)(Hp / (float)MaxHp * 100)} {(int)(Mp / (float)MaxMp * 100)} 0 {faction} 3 {CharacterId} 1 0 {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : (Skin != 0 ? Skin : -1))} {spName} 1 1 1 {(SpInstance.PartnerSkill1 != 0 ? $"{SpInstance.PartnerSkill1}" : "0")} {(SpInstance.PartnerSkill2 != 0 ? $"{SpInstance.PartnerSkill2}" : "0")} {(SpInstance.PartnerSkill3 != 0 ? $"{SpInstance.PartnerSkill3}" : "0")} {(SpInstance.SkillRank1 == 7 ? "4237" : "0")} {(SpInstance.SkillRank2 == 7 ? "4238" : "0")} {(SpInstance.SkillRank3 == 7 ? "4239" : "0")} 0";
             }
             return
                 $"in 2 {NpcMonsterVNum} {MateTransportId} {(IsTeamMember ? PositionX : MapX)} {(IsTeamMember ? PositionY : MapY)} {Direction} {(int)(Hp / (float)MaxHp * 100)} {(int)(Mp / (float)MaxMp * 100)} 0 {faction} 3 {CharacterId} 1 0 {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : (Skin != 0 ? Skin : -1))} {name} {MateType + 1} 1 0 0 0 0 0 0 0 0";

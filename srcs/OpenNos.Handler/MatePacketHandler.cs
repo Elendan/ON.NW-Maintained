@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Linq;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Handling;
@@ -91,6 +92,106 @@ namespace OpenNos.Handler
         }
 
         /// <summary>
+        ///     u_ps packet
+        /// </summary>
+        /// <param name="upsPacket"></param>
+        public void SpecialPartnerSkill(UpsPacket upsPacket)
+        {
+            PenaltyLogDTO penalty = Session.Account.PenaltyLogs.OrderByDescending(s => s.DateEnd).FirstOrDefault();
+            if (Session.Character.IsMuted() && penalty != null)
+            {
+                if (Session.Character.Gender == GenderType.Female)
+                {
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_FEMALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                }
+                else
+                {
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_MALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                }
+
+                return;
+            }
+
+            Mate attacker = Session.Character.Mates.FirstOrDefault(x => x.MateTransportId == upsPacket.MateTransportId);
+            if (attacker == null)
+            {
+                return;
+            }
+            Skill mateSkill = null;
+
+            short? skillVnum = null;
+            byte value = 0;
+            switch (upsPacket.SkillSlot)
+            {
+                case 0:
+                    skillVnum = attacker.SpInstance?.PartnerSkill1;
+                    value = 0;
+                    break;
+                case 1:
+                    skillVnum = attacker.SpInstance?.PartnerSkill2;
+                    value = 1;
+                    break;
+                case 2:
+                    skillVnum = attacker.SpInstance?.PartnerSkill3;
+                    value = 2;
+                    break;
+            }
+
+            if (skillVnum == null)
+            {
+                return;
+            }
+
+            mateSkill = ServerManager.Instance.GetSkill(skillVnum.Value);
+
+            if (mateSkill == null)
+            {
+                return;
+            }
+
+            Observable.Timer(TimeSpan.FromSeconds(mateSkill.Cooldown * 0.1)).Subscribe(x =>
+            {
+                attacker.Owner?.Session.SendPacket($"psr {value}");
+            });
+
+            if (attacker.IsSitting)
+            {
+                return;
+            }
+
+            switch (upsPacket.TargetType)
+            {
+                case UserType.Monster:
+                    if (attacker.Hp > 0)
+                    {
+                        MapMonster target = Session?.CurrentMapInstance?.GetMonster(upsPacket.TargetId);
+                        AttackMonster(attacker, mateSkill, target);
+                    }
+
+                    return;
+
+                case UserType.Npc:
+                    if (attacker.Hp > 0)
+                    {
+                        Logger.Log.Error("Got here");
+                        AttackMonster(attacker, mateSkill, upsPacket.TargetId);
+                    }
+                    return;
+
+                case UserType.Player:
+                    return;
+
+                case UserType.Object:
+                    return;
+
+                default:
+                    return;
+            }
+        }
+
+        /// <summary>
         ///     u_pet packet
         /// </summary>
         /// <param name="upetPacket"></param>
@@ -152,7 +253,7 @@ namespace OpenNos.Handler
                 case UserType.Npc:
                     if (attacker.Hp > 0)
                     {
-                        UseSkill(attacker, mateSkill, upetPacket.TargetId);
+                        AttackMonster(attacker, mateSkill.Skill, upetPacket.TargetId);
                     }
                     return;
 
@@ -205,6 +306,13 @@ namespace OpenNos.Handler
             if (mateSkills != null)
             {
                 NpcMonsterSkill ski = mateSkills.FirstOrDefault(s => s?.Skill?.CastId == suctlPacket.CastId);
+                if (ski == null)
+                {
+                    ski = new NpcMonsterSkill
+                    {
+                        SkillVNum = 200
+                    };
+                }
                 switch (suctlPacket.TargetType)
                 {
                     case UserType.Monster:
@@ -221,47 +329,85 @@ namespace OpenNos.Handler
 
         public void UseSkill(Mate attacker, NpcMonsterSkill skill, long id)
         {
+            UseSkill(attacker, skill.Skill, id);
+        }
+
+        public void UseSkill(Mate attacker, Skill skill, long id)
+        {
             if (attacker == null)
             {
                 return;
             }
             if (skill == null)
             {
-                skill = new NpcMonsterSkill
+                skill = new Skill
                 {
                     SkillVNum = attacker.Monster.BasicSkill
                 };
             }
 
-            string st = $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.Skill.SkillVNum} {skill.Skill.Cooldown} {skill.Skill.AttackAnimation} {skill.Skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.Skill.SkillType - 1}";
+            string st = $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.SkillType - 1}";
             attacker.LastSkillUse = DateTime.Now;
-            attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
-            if (skill?.Skill?.Effect != null)
-            {
-                attacker.MapInstance.Broadcast(attacker.GenerateEff((int)skill?.Skill?.Effect));
-            }
-            Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {id} {skill.Skill?.CastAnimation} {skill.Skill?.CastEffect} {skill.Skill?.SkillVNum}");
+            attacker.Mp -= skill.MpCost;
+            attacker.MapInstance.Broadcast(attacker.GenerateEff((int)skill?.Effect));
+            Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {id} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
             Session.CurrentMapInstance?.Broadcast(st);
         }
 
         public void AttackMonster(Mate attacker, NpcMonsterSkill skill, MapMonster target)
         {
-            if (target == null || attacker == null || !target.IsAlive || skill?.Skill?.MpCost > attacker.Mp)
+            AttackMonster(attacker, skill.Skill, target);
+        }
+
+        public void AttackMonster(Mate attacker, Skill skill, MapMonster target)
+        {
+            if (target == null || attacker == null || !target.IsAlive || skill?.MpCost > attacker.Mp)
             {
                 return;
             }
             if (skill == null)
             {
-                skill = new NpcMonsterSkill
+                skill = new Skill
                 {
                     SkillVNum = attacker.Monster.BasicSkill
                 };
             }
-            attacker.LastSkillUse = DateTime.Now;
-            attacker.Mp -= skill.Skill == null ? 0 : skill.Skill.MpCost;
-            target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
-            Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 3 {target.MapMonsterId} {skill.Skill?.CastAnimation} {skill.Skill?.CastEffect} {skill.Skill?.SkillVNum}");
-            attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill.Skill);
+            
+            else
+            {
+                attacker.LastSkillUse = DateTime.Now;
+                attacker.Mp -= skill.MpCost;
+                target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
+                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {target.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+            }
+        }
+
+        public void AttackMonster(Mate attacker, Skill skill, long id)
+        {
+            if (attacker == null || skill == null || skill?.MpCost > attacker.Mp)
+            {
+                return;
+            }
+
+            if (attacker.MateTransportId == id)
+            {
+                attacker.LastSkillUse = DateTime.Now;
+                attacker.Mp -= skill.MpCost;
+                List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
+                Logger.Log.Error("After counting");
+                if (monstersInRange == null)
+                {
+                    return;
+                }
+                Logger.Log.Error($"count : {monstersInRange.Count}");
+                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(monstersInRange.FirstOrDefault()?.MapMonsterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                foreach (MapMonster target in monstersInRange)
+                {
+                    target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
+                    attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+                }
+            }
         }
 
         public void AttackCharacter(Mate attacker, NpcMonsterSkill skill, Character target)

@@ -201,6 +201,7 @@
     <Compile Include="Map\MapInstancePortalHandler.cs" />
     <Compile Include="Packets\ClientPackets\CsprPacket.cs" />
     <Compile Include="Packets\ClientPackets\RInfoPacket.cs" />
+    <Compile Include="Packets\ClientPackets\UpsPacket.cs" />
     <Compile Include="Packets\CommandPackets\GenerateShellPacket.cs" />
     <Compile Include="Packets\CommandPackets\HelpMePacket.cs" />
     <Compile Include="Packets\CommandPackets\ItemRainPacket.cs" />
