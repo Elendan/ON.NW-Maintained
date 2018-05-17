@@ -208,10 +208,8 @@ namespace OpenNos.GameObject.Item
                         switch (EquipmentSlot)
                         {
                             case EquipmentType.Armor:
-                                Logger.Log.Error("test");
                                 if (ItemSubType == 4)
                                 {
-                                    Logger.Log.Error("In here");
                                     mate.ArmorInstance = inv;
                                     break;
                                 }
