@@ -6,6 +6,7 @@ using OpenNos.Core;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
 using OpenNos.GameObject;
+using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
@@ -70,15 +71,15 @@ namespace OpenNos.Handler
                 {
                     case 0:
                         partnerInTeam.SpInstance.PartnerSkill1 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
-                        partnerInTeam.SpInstance.SkillRank1 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        partnerInTeam.SpInstance.SkillRank1 = (byte)ServerManager.Instance.RandomNumber(1, 8);
                         break;
                     case 1:
                         partnerInTeam.SpInstance.PartnerSkill2 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
-                        partnerInTeam.SpInstance.SkillRank2 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        partnerInTeam.SpInstance.SkillRank2 = (byte)ServerManager.Instance.RandomNumber(1, 8);
                         break;
                     case 2:
                         partnerInTeam.SpInstance.PartnerSkill3 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
-                        partnerInTeam.SpInstance.SkillRank3 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        partnerInTeam.SpInstance.SkillRank3 = (byte)ServerManager.Instance.RandomNumber(1, 8);
                         break;
                 }
 
@@ -292,6 +293,13 @@ namespace OpenNos.Handler
                     Session.Character.MapInstance.Broadcast(mate.GenerateOut());
                     Session.Character.MapInstance.Broadcast(mate.GenerateIn());
                     Session.SendPacket(Session.Character.GeneratePinit());
+                    Session.Character.RemoveBuff(3000);
+                    Session.Character.RemoveBuff(3001);
+                    Session.Character.RemoveBuff(3002);
+                    Session.Character.RemoveBuff(3003);
+                    Session.Character.RemoveBuff(3004);
+                    Session.Character.RemoveBuff(3005);
+                    Session.Character.RemoveBuff(3006);
                     //psd 30
                 }
                 else
@@ -318,6 +326,14 @@ namespace OpenNos.Handler
                 Session.Character.MapInstance.Broadcast(mate.GenerateIn());
                 Session.SendPacket(Session.Character.GeneratePinit());
                 Session.Character.MapInstance.Broadcast(mate.GenerateEff(196));
+                //TODO: Fix this & find a link
+                if (mate.SpInstance.Item.Morph != 2378)
+                {
+                    return;
+                }
+
+                int sum = (mate.SpInstance.SkillRank1 + mate.SpInstance.SkillRank1 + mate.SpInstance.SkillRank1) / 3;
+                Session.Character.AddBuff(new Buff(3000 + (sum - 1), isPermaBuff: true));
             }
         }
     }
