@@ -289,7 +289,7 @@ namespace OpenNos.Handler
 
                 return;
             }
-
+            //TODO: Review this rushed code
             Mate attacker = Session.Character.Mates.FirstOrDefault(x => x.MateTransportId == suctlPacket.MateTransportId);
             if (attacker == null)
             {
@@ -400,6 +400,7 @@ namespace OpenNos.Handler
                         attacker.AddBuff(new Buff(selfCard.SecondData));
                     }
                 }
+                //TODO: Review this rushed code
                 if (skill.HitType == 1)
                 {
                     List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
@@ -467,6 +468,7 @@ namespace OpenNos.Handler
                         return;
                     }
 
+                    //Todo: review this rushed code
                     int bonusBuff = 0;
                     Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(sessionsInRange.FirstOrDefault()?.CharacterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                     foreach (Character target in sessionsInRange)
