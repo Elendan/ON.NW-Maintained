@@ -39,18 +39,26 @@ namespace OpenNos.Handler
                 return;
             }
 
+            if (partnerInTeam.SpInstance.PartnerSkill1 != 0 && psopPacket.SkillSlot == 0 ||
+                partnerInTeam.SpInstance.PartnerSkill2 != 0 && psopPacket.SkillSlot == 1 ||
+                partnerInTeam.SpInstance.PartnerSkill3 != 0 && psopPacket.SkillSlot == 2)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("ALREADY_HAVE_SKILL", 1));
+                return;
+            }
+
             if (partnerInTeam.IsUsingSp)
             {
                 Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("REMOVE_PARTNER_SP", 1));
                 return;
             }
 
-            //TODO: Re-enable this in case of release
-            /*if (partnerInTeam.SpInstance.Agility < 100)
+            if (partnerInTeam.SpInstance.Agility < 100 && Session.Account.Authority < AuthorityType.GameMaster)
             {
                 Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NOT_ENOUGH_AGILITY", 1));
                 return;
-            }*/
+            }
+
             if (psopPacket.Option == 0)
             {
                 Session.SendPacket($"delay 3000 12 #ps_op^{psopPacket.PetId}^{psopPacket.SkillSlot}^1");
@@ -58,7 +66,24 @@ namespace OpenNos.Handler
             }
             else
             {
+                switch (psopPacket.SkillSlot)
+                {
+                    case 0:
+                        partnerInTeam.SpInstance.PartnerSkill1 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
+                        partnerInTeam.SpInstance.SkillRank1 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        break;
+                    case 1:
+                        partnerInTeam.SpInstance.PartnerSkill2 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
+                        partnerInTeam.SpInstance.SkillRank2 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        break;
+                    case 2:
+                        partnerInTeam.SpInstance.PartnerSkill3 = MateHelper.Instance.PartnerSkills(partnerInTeam.SpInstance.Item.VNum, psopPacket.SkillSlot);
+                        partnerInTeam.SpInstance.SkillRank3 = (byte)ServerManager.Instance.RandomNumber(0, 6);
+                        break;
+                }
+
                 partnerInTeam.GenerateScPacket();
+                partnerInTeam.SpInstance.Agility = 0;
                 Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("COMPETENCE_MASTERED", 1));
             }
         }

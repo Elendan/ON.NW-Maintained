@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using NosSharp.Enums;
 using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Helpers
@@ -55,6 +56,299 @@ namespace OpenNos.GameObject.Helpers
 
         #region Methods
 
+        #region PartnerSkills
+
+        public short PartnerSkills(short vnum, byte skillSlot)
+        {
+            switch (vnum)
+            {
+                // aegir
+                case 4800:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1235;
+                        case 1:
+                            return 1237;
+                        case 2:
+                            return 1239;
+                    }
+                    break;
+                //Barni
+                case 4802:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1236;
+                        case 1:
+                            return 1238;
+                        case 2:
+                            return 1240;
+                    }
+                    break;
+                //Freya
+                case 4803:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1241;
+                        case 1:
+                            return 1242;
+                        case 2:
+                            return 1243;
+                    }
+                    break;
+                // Shinobi
+                case 4804:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1268;
+                        case 1:
+                            return 1269;
+                        case 2:
+                            return 1273;
+                    }
+                    break;
+                // Lotus
+                case 4805:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1270;
+                        case 1:
+                            return 1271;
+                        case 2:
+                            return 1275;
+                    }
+                    break;
+                // Orkani
+                case 4806:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1272;
+                        case 1:
+                            return 1274;
+                        case 2:
+                            return 1276;
+                    }
+                    break;
+                // Fiona
+                // Foxy
+                case 4818:
+                case 4807:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1292;
+                        case 1:
+                            return 1293;
+                        case 2:
+                            return 1294;
+                    }
+                    break;
+                // Maru
+                // Maru maman
+                case 4808:
+                case 4809:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1299;
+                        case 1:
+                            return 1300;
+                        case 2:
+                            return 1301;
+                    }
+                    break;
+                // Hongbi
+                // Cheongbi
+                case 4810:
+                case 4811:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1315;
+                        case 1:
+                            return 1316;
+                        case 2:
+                            return 1317;
+                    }
+                    break;
+                // Lucifer
+                case 4812:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1318;
+                        case 1:
+                            return 1319;
+                        case 2:
+                            return 1320;
+                    }
+                    break;
+                // Laurena
+                case 4813:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1333;
+                        case 1:
+                            return 1334;
+                        case 2:
+                            return 1335;
+                    }
+                    break;
+                // Amon
+                case 4814:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1358;
+                        case 1:
+                            return 1359;
+                        case 2:
+                            return 1360;
+                    }
+                    break;
+                // Lucie
+                case 4815:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1368;
+                        case 1:
+                            return 1369;
+                        case 2:
+                            return 1370;
+                    }
+                    break;
+                // Chloé
+                case 4817:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1371;
+                        case 1:
+                            return 1372;
+                        case 2:
+                            return 1373;
+                    }
+                    break;
+                // Djinn
+                case 4819:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1379;
+                        case 1:
+                            return 1380;
+                        case 2:
+                            return 1381;
+                    }
+                    break;
+                // Eliza
+                case 4820:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1433;
+                        case 1:
+                            return 1434;
+                        case 2:
+                            return 1435;
+                    }
+                    break;
+                // Daniel Ducat
+                case 4821:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1436;
+                        case 1:
+                            return 1437;
+                        case 2:
+                            return 1438;
+                    }
+                    break;
+                // Marion
+                case 4822:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1439;
+                        case 1:
+                            return 1440;
+                        case 2:
+                            return 1441;
+                    }
+                    break;
+                // Arlequin
+                case 4823:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1442;
+                        case 1:
+                            return 1443;
+                        case 2:
+                            return 1444;
+                    }
+                    break;
+                // Nelya
+                case 4824:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1446;
+                        case 1:
+                            return 1447;
+                        case 2:
+                            return 1448;
+                    }
+                    break;
+                // Venus
+                case 4825:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1449;
+                        case 1:
+                            return 1450;
+                        case 2:
+                            return 1451;
+                    }
+                    break;
+                // Ragnar squelet
+                case 4326:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1490;
+                        case 1:
+                            return 1491;
+                        case 2:
+                            return 1492;
+                    }
+                    break;
+                // Miaou fou
+                case 4343:
+                    switch (skillSlot)
+                    {
+                        case 0:
+                            return 1521;
+                        case 1:
+                            return 1522;
+                        case 2:
+                            return 1523;
+                    }
+                    break;
+            }
+            return -1;
+        }
+        #endregion
+
         #region PetBuffs
 
         public void AddPetBuff(ClientSession session, Mate mate)
@@ -66,9 +360,12 @@ namespace OpenNos.GameObject.Helpers
                 session.Character.AddBuff(new Buff.Buff(cardId, isPermaBuff: true));
             }
 
-            foreach (NpcMonsterSkill skill in mate.Monster.Skills.Where(sk => PetSkills.Contains(sk.SkillVNum)))
+            if (mate.MateType == MateType.Pet)
             {
-                session.SendPacket(session.Character.GeneratePetskill(skill.SkillVNum));
+                foreach (NpcMonsterSkill skill in mate.Monster.Skills.Where(sk => PetSkills.Contains(sk.SkillVNum)))
+                {
+                    session.SendPacket(session.Character.GeneratePetskill(skill.SkillVNum));
+                }
             }
         }
 

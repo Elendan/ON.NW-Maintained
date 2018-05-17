@@ -308,9 +308,9 @@ namespace OpenNos.GameObject
 
         public string GeneratePski()
         {
-            if (SpSkills?.Length >= 3)
+            if (SpSkills?.Length >= 3 && SpInstance != null)
             {
-                return $"pski {SpSkills[0]?.SkillVNum} {SpSkills[1]?.SkillVNum} {SpSkills[2]?.SkillVNum}";
+                return $"pski {(SpInstance.PartnerSkill1 == 0 ? "" : $"{SpInstance.PartnerSkill1}")} {(SpInstance.PartnerSkill2 == 0 ? "" : $"{SpInstance.PartnerSkill2}")} {(SpInstance.PartnerSkill3 == 0 ? "" : $"{SpInstance.PartnerSkill3}")}";
             }
 
             return "pski";
@@ -554,7 +554,10 @@ namespace OpenNos.GameObject
             StartLife();
             Hp = MaxHp;
             Mp = MaxMp;
-            MateHelper.Instance.AddPetBuff(Owner.Session, this); // Add pet buffs
+            if (MateType == MateType.Pet)
+            {
+                MateHelper.Instance.AddPetBuff(Owner.Session, this); // Add pet buffs
+            }
         }
 
         public void RemoveTeamMember()
