@@ -31,13 +31,13 @@ namespace OpenNos.Handler
             Mate partnerInTeam = Session.Character.Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
             if (partnerInTeam == null || psopPacket.PetId != partnerInTeam.PetId)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NEED_PARTNER_TEAM", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe.", 1));
                 return;
             }
 
             if (partnerInTeam.SpInstance == null)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NO_PARTNER_SP", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Le partenaire n'a pas de sp", 1));
                 return;
             }
 
@@ -45,19 +45,19 @@ namespace OpenNos.Handler
                 partnerInTeam.SpInstance.PartnerSkill2 != 0 && psopPacket.SkillSlot == 1 ||
                 partnerInTeam.SpInstance.PartnerSkill3 != 0 && psopPacket.SkillSlot == 2)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("ALREADY_HAVE_SKILL", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Le partenaire possède déjà ce skill", 1));
                 return;
             }
 
             if (partnerInTeam.IsUsingSp)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("REMOVE_PARTNER_SP", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Veuillez enlever la transformation de spécialiste", 1));
                 return;
             }
 
             if (partnerInTeam.SpInstance.Agility < 100 && Session.Account.Authority < AuthorityType.GameMaster)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NOT_ENOUGH_AGILITY", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas assez d'adresse", 1));
                 return;
             }
 
@@ -84,10 +84,10 @@ namespace OpenNos.Handler
                         break;
                 }
 
+                partnerInTeam.SpInstance.Agility = 0;
                 Session.SendPacket(partnerInTeam.GenerateScPacket());
                 Session.SendPacket(partnerInTeam.GeneratePski());
-                partnerInTeam.SpInstance.Agility = 0;
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("COMPETENCE_MASTERED", 1));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Ton partenaire maîtrise maintenant cette compétence", 1));
             }
         }
 
@@ -175,7 +175,6 @@ namespace OpenNos.Handler
                 case UserType.Npc:
                     if (attacker.Hp > 0)
                     {
-                        Logger.Log.Error("Got here");
                         AttackMonster(attacker, mateSkill, upsPacket.TargetId);
                     }
                     return;
@@ -395,12 +394,10 @@ namespace OpenNos.Handler
                 attacker.LastSkillUse = DateTime.Now;
                 attacker.Mp -= skill.MpCost;
                 List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
-                Logger.Log.Error("After counting");
                 if (monstersInRange == null)
                 {
                     return;
                 }
-                Logger.Log.Error($"count : {monstersInRange.Count}");
                 Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(monstersInRange.FirstOrDefault()?.MapMonsterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                 foreach (MapMonster target in monstersInRange)
                 {

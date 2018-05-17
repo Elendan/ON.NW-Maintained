@@ -47,9 +47,186 @@ namespace OpenNos.GameObject.Item
             string[] packetsplit = null)
         {
             inv.Item.BCards.ForEach(c => c.ApplyBCards(session.Character));
-
+            Mate partner = null;
             switch (Effect)
             {
+                // Reinitialize single
+                case 11111:
+                    partner = session.Character.Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
+                    if (packetsplit == null)
+                    {
+                        // Packet Hacking
+                        return;
+                    }
+
+                    if (packetsplit.Length < 9)
+                    {
+                        // Packet hacking
+                        return;
+                    }
+
+                    if (!byte.TryParse(packetsplit[9], out byte sPos))
+                    {
+                        // out of range
+                        return;
+                    }
+
+                    if (!Enum.TryParse(packetsplit[8], out EquipmentType sEqpType))
+                    {
+                        // Out of range
+                        return;
+                    }
+
+                    if (!byte.TryParse(packetsplit[6], out byte sRequest))
+                    {
+                        return;
+                    }
+
+                    if (partner == null)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1);
+                        return;
+                    }
+
+                    if (partner.SpInstance == null)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1);
+                        return;
+                    }
+
+                    if (partner.IsUsingSp)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1);
+                        return;
+                    }
+                    
+                    if (sRequest == 3)
+                    {
+                        switch (sPos)
+                        {
+                            case 0:
+                                if (partner.SpInstance.SkillRank1 == 7)
+                                {
+                                    session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Cet objet a atteint le niveau maximal.", 1));
+                                    return;
+                                }
+                                partner.SpInstance.PartnerSkill1 = 0;
+                                partner.SpInstance.SkillRank1 = 0;
+                                break;
+                            case 1:
+                                if (partner.SpInstance.SkillRank2 == 7)
+                                {
+                                    session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Cet objet a atteint le niveau maximal.", 1));
+                                    return;
+                                }
+                                partner.SpInstance.PartnerSkill2 = 0;
+                                partner.SpInstance.SkillRank2 = 0;
+                                break;
+                            case 2:
+                                if (partner.SpInstance.SkillRank3 == 7)
+                                {
+                                    session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Cet objet a atteint le niveau maximal.", 1));
+                                    return;
+                                }
+                                partner.SpInstance.PartnerSkill3 = 0;
+                                partner.SpInstance.SkillRank3 = 0;
+                                break;
+                            default:
+                                // Packet Hacking
+                                return;
+                        }
+                        
+                        partner.SpInstance.Agility = 100;
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Le rang de compétence a été modifié.", 1));
+                        session.SendPacket(session.Character.GenerateSay("L'adresse de ton partenaire a atteint les 100%", 10));
+                        session.SendPacket(partner.GenerateScPacket());
+                        session.Character.Inventory.RemoveItemAmount(inv.ItemVNum);
+                        return;
+                    }
+                    else if (option == 0)
+                    {
+                        session.SendPacket($"qna #u_i^1^{session.Character.CharacterId}^{(short)inv.Type}^{inv.Slot}^1^1^{(short)sEqpType}^{sPos} Veux-tu modifier le rang de compétence sélectionné ?");
+                    }
+                    else if (option == 255)
+                    {
+                        session.Character.LastDelay = DateTime.Now;
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateDelay(5000, 7, $"#u_i^1^{session.Character.CharacterId}^{(short)inv.Type}^{inv.Slot}^3^1^{(short)sEqpType}^{sPos}"));
+                    }
+                    break;
+                //Reinitialize all
+                case 11112:
+                    partner = session.Character.Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
+                    if (packetsplit == null)
+                    {
+                        // Packet Hacking
+                        return;
+                    }
+
+                    if (packetsplit.Length < 9)
+                    {
+                        // Packet hacking
+                        return;
+                    }
+
+                    if (!byte.TryParse(packetsplit[9], out byte pos))
+                    {
+                        // out of range
+                        return;
+                    }
+
+                    if (!Enum.TryParse(packetsplit[8], out EquipmentType eqpType))
+                    {
+                        // Out of range
+                        return;
+                    }
+
+                    if (!byte.TryParse(packetsplit[6], out byte request))
+                    {
+                        return;
+                    }
+
+                    if (partner == null)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1);
+                        return;
+                    }
+
+                    if (partner.SpInstance == null)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1);
+                        return;
+                    }
+
+                    if (partner.IsUsingSp)
+                    {
+                        UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1);
+                        return;
+                    }
+                    if (request == 3)
+                    {
+                        partner.SpInstance.PartnerSkill1 = 0;
+                        partner.SpInstance.PartnerSkill2 = 0;
+                        partner.SpInstance.PartnerSkill3 = 0;
+                        partner.SpInstance.SkillRank1 = 0;
+                        partner.SpInstance.SkillRank2 = 0;
+                        partner.SpInstance.SkillRank3 = 0;
+                        partner.SpInstance.Agility = 100;
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Toutes les compétences ont été réinitialisées.", 1));
+                        session.SendPacket(session.Character.GenerateSay("L'adresse de ton partenaire a atteint les 100%", 10));
+                        session.SendPacket(partner.GenerateScPacket());
+                        session.Character.Inventory.RemoveItemAmount(inv.ItemVNum);
+                        return;
+                    }
+                    else if (option == 0)
+                    {
+                        session.SendPacket($"qna #u_i^1^{session.Character.CharacterId}^{(short)inv.Type}^{inv.Slot}^1^1^{(short)eqpType}^{pos} Veux-tu modifier le rang de toutes les compétences ?");
+                    }
+                    else if (option == 255)
+                    {
+                        session.Character.LastDelay = DateTime.Now;
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateDelay(5000, 7, $"#u_i^1^{session.Character.CharacterId}^{(short)inv.Type}^{inv.Slot}^3^1^{(short)eqpType}^{pos}"));
+                    }
+                    break;
                 case 0:
                     switch (VNum)
                     {
@@ -316,7 +493,7 @@ namespace OpenNos.GameObject.Item
                     break;
 
                 case 305:
-                    Mate partner = session.Character.Mates
+                    partner = session.Character.Mates
                         .FirstOrDefault(x =>
                             x.IsTeamMember &&
                             (x.NpcMonsterVNum == 317 || x.NpcMonsterVNum == 318 || x.NpcMonsterVNum == 319) &&
