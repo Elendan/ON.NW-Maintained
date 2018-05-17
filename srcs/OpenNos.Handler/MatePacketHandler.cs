@@ -10,6 +10,7 @@ using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
 using OpenNos.GameObject.Packets.ClientPackets;
+using OpenNos.GameObject.Packets.ServerPackets;
 
 namespace OpenNos.Handler
 {
@@ -19,6 +20,48 @@ namespace OpenNos.Handler
 
         private ClientSession Session { get; }
 
+        /// <summary>
+        ///     ps_op packet
+        /// </summary>
+        /// <param name="psopPacket"></param>
+        public void LearnSkill(PsopPacket psopPacket)
+        {
+            Mate partnerInTeam = Session.Character.Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
+            if (partnerInTeam == null || psopPacket.PetId != partnerInTeam.PetId)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NEED_PARTNER_TEAM", 1));
+                return;
+            }
+
+            if (partnerInTeam.SpInstance == null)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NO_PARTNER_SP", 1));
+                return;
+            }
+
+            if (partnerInTeam.IsUsingSp)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("REMOVE_PARTNER_SP", 1));
+                return;
+            }
+
+            //TODO: Re-enable this in case of release
+            /*if (partnerInTeam.SpInstance.Agility < 100)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("NOT_ENOUGH_AGILITY", 1));
+                return;
+            }*/
+            if (psopPacket.Option == 0)
+            {
+                Session.SendPacket($"delay 3000 12 #ps_op^{psopPacket.PetId}^{psopPacket.SkillSlot}^1");
+                Session.CurrentMapInstance?.Broadcast(UserInterfaceHelper.Instance.GenerateGuri(2, 2, partnerInTeam.MateTransportId), partnerInTeam.PositionX, partnerInTeam.PositionY);
+            }
+            else
+            {
+                partnerInTeam.GenerateScPacket();
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("COMPETENCE_MASTERED", 1));
+            }
+        }
 
         /// <summary>
         ///     u_pet packet
