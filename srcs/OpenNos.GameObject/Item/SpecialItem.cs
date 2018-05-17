@@ -84,19 +84,19 @@ namespace OpenNos.GameObject.Item
 
                     if (partner == null)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1));
                         return;
                     }
 
                     if (partner.SpInstance == null)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1));
                         return;
                     }
 
                     if (partner.IsUsingSp)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1));
                         return;
                     }
                     
@@ -187,19 +187,19 @@ namespace OpenNos.GameObject.Item
 
                     if (partner == null)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas de partenaire dans l'équipe", 1));
                         return;
                     }
 
                     if (partner.SpInstance == null)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Pas de sp partenaire", 1));
                         return;
                     }
 
                     if (partner.IsUsingSp)
                     {
-                        UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1));
                         return;
                     }
                     if (request == 3)
