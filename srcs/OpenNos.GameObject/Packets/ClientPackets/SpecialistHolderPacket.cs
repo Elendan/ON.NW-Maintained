@@ -15,6 +15,9 @@ namespace OpenNos.GameObject.Packets.ClientPackets
         [PacketIndex(1)]
         public byte HolderSlot { get; set; }
 
+        [PacketIndex(2)]
+        public byte HolderType { get; set; }
+
         #endregion
     }
 }

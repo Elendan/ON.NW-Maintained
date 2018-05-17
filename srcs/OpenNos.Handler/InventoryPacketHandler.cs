@@ -1124,32 +1124,55 @@ namespace OpenNos.Handler
         /// <param name="specialistHolderPacket"></param>
         public void SpecialistHolder(SpecialistHolderPacket specialistHolderPacket)
         {
-            SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
-            BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
-            if (specialist == null || holder == null)
+            if (specialistHolderPacket.HolderType == 0)
             {
-                return;
-            }
+                SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
+                BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
+                if (specialist == null || holder == null)
+                {
+                    return;
+                }
 
-            holder.HoldingVNum = specialist.ItemVNum;
-            holder.SlDamage = specialist.SlDamage;
-            holder.SlDefence = specialist.SlDefence;
-            holder.SlElement = specialist.SlElement;
-            holder.SlHP = specialist.SlHP;
-            holder.SpDamage = specialist.SpDamage;
-            holder.SpDark = specialist.SpDark;
-            holder.SpDefence = specialist.SpDefence;
-            holder.SpElement = specialist.SpElement;
-            holder.SpFire = specialist.SpFire;
-            holder.SpHP = specialist.SpHP;
-            holder.SpLevel = specialist.SpLevel;
-            holder.SpLight = specialist.SpLight;
-            holder.SpStoneUpgrade = specialist.SpStoneUpgrade;
-            holder.SpWater = specialist.SpWater;
-            holder.Upgrade = specialist.Upgrade;
-            holder.XP = specialist.XP;
-            Session.SendPacket("shop_end 2");
-            Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+                holder.HoldingVNum = specialist.ItemVNum;
+                holder.SlDamage = specialist.SlDamage;
+                holder.SlDefence = specialist.SlDefence;
+                holder.SlElement = specialist.SlElement;
+                holder.SlHP = specialist.SlHP;
+                holder.SpDamage = specialist.SpDamage;
+                holder.SpDark = specialist.SpDark;
+                holder.SpDefence = specialist.SpDefence;
+                holder.SpElement = specialist.SpElement;
+                holder.SpFire = specialist.SpFire;
+                holder.SpHP = specialist.SpHP;
+                holder.SpLevel = specialist.SpLevel;
+                holder.SpLight = specialist.SpLight;
+                holder.SpStoneUpgrade = specialist.SpStoneUpgrade;
+                holder.SpWater = specialist.SpWater;
+                holder.Upgrade = specialist.Upgrade;
+                holder.XP = specialist.XP;
+                Session.SendPacket("shop_end 2");
+                Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+            }
+            else if (specialistHolderPacket.HolderType == 1)
+            {
+                SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
+                BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
+                if (specialist == null || holder == null)
+                {
+                    Logger.Log.Error("Specialist or holder null");
+                    return;
+                }
+
+                holder.HoldingVNum = specialist.ItemVNum;
+                holder.PartnerSkill1 = specialist.PartnerSkill1;
+                holder.PartnerSkill2 = specialist.PartnerSkill2;
+                holder.PartnerSkill3 = specialist.PartnerSkill3;
+                holder.SkillRank1 = specialist.SkillRank1;
+                holder.SkillRank2 = specialist.SkillRank2;
+                holder.SkillRank3 = specialist.SkillRank3;
+                Session.SendPacket("shop_end 2");
+                Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+            }
         }
 
         /// <summary>
