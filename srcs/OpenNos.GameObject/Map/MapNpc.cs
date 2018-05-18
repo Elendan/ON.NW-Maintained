@@ -391,7 +391,7 @@ namespace OpenNos.GameObject.Map
                     return;
                 }
 
-                Path.RemoveRange(0, maxindex);
+                Path?.RemoveRange(0, maxindex);
             }
 
             HostilityTarget();

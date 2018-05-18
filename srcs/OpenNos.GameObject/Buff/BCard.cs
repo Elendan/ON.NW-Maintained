@@ -33,7 +33,7 @@ namespace OpenNos.GameObject.Buff
     {
         #region Methods
 
-        public void ApplyBCards(IBattleEntity session, IBattleEntity caster = null)
+        public void ApplyBCards(IBattleEntity session, IBattleEntity caster = null, short? partnerBuffLevel = null)
         {
             Mate mate = session is Mate ? (Mate)session.GetSession() : null;
             Character character = session is Character ? (Character)session.GetSession() : null;
@@ -42,7 +42,7 @@ namespace OpenNos.GameObject.Buff
                 case BCardType.CardType.Buff:
                     if (ServerManager.Instance.RandomNumber() < FirstData)
                     {
-                        session?.BattleEntity.AddBuff(new Buff(SecondData,
+                        session?.BattleEntity.AddBuff(new Buff(SecondData + partnerBuffLevel ?? 0,
                             caster?.BattleEntity.Level ?? session.BattleEntity.Level, entity: caster));
                     }
 

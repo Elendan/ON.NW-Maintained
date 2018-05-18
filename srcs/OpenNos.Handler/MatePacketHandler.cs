@@ -416,13 +416,10 @@ namespace OpenNos.Handler
                                 bonusbuff = (int)(attacker.SpInstance?.SkillRank3 - 1);
                             }
 
-                            Buff bf = null;
                             if (bc.Type == (short)BCardType.CardType.Buff)
                             {
-                                BCard nvalue = bc;
-                                nvalue.SecondData += bonusbuff;
-                                nvalue.ApplyBCards(attacker);
-                                nvalue.ApplyBCards(attacker.Owner);
+                                bc.ApplyBCards(attacker, partnerBuffLevel: (short?)bonusbuff);
+                                bc.ApplyBCards(attacker.Owner, partnerBuffLevel: (short?)bonusbuff);
                             }
                             else
                             {
