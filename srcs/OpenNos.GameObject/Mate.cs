@@ -315,7 +315,7 @@ namespace OpenNos.GameObject
 
         public string GeneratePski()
         {
-            if (SpSkills?.Length >= 3 && SpInstance != null)
+            if (SpSkills?.Length >= 3 && SpInstance != null && IsUsingSp)
             {
                 return $"pski {(SpInstance.PartnerSkill1 == 0 ? "" : $"{SpInstance.PartnerSkill1}")} {(SpInstance.PartnerSkill2 == 0 ? "" : $"{SpInstance.PartnerSkill2}")} {(SpInstance.PartnerSkill3 == 0 ? "" : $"{SpInstance.PartnerSkill3}")}";
             }
