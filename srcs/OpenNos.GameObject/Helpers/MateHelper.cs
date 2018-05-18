@@ -58,6 +58,104 @@ namespace OpenNos.GameObject.Helpers
 
         #region PartnerSkills
 
+        public bool CanWearItem(short vnum, short partnerVnum, ClientSession session)
+        {
+            switch (vnum)
+            {
+                // Corps a corps (tom & kliff & ragnar)
+                case 4825:
+                case 4343:
+                case 4822:
+                case 4814:
+                case 4815:
+                case 4808:
+                case 4809:
+                case 4800:
+                case 4804:
+                case 4818:
+                case 4807:
+                    switch (partnerVnum)
+                    {
+                        case 318:
+                        case 319:
+                        case 2603:
+                        case 2618:
+                            return true;
+                        default:
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Tom, Kill & Ragnar", 10));
+                            break;
+                    }
+                    break;
+
+
+                // magical (sakura, graham, erdimien)
+                case 4819:
+                case 4813:
+                case 4810:
+                case 4811:
+                case 4806:
+                case 4803:
+                case 4820:
+                case 4823:
+                    switch (partnerVnum)
+                    {
+                        case 417:
+                        case 2539:
+                        case 2540:
+                        case 2557:
+                        case 2620:
+                        case 2621:
+                            return true;
+
+                        default:
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Sakura, Graham & Erdimien", 10));
+                            break;
+                    }
+                    break;
+
+                // distance (Leona, Bob, Frigg)
+                case 4805:
+                case 4812:
+                case 4817:
+                case 4821:
+                case 4824:
+                case 4802:
+                    switch (partnerVnum)
+                    {
+                        case 317:
+                        case 822:
+                        case 2602:
+                        case 2617:
+                            return true;
+
+                        default:
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Leona, Bob & Frigg", 10));
+                            break;
+                    }
+                    break;
+
+                case 4326:
+                    switch (partnerVnum)
+                    {
+                        case 2603:
+                        case 2618:
+                            return true;
+                        default:
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Ragnar", 10));
+                            break;
+                    }
+
+                    break;
+                
+
+                default:
+                    session.SendPacket(session.Character.GenerateSay("Not implemented, please report to the staff.", 10));
+                    return false;
+            }
+
+            return false;
+        }
+
         public short PartnerSkills(short vnum, byte skillSlot)
         {
             switch (vnum)

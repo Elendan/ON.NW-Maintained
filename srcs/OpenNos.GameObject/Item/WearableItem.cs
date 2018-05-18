@@ -240,7 +240,14 @@ namespace OpenNos.GameObject.Item
                             case EquipmentType.Sp:
                                 if (ItemSubType == 4)
                                 {
-                                    mate.SpInstance = inv;
+                                    if (MateHelper.Instance.CanWearItem(inv.ItemVNum, mate.Monster.NpcMonsterVNum, session))
+                                    {
+                                        mate.SpInstance = inv;
+                                    }
+                                    else
+                                    {
+                                        goto default;
+                                    }
                                     break;
                                 }
                                 else
