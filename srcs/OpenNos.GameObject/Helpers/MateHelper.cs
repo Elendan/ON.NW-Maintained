@@ -82,7 +82,7 @@ namespace OpenNos.GameObject.Helpers
                         case 2618:
                             return true;
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Tom, Kill & Ragnar", 10));
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Tom, Kill & Ragnar", 12));
                             break;
                     }
                     break;
@@ -108,7 +108,7 @@ namespace OpenNos.GameObject.Helpers
                             return true;
 
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Sakura, Graham & Erdimien", 10));
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Sakura, Graham & Erdimien", 12));
                             break;
                     }
                     break;
@@ -129,7 +129,7 @@ namespace OpenNos.GameObject.Helpers
                             return true;
 
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Leona, Bob & Frigg", 10));
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Leona, Bob & Frigg", 12));
                             break;
                     }
                     break;
@@ -141,15 +141,15 @@ namespace OpenNos.GameObject.Helpers
                         case 2618:
                             return true;
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Ragnar", 10));
+                            session.SendPacket(session.Character.GenerateSay("This sp goes on Ragnar", 12));
                             break;
                     }
 
                     break;
-                
+
 
                 default:
-                    session.SendPacket(session.Character.GenerateSay("Not implemented, please report to the staff.", 10));
+                    session.SendPacket(session.Character.GenerateSay("Not implemented, please report to the staff.", 12));
                     return false;
             }
 
