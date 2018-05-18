@@ -1324,6 +1324,11 @@ namespace OpenNos.Handler
                     int price = 20000;
                     if (inventory != null)
                     {
+                        if (inventory.EquipmentOptions != null)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("ce stuff a une rune", 10));
+                            return;
+                        }
                         if (inventory.Item.EquipmentSlot == EquipmentType.Armor ||
                             inventory.Item.EquipmentSlot == EquipmentType.MainWeapon)
                         {
