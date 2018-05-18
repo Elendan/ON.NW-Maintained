@@ -1977,7 +1977,7 @@ namespace OpenNos.GameObject
                 {
                     if (partnerInTeam?.SpInstance != null && partnerInTeam.SpInstance.Agility < 100)
                     {
-                        partnerInTeam.SpInstance.Agility += 2;
+                        partnerInTeam.SpInstance.Agility = (byte)(partnerInTeam.SpInstance.Agility + 2 > 100 ? 100 : partnerInTeam.SpInstance.Agility + 2);
                         Session.SendPacket(partnerInTeam.GenerateScPacket());
                         if (partnerInTeam.SpInstance.Agility == 100)
                         {
