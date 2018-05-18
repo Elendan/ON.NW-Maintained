@@ -196,17 +196,10 @@ namespace OpenNos.Handler
                             invType = InventoryType.SecondPartnerInventory;
                             break;
                         case 3:
-                            invType = InventoryType.SecondPartnerInventory;
+                            invType = InventoryType.ThirdPartnerInventory;
                             break;
                     }
-                    if (value != 12)
-                    {
-                        inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(value, invType);
-                    }
-                    else
-                    {
-                        inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(value, invType);
-                    }
+                    inventory = value != 12 ? Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(value, invType) : Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(value, invType);
                     break;
 
                 case 10:
