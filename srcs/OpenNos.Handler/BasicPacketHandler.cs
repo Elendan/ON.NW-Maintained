@@ -849,7 +849,7 @@ namespace OpenNos.Handler
                         return;
                     }
 
-                    if (Session.HasCurrentMapInstance && portal.DestinationMapInstanceId == Session.Character.MapInstanceId)
+                    if (Session.HasCurrentMapInstance && portal.DestinationMapId == Session.Character.MapId)
                     {
                         Session.Character.TeleportOnMap(portal.DestinationX, portal.DestinationY);
                         return;
