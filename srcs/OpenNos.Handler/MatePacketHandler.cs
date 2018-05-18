@@ -244,7 +244,6 @@ namespace OpenNos.Handler
                 case UserType.Monster:
                     if (attacker.Hp > 0)
                     {
-                        MapMonster target = Session?.CurrentMapInstance?.GetMonster(upetPacket.TargetId);
                         AttackMonster(attacker, mateSkill, upetPacket.TargetId);
                     }
 
@@ -290,7 +289,6 @@ namespace OpenNos.Handler
 
                 return;
             }
-            //TODO: Review this rushed code
             Mate attacker = Session.Character.Mates.FirstOrDefault(x => x.MateTransportId == suctlPacket.MateTransportId);
             if (attacker == null)
             {
@@ -318,7 +316,6 @@ namespace OpenNos.Handler
                     case UserType.Monster:
                         if (attacker.Hp > 0)
                         {
-                            MapMonster target = Session?.CurrentMapInstance?.GetMonster(suctlPacket.TargetId);
                             AttackMonster(attacker, ski, suctlPacket.TargetId);
                         }
 
@@ -340,10 +337,6 @@ namespace OpenNos.Handler
             }
             attacker.LastSkillUse = DateTime.Now;
             attacker.Mp -= skill.MpCost;
-            /*
-                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {target.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
-             */
             if (skill.TargetType == 1 && skill.HitType == 1)
             {
                 if (Session.HasCurrentMapInstance && skill.TargetRange != 0)
@@ -358,7 +351,6 @@ namespace OpenNos.Handler
             }
             else if (skill.TargetType == 2 && skill.HitType == 0)
             {
-                //Not sure about this CT packet
                 ClientSession target = attacker.Owner.Session ?? Session;
                 Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {targetId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                 skill.BCards.ToList().ForEach(s =>
@@ -436,7 +428,6 @@ namespace OpenNos.Handler
                             {
                                 bc.ApplyBCards(attacker);
                             }
-                            //Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                         }
                         break;
                 }
