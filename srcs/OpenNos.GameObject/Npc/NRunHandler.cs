@@ -385,8 +385,7 @@ namespace OpenNos.GameObject.Npc
                     }
                     else
                     {
-                        session.SendPacket(
-                            session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_MONEY"), 10));
+                        session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_MONEY"), 10));
                     }
 
                     break;
