@@ -18,6 +18,7 @@ using OpenNos.Core;
 using OpenNos.Data;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
+using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Item
@@ -176,6 +177,30 @@ namespace OpenNos.GameObject.Item
                         }
                     }
 
+                    break;
+
+                case 10000:
+                    if (session.Character.MapInstance != session.Character.Miniland)
+                    {
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("not in minimland", 1));
+                        return;
+                    }
+                    var monster = new MapMonster
+                    {
+                        MonsterVNum = (short)EffectValue,
+                        MapY = session.Character.PositionY,
+                        MapX = session.Character.PositionX,
+                        MapId = session.Character.MapInstance.Map.MapId,
+                        Position = (byte)session.Character.Direction,
+                        IsMoving = true,
+                        IsHostile = true,
+                        MapMonsterId = session.CurrentMapInstance.GetNextId(),
+                        IsMateTrainer = true,
+                        ShouldRespawn = false
+                    };
+                    monster.Initialize(session.CurrentMapInstance);
+                    session.CurrentMapInstance.AddMonster(monster);
+                    session.CurrentMapInstance.Broadcast(monster.GenerateIn());
                     break;
 
                 default:

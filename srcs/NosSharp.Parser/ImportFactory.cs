@@ -4902,6 +4902,19 @@ namespace NosSharp.Parser
                                 item.Effect = Convert.ToInt16(currentLine[2]);
                                 item.EffectValue = Convert.ToInt32(currentLine[4]);
 
+                                switch (item.VNum)
+                                {
+                                    case 2079:
+                                    case 2129:
+                                    case 2321:
+                                    case 2323:
+                                    case 2328:
+                                    case 10017:
+                                        item.Effect = 10000;
+                                        item.EffectValue = 900;
+                                        break;
+                                }
+
                                 // item.PetLoyality = Convert.ToInt16(linesave[4]); item.PetFood = Convert.ToInt16(linesave[7]);
                                 break;
 

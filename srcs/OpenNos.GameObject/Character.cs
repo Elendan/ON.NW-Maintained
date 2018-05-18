@@ -1973,6 +1973,7 @@ namespace OpenNos.GameObject
                 #region Partners
 
                 Mate partnerInTeam = Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
+                Mate mateInTeam = Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Pet);
                 if (Level < monsterToAttack.Monster.Level + 15)
                 {
                     if (partnerInTeam?.SpInstance != null && partnerInTeam.SpInstance.Agility < 100)
@@ -1997,6 +1998,69 @@ namespace OpenNos.GameObject
                         }
                     }
                 }
+
+                if (mateInTeam != null)
+                {
+                    if (monsterToAttack.IsMateTrainer)
+                    {
+                        int probaLevelUp = ServerManager.Instance.RandomNumber();
+
+                        if (probaLevelUp > 50)
+                        {
+                            // Upgrade 
+                            probaLevelUp = ServerManager.Instance.RandomNumber();
+                            if (probaLevelUp > 50)
+                            {
+                                // Weapon
+                                probaLevelUp = ServerManager.Instance.RandomNumber();
+                                if (probaLevelUp > 50 && mateInTeam.Attack < 10)
+                                {
+                                    // Upgrade
+                                    mateInTeam.Attack++;
+                                    Session.SendPacket(Session.Character.GenerateSay("the attack level of the mate increased", 10));
+                                }
+                            }
+                            else
+                            {
+                                // Armor
+                                probaLevelUp = ServerManager.Instance.RandomNumber();
+                                if (probaLevelUp > 50 && mateInTeam.Defence < 10)
+                                {
+                                    mateInTeam.Defence++;
+                                    Session.SendPacket(Session.Character.GenerateSay("the defence level of the mate increased", 10));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // Downgrade
+                            probaLevelUp = ServerManager.Instance.RandomNumber();
+                            if (probaLevelUp > 50)
+                            {
+                                // Weapon
+                                probaLevelUp = ServerManager.Instance.RandomNumber();
+                                if (probaLevelUp > 50 && mateInTeam.Attack > 0)
+                                {
+                                    // Downgrade
+                                    mateInTeam.Attack--;
+                                    Session.SendPacket(Session.Character.GenerateSay("the attack level of the mate decreased", 10));
+                                }
+                            }
+                            else
+                            {
+                                // Armor
+                                probaLevelUp = ServerManager.Instance.RandomNumber();
+                                if (probaLevelUp > 50 && mateInTeam.Defence > 0)
+                                {
+                                    //DownGrade
+                                    mateInTeam.Defence--;
+                                    Session.SendPacket(Session.Character.GenerateSay("the defence level of the mate decreased", 10));
+                                }
+                            }
+                        }
+                    }
+                }
+
                 #endregion
 
                 #region Quest

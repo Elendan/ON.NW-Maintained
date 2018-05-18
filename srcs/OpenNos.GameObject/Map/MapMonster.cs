@@ -56,6 +56,8 @@ namespace OpenNos.GameObject.Map
 
         #region BattleEntityProperties
 
+        public bool IsMateTrainer { get; set; }
+
         public BattleEntity BattleEntity { get; set; }
 
         public void AddBuff(Buff.Buff indicator) => BattleEntity.AddBuff(indicator);
