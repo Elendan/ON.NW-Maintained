@@ -156,7 +156,7 @@ namespace OpenNos.GameObject.Item
                             s.MateTransportId == x1 && s.MateType == MateType.Partner);
                         if (mate != null)
                         {
-                            if (!mate.IsTeamMember)
+                            if (!mate.IsTeamMember && mate.SpInstance == null)
                             {
                                 session.Character.Mates.Remove(mate);
                                 session.SendPacket(
