@@ -71,6 +71,21 @@ namespace OpenNos.DAL.EF.Entities
 
         public byte Upgrade { get; set; }
 
+        //Partner agility
+        public byte Agility { get; set; }
+
+        public short PartnerSkill1 { get; set; }
+
+        public short PartnerSkill2 { get; set; }
+
+        public short PartnerSkill3 { get; set; }
+
+        public byte SkillRank1 { get; set; }
+
+        public byte SkillRank2 { get; set; }
+
+        public byte SkillRank3 { get; set; }
+
         #endregion
     }
 }

@@ -157,7 +157,7 @@ namespace OpenNos.Master.Library.Client
 
         public string RetrieveRegisteredWorldServers(long sessionId) => _client.ServiceProxy.RetrieveRegisteredWorldServers(sessionId);
 
-        public string RetrieveServerStatistics() => _client.ServiceProxy.RetrieveServerStatistics();
+        public string RetrieveServerStatistics(bool online = false) => _client.ServiceProxy.RetrieveServerStatistics(online);
 
         public SerializableWorldServer GetPreviousChannelByAccountId(long accountId) => _client.ServiceProxy.GetPreviousChannelByAccountId(accountId);
 

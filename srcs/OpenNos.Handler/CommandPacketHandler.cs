@@ -2682,12 +2682,10 @@ namespace OpenNos.Handler
                 13));
             Session.SendPacket(Session.Character.GenerateSay($"{Language.Instance.GetMessageFromKey("MEMORY")}: {GC.GetTotalMemory(true) / (1024 * 1024)}MB ", 13));
 
-            /*
-            foreach (string message in CommunicationServiceClient.Instance.RetrieveServerStatistics())
-            {
-                Session.SendPacket(Session.Character.GenerateSay(message, 13));
-            }
-            */
+            
+            Session.SendPacket($"{Session.Character.GenerateSay($"Online players: {CommunicationServiceClient.Instance.RetrieveServerStatistics(true)}", 13)}");
+
+
         }
 
         /// <summary>
@@ -3406,7 +3404,7 @@ namespace OpenNos.Handler
                 Session.SendPacket(Session.Character.GenerateSay(packet?.ToString(), 10));
                 return;
             }
-            foreach (ClientSession team in ServerManager.Instance.Sessions.Where(s => s.Account.Authority >= AuthorityType.Moderator && s.Account.Authority <= AuthorityType.SuperGameMaster))
+            foreach (ClientSession team in ServerManager.Instance.Sessions.Where(s => s.Account.Authority >= AuthorityType.Moderator))
             {
                 if (!team.HasSelectedCharacter)
                 {

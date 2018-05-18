@@ -224,6 +224,63 @@ namespace OpenNos.GameObject.Item
 
                     break;
 
+                case 6969:
+                    if (EffectValue == 1 || EffectValue == 2)
+                    {
+                        var box =
+                            session.Character.Inventory.LoadBySlotAndType<BoxInstance>(inv.Slot,
+                                InventoryType.Equipment);
+                        if (box != null)
+                        {
+                            if (box.HoldingVNum == 0)
+                            {
+                                session.SendPacket($"wopen 44 {inv.Slot} 1");
+                            }
+                            else
+                            {
+                                List<ItemInstance> newInv =
+                                    session.Character.Inventory.AddNewToInventory(box.HoldingVNum);
+                                if (newInv.Any())
+                                {
+                                    ItemInstance itemInstance = newInv.First();
+                                    var specialist =
+                                        session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(
+                                            itemInstance.Slot, itemInstance.Type);
+                                    if (specialist != null)
+                                    {
+                                        specialist.SkillRank1 = box.SkillRank1;
+                                        specialist.SkillRank2 = box.SkillRank2;
+                                        specialist.SkillRank3 = box.SkillRank3;
+                                        specialist.PartnerSkill1 = box.PartnerSkill1;
+                                        specialist.PartnerSkill2 = box.PartnerSkill2;
+                                        specialist.PartnerSkill3 = box.PartnerSkill3;
+                                    }
+
+                                    short slot = inv.Slot;
+                                    if (slot != -1)
+                                    {
+                                        if (specialist != null)
+                                        {
+                                            session.SendPacket(session.Character.GenerateSay(
+                                                $"{Language.Instance.GetMessageFromKey("ITEM_ACQUIRED")}: {specialist.Item.Name}",
+                                                12));
+                                            newInv.ForEach(s => session.SendPacket(specialist.GenerateInventoryAdd()));
+                                        }
+
+                                        session.Character.Inventory.RemoveItemAmountFromInventory(1, box.Id);
+                                    }
+                                }
+                                else
+                                {
+                                    session.SendPacket(
+                                        UserInterfaceHelper.Instance.GenerateMsg(
+                                            Language.Instance.GetMessageFromKey("NOT_ENOUGH_PLACE"), 0));
+                                }
+                            }
+                        }
+                    }
+                    break;
+
                 case 69:
                     if (EffectValue == 1 || EffectValue == 2)
                     {
@@ -234,7 +291,7 @@ namespace OpenNos.GameObject.Item
                         {
                             if (box.HoldingVNum == 0)
                             {
-                                session.SendPacket($"wopen 44 {inv.Slot}");
+                                session.SendPacket($"wopen 44 {inv.Slot} 0");
                             }
                             else
                             {

@@ -4280,6 +4280,10 @@ namespace NosSharp.Parser
                                         item.Effect = 69;
                                         item.EffectValue = 4;
                                         break;
+                                    case 4801:
+                                        item.Effect = 6969;
+                                        item.EffectValue = 1;
+                                        break;
 
                                     case 185: // Hatus
                                     case 302: // Classic
@@ -4526,6 +4530,12 @@ namespace NosSharp.Parser
                             case ItemType.Special:
                                 switch (item.VNum)
                                 {
+                                    case 5932:
+                                        item.Effect = 11112;
+                                        break;
+                                    case 5931:
+                                        item.Effect = 11111;
+                                        break;
                                     case 1246:
                                     case 9020:
                                         item.Effect = 6600;

@@ -148,7 +148,7 @@ namespace OpenNos.Master.Library.Interface
         ///     Generates the Stats from all Servers
         /// </summary>
         /// <returns>the actual result</returns>
-        string RetrieveServerStatistics();
+        string RetrieveServerStatistics(bool online = false);
 
         /// <summary>
         ///     Generates the Channel Selection Packet

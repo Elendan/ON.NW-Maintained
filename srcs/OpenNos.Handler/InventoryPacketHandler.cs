@@ -24,6 +24,7 @@ using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
@@ -1123,32 +1124,55 @@ namespace OpenNos.Handler
         /// <param name="specialistHolderPacket"></param>
         public void SpecialistHolder(SpecialistHolderPacket specialistHolderPacket)
         {
-            SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
-            BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
-            if (specialist == null || holder == null)
+            if (specialistHolderPacket.HolderType == 0)
             {
-                return;
-            }
+                SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
+                BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
+                if (specialist == null || holder == null)
+                {
+                    return;
+                }
 
-            holder.HoldingVNum = specialist.ItemVNum;
-            holder.SlDamage = specialist.SlDamage;
-            holder.SlDefence = specialist.SlDefence;
-            holder.SlElement = specialist.SlElement;
-            holder.SlHP = specialist.SlHP;
-            holder.SpDamage = specialist.SpDamage;
-            holder.SpDark = specialist.SpDark;
-            holder.SpDefence = specialist.SpDefence;
-            holder.SpElement = specialist.SpElement;
-            holder.SpFire = specialist.SpFire;
-            holder.SpHP = specialist.SpHP;
-            holder.SpLevel = specialist.SpLevel;
-            holder.SpLight = specialist.SpLight;
-            holder.SpStoneUpgrade = specialist.SpStoneUpgrade;
-            holder.SpWater = specialist.SpWater;
-            holder.Upgrade = specialist.Upgrade;
-            holder.XP = specialist.XP;
-            Session.SendPacket("shop_end 2");
-            Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+                holder.HoldingVNum = specialist.ItemVNum;
+                holder.SlDamage = specialist.SlDamage;
+                holder.SlDefence = specialist.SlDefence;
+                holder.SlElement = specialist.SlElement;
+                holder.SlHP = specialist.SlHP;
+                holder.SpDamage = specialist.SpDamage;
+                holder.SpDark = specialist.SpDark;
+                holder.SpDefence = specialist.SpDefence;
+                holder.SpElement = specialist.SpElement;
+                holder.SpFire = specialist.SpFire;
+                holder.SpHP = specialist.SpHP;
+                holder.SpLevel = specialist.SpLevel;
+                holder.SpLight = specialist.SpLight;
+                holder.SpStoneUpgrade = specialist.SpStoneUpgrade;
+                holder.SpWater = specialist.SpWater;
+                holder.Upgrade = specialist.Upgrade;
+                holder.XP = specialist.XP;
+                Session.SendPacket("shop_end 2");
+                Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+            }
+            else if (specialistHolderPacket.HolderType == 1)
+            {
+                SpecialistInstance specialist = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(specialistHolderPacket.Slot, InventoryType.Equipment);
+                BoxInstance holder = Session.Character.Inventory.LoadBySlotAndType<BoxInstance>(specialistHolderPacket.HolderSlot, InventoryType.Equipment);
+                if (specialist == null || holder == null)
+                {
+                    Logger.Log.Error("Specialist or holder null");
+                    return;
+                }
+
+                holder.HoldingVNum = specialist.ItemVNum;
+                holder.PartnerSkill1 = specialist.PartnerSkill1;
+                holder.PartnerSkill2 = specialist.PartnerSkill2;
+                holder.PartnerSkill3 = specialist.PartnerSkill3;
+                holder.SkillRank1 = specialist.SkillRank1;
+                holder.SkillRank2 = specialist.SkillRank2;
+                holder.SkillRank3 = specialist.SkillRank3;
+                Session.SendPacket("shop_end 2");
+                Session.Character.Inventory.RemoveItemAmountFromInventory(1, specialist.Id);
+            }
         }
 
         /// <summary>
@@ -1285,6 +1309,82 @@ namespace OpenNos.Handler
             WearableInstance inventory;
             switch (uptype)
             {
+                case 0:
+                    inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
+                    int donaVnum = 1027;
+                    //TODO: Find real gold formula
+                    int price = 20000;
+                    if (inventory != null)
+                    {
+                        if (inventory.Item.EquipmentSlot == EquipmentType.Armor ||
+                            inventory.Item.EquipmentSlot == EquipmentType.MainWeapon)
+                        {
+                            if (Session.Character.Gold < price)
+                            {
+                                // Not enough gold
+                                Session.SendPacket("shop_end 1");
+                                return;
+                            }
+
+                            if (Session.Character.Inventory.CountItem(donaVnum) < inventory.Item.LevelMinimum)
+                            {
+                                // Not enough dona
+                                Session.SendPacket("shop_end 1");
+                                return;
+                            }
+
+                            WearableInstance newItem = inventory;
+                            switch (inventory.Item.EquipmentSlot)
+                            {
+                                case EquipmentType.Armor:
+                                    switch (inventory.Item.Class)
+                                    {
+                                        case 4:
+                                            newItem.ItemVNum = 996;
+                                            break;
+                                        case 2:
+                                            newItem.ItemVNum = 997;
+                                            break;
+                                        case 8:
+                                            newItem.ItemVNum = 995;
+                                            break;
+                                        default:
+                                            Session.SendPacket("shop_end 1");
+                                            return;
+                                    }
+
+                                    break;
+                                case EquipmentType.MainWeapon:
+                                    switch (inventory.Item.Class)
+                                    {
+                                        case 4:
+                                            newItem.ItemVNum = 991;
+                                            break;
+                                        case 2:
+                                            newItem.ItemVNum = 990;
+                                            break;
+                                        case 8:
+                                            newItem.ItemVNum = 992;
+                                            break;
+                                        default:
+                                            Session.SendPacket("shop_end 1");
+                                            return;
+                                    }
+
+                                    break;
+                                default:
+                                    Session.SendPacket("shop_end 1");
+                                    return;
+                            }
+                            Session.Character.Inventory.DeleteFromSlotAndType(slot, inventoryType);
+                            Session.Character.Inventory.AddToInventory(newItem, InventoryType.Equipment);
+                            Session.Character.Inventory.RemoveItemAmount(donaVnum);
+                            Session.Character.Gold -= price;
+                            Session.SendPacket(Session.Character.GenerateGold());
+                            Session.SendPacket("shop_end 1");
+                        }
+                    }
+                    break;
                 case 1:
                     inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
                     if (inventory != null)
@@ -1621,11 +1721,6 @@ namespace OpenNos.Handler
         public void Wear(WearPacket wearPacket)
         {
             if (Session.Character.ExchangeInfo != null && Session.Character.ExchangeInfo.ExchangeList.Any() || Session.Character.Speed == 0)
-            {
-                return;
-            }
-
-            if (wearPacket.Type != 0)
             {
                 return;
             }

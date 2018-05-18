@@ -43,6 +43,7 @@ namespace OpenNos.GameObject
 
         public Mate()
         {
+            ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
         }
 
         public Mate(Character owner, NpcMonster npcMonster, byte level, MateType matetype)
@@ -275,6 +276,12 @@ namespace OpenNos.GameObject
             {
                 faction = (byte)Owner.Faction + 2;
             }
+
+            if (SpInstance != null && IsUsingSp)
+            {
+                string spName = SpInstance.Item.Name.Replace(' ', '^');
+                return $"in 2 {NpcMonsterVNum} {MateTransportId} {(IsTeamMember ? PositionX : MapX)} {(IsTeamMember ? PositionY : MapY)} {Direction} {(int)(Hp / (float)MaxHp * 100)} {(int)(Mp / (float)MaxMp * 100)} 0 {faction} 3 {CharacterId} 1 0 {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : (Skin != 0 ? Skin : -1))} {spName} 1 1 1 {(SpInstance.PartnerSkill1 != 0 ? $"{SpInstance.PartnerSkill1}" : "0")} {(SpInstance.PartnerSkill2 != 0 ? $"{SpInstance.PartnerSkill2}" : "0")} {(SpInstance.PartnerSkill3 != 0 ? $"{SpInstance.PartnerSkill3}" : "0")} {(SpInstance.SkillRank1 == 7 ? "4237" : "0")} {(SpInstance.SkillRank2 == 7 ? "4238" : "0")} {(SpInstance.SkillRank3 == 7 ? "4239" : "0")} 0";
+            }
             return
                 $"in 2 {NpcMonsterVNum} {MateTransportId} {(IsTeamMember ? PositionX : MapX)} {(IsTeamMember ? PositionY : MapY)} {Direction} {(int)(Hp / (float)MaxHp * 100)} {(int)(Mp / (float)MaxMp * 100)} 0 {faction} 3 {CharacterId} 1 0 {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : (Skin != 0 ? Skin : -1))} {name} {MateType + 1} 1 0 0 0 0 0 0 0 0";
         }
@@ -308,9 +315,9 @@ namespace OpenNos.GameObject
 
         public string GeneratePski()
         {
-            if (SpSkills?.Length >= 3)
+            if (SpSkills?.Length >= 3 && SpInstance != null)
             {
-                return $"pski {SpSkills[0]?.SkillVNum} {SpSkills[1]?.SkillVNum} {SpSkills[2]?.SkillVNum}";
+                return $"pski {(SpInstance.PartnerSkill1 == 0 ? "" : $"{SpInstance.PartnerSkill1}")} {(SpInstance.PartnerSkill2 == 0 ? "" : $"{SpInstance.PartnerSkill2}")} {(SpInstance.PartnerSkill3 == 0 ? "" : $"{SpInstance.PartnerSkill3}")}";
             }
 
             return "pski";
@@ -327,7 +334,7 @@ namespace OpenNos.GameObject
         public string GenerateSay(string message, int type) => $"say 2 {MateTransportId} 2 {message}";
 
         public string GenerateScPacket() => MateType == MateType.Partner
-            ? $"sc_n {PetId} {NpcMonsterVNum} {MateTransportId} {Level} {Loyalty} {Experience} {(WeaponInstance != null ? $"{WeaponInstance.ItemVNum}.{WeaponInstance.Rare}.{WeaponInstance.Upgrade}" : "-1")} {(ArmorInstance != null ? $"{ArmorInstance.ItemVNum}.{ArmorInstance.Rare}.{ArmorInstance.Upgrade}" : "-1")} {(GlovesInstance != null ? $"{GlovesInstance.ItemVNum}.0.0" : "-1")} {(BootsInstance != null ? $"{BootsInstance.ItemVNum}.0.0" : "-1")} 0 0 1 0 142 174 232 4 70 0 73 158 86 158 69 0 0 0 0 0 {Hp} {MaxHp} {Mp} {MaxMp} 0 285816 {Name.Replace(' ', '^')} {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : Skin != 0 ? Skin : -1)} {(IsSummonable ? 1 : 0)} {(SpInstance != null ? $"{SpInstance.ItemVNum}.100" : "-1")} -1 -1 -1"
+            ? $"sc_n {PetId} {NpcMonsterVNum} {MateTransportId} {Level} {Loyalty} {Experience} {(WeaponInstance != null ? $"{WeaponInstance.ItemVNum}.{WeaponInstance.Rare}.{WeaponInstance.Upgrade}" : "-1")} {(ArmorInstance != null ? $"{ArmorInstance.ItemVNum}.{ArmorInstance.Rare}.{ArmorInstance.Upgrade}" : "-1")} {(GlovesInstance != null ? $"{GlovesInstance.ItemVNum}.0.0" : "-1")} {(BootsInstance != null ? $"{BootsInstance.ItemVNum}.0.0" : "-1")} 0 0 1 0 142 174 232 4 70 0 73 158 86 158 69 0 0 0 0 0 {Hp} {MaxHp} {Mp} {MaxMp} 0 285816 {Name.Replace(' ', '^')} {(IsUsingSp && SpInstance != null ? SpInstance.Item.Morph : Skin != 0 ? Skin : -1)} {(IsSummonable ? 1 : 0)} {(SpInstance != null ? $"{SpInstance.ItemVNum}.{SpInstance.Agility}" : "-1")} {(SpInstance != null ? $"{SpInstance.PartnerSkill1}.{SpInstance.SkillRank1}" : "-1")} {(SpInstance != null ? $"{SpInstance.PartnerSkill2}.{SpInstance.SkillRank2}" : "-1")} {(SpInstance != null ? $"{SpInstance.PartnerSkill3}.{SpInstance.SkillRank3}" : "-1")}"
             : $"sc_p {PetId} {NpcMonsterVNum} {MateTransportId} {Level} {Loyalty} {Experience} 0 {Monster.AttackUpgrade} {DamageMinimum} {DamageMaximum} {Concentrate} {Monster.CriticalChance} {Monster.CriticalRate} {Monster.DefenceUpgrade} {Monster.CloseDefence} {Monster.DefenceDodge} {Monster.DistanceDefence} {Monster.DistanceDefenceDodge} {Monster.MagicDefence} {Monster.Element} {Monster.FireResistance} {Monster.WaterResistance} {Monster.LightResistance} {Monster.DarkResistance} {Hp} {MaxHp} {Mp} {MaxMp} {(byte)(IsTeamMember ? 1 : 0)} {XpLoad()} {(byte)(CanPickUp ? 1 : 0)} {Name.Replace(' ', '^')} {(byte)(IsSummonable ? 1 : 0)}";
 
         public string GenerateStatInfo() => $"st 2 {MateTransportId} {Level} 0 {(int)(Hp / (float)MaxHp * 100)} {(int)(Mp / (float)MaxMp * 100)} {Hp} {Mp}";
@@ -524,11 +531,11 @@ namespace OpenNos.GameObject
             IsAlive = true;
             PositionY = (short)(Owner.PositionY + 1);
             PositionX = (short)(Owner.PositionX + 1);
+            Hp = MaxHp;
+            Mp = MaxMp;
             Owner.MapInstance?.Broadcast(GenerateIn());
             Owner.Session.SendPacket(GenerateCond());
             Owner.Session.SendPacket(Owner.GeneratePinit());
-            Hp = MaxHp;
-            Mp = MaxMp;
         }
 
         public void RefreshStats()
@@ -554,7 +561,10 @@ namespace OpenNos.GameObject
             StartLife();
             Hp = MaxHp;
             Mp = MaxMp;
-            MateHelper.Instance.AddPetBuff(Owner.Session, this); // Add pet buffs
+            if (MateType == MateType.Pet)
+            {
+                MateHelper.Instance.AddPetBuff(Owner.Session, this); // Add pet buffs
+            }
         }
 
         public void RemoveTeamMember()
@@ -601,6 +611,7 @@ namespace OpenNos.GameObject
 
         public void GenerateDeath(IBattleEntity killer)
         {
+            bool doll = false;
             if (Hp > 0)
             {
                 return;
@@ -615,27 +626,31 @@ namespace OpenNos.GameObject
 
             if (MateType == MateType.Pet ? Owner.IsPetAutoRelive : Owner.IsPartnerAutoRelive)
             {
-                if (Owner.Inventory.CountItem(1012) < 5)
+                if (Owner.Inventory.CountItem(MateType == MateType.Pet ? 2089 : 2329) >= 1)
                 {
-                    Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
-                        string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_REQUIERED_ITEM"),
-                            ServerManager.Instance.GetItem(1012).Name), 0));
-                    if (MateType == MateType.Pet)
-                    {
-                        Owner.IsPetAutoRelive = false;
-                    }
-                    else
-                    {
-                        Owner.IsPartnerAutoRelive = false;
-                    }
+                    Owner.Inventory.RemoveItemAmount(MateType == MateType.Pet ? 2089 : 2329);
+                    GenerateRevive();
+                    return;
                 }
-                else
+                if (Owner.Inventory.CountItem(1012) >= 5)
                 {
                     Owner.Inventory.RemoveItemAmount(1012, 5);
                     Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
                         string.Format(Language.Instance.GetMessageFromKey("WILL_BE_BACK"), MateType), 0));
                     return;
                 }
+                Owner.Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
+                    string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_REQUIERED_ITEM"),
+                        ServerManager.Instance.GetItem(1012).Name), 0));
+                if (MateType == MateType.Pet)
+                {
+                    Owner.IsPetAutoRelive = false;
+                }
+                else
+                {
+                    Owner.IsPartnerAutoRelive = false;
+                }
+
             }
 
             Owner.Session.SendPacket(

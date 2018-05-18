@@ -158,6 +158,11 @@ namespace OpenNos.GameObject.Npc
                         case 3:
                             if (mate != null && session.Character.Miniland == session.Character.MapInstance)
                             {
+                                if (mate.SpInstance != null || mate.IsUsingSp)
+                                {
+                                    session.SendPacket(session.Character.GenerateSay("partner is wearing a specialist", 10));
+                                    return;
+                                }
                                 mate.RemoveTeamMember();
                             }
 
@@ -168,6 +173,11 @@ namespace OpenNos.GameObject.Npc
                             {
                                 if (session.Character.Miniland == session.Character.MapInstance)
                                 {
+                                    if (mate.SpInstance != null || mate.IsUsingSp)
+                                    {
+                                        session.SendPacket(session.Character.GenerateSay("partner is wearing a specialist", 10));
+                                        return;
+                                    }
                                     mate.RemoveTeamMember();
                                 }
                                 else
@@ -193,6 +203,11 @@ namespace OpenNos.GameObject.Npc
                             {
                                 if (session.Character.Miniland != session.Character.MapInstance)
                                 {
+                                    if (mate.SpInstance != null || mate.IsUsingSp)
+                                    {
+                                        session.SendPacket(session.Character.GenerateSay("partner is wearing a specialist", 10));
+                                        return;
+                                    }
                                     mate.RemoveTeamMember();
                                     session.CurrentMapInstance.Broadcast(mate.GenerateOut());
                                     session.SendPacket(session.Character.GenerateSay(
@@ -370,8 +385,7 @@ namespace OpenNos.GameObject.Npc
                     }
                     else
                     {
-                        session.SendPacket(
-                            session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_MONEY"), 10));
+                        session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_MONEY"), 10));
                     }
 
                     break;

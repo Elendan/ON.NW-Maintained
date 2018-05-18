@@ -520,7 +520,7 @@ namespace OpenNos.GameObject.Map
             }
         }
 
-        internal IEnumerable<Character> GetCharactersInRange(short mapX, short mapY, byte distance)
+        public IEnumerable<Character> GetCharactersInRange(short mapX, short mapY, byte distance)
         {
             List<Character> characters = new List<Character>();
             IEnumerable<ClientSession> cl = Sessions.Where(s => s.HasSelectedCharacter && s.Character.Hp > 0);

@@ -357,8 +357,13 @@ namespace ON.NW.Master
             return MsManager.Instance.WorldServers.Any() ? channelPacket : null;
         }
 
-        public string RetrieveServerStatistics()
+        public string RetrieveServerStatistics(bool onlinePlayers = false)
         {
+            if (onlinePlayers)
+            {
+                return $"{MsManager.Instance.ConnectedAccounts.Count}";
+            }
+
             Dictionary<int, List<AccountSession.CharacterSession>> dictionary =
                 MsManager.Instance.WorldServers.ToDictionary(world => world.ChannelId, world => new List<AccountSession.CharacterSession>());
 
@@ -371,6 +376,7 @@ namespace ON.NW.Master
             }
 
             return JsonConvert.SerializeObject(dictionary);
+
         }
 
         public int? SendMessageToCharacter(SCSCharacterMessage message)
