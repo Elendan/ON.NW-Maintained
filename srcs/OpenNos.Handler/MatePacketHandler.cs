@@ -7,6 +7,7 @@ using OpenNos.Core;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
 using OpenNos.GameObject;
+using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Map;
@@ -167,7 +168,7 @@ namespace OpenNos.Handler
                     if (attacker.Hp > 0)
                     {
                         MapMonster target = Session?.CurrentMapInstance?.GetMonster(upsPacket.TargetId);
-                        AttackMonster(attacker, mateSkill, target);
+                        AttackMonster(attacker, mateSkill, upsPacket.TargetId);
                     }
 
                     return;
@@ -244,7 +245,7 @@ namespace OpenNos.Handler
                     if (attacker.Hp > 0)
                     {
                         MapMonster target = Session?.CurrentMapInstance?.GetMonster(upetPacket.TargetId);
-                        AttackMonster(attacker, mateSkill, target);
+                        AttackMonster(attacker, mateSkill, upetPacket.TargetId);
                     }
 
                     return;
@@ -318,7 +319,7 @@ namespace OpenNos.Handler
                         if (attacker.Hp > 0)
                         {
                             MapMonster target = Session?.CurrentMapInstance?.GetMonster(suctlPacket.TargetId);
-                            AttackMonster(attacker, ski, target);
+                            AttackMonster(attacker, ski, suctlPacket.TargetId);
                         }
 
                         return;
@@ -326,202 +327,172 @@ namespace OpenNos.Handler
             }
         }
 
-        public void UseSkill(Mate attacker, NpcMonsterSkill skill, long id)
+        public void AttackMonster(Mate attacker, NpcMonsterSkill skill, long id)
         {
-            UseSkill(attacker, skill.Skill, id);
+            AttackMonster(attacker, skill.Skill, id);
         }
 
-        public void UseSkill(Mate attacker, Skill skill, long id)
-        {
-            if (attacker == null)
-            {
-                return;
-            }
-            if (skill == null)
-            {
-                skill = new Skill
-                {
-                    SkillVNum = attacker.Monster.BasicSkill
-                };
-            }
-
-            string st = $"su 2 {attacker.MateTransportId} 1 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill.Effect} {attacker.PositionX} {attacker.PositionY} 1 {(int)((double)attacker.Hp / attacker.HpLoad() * 100)} 0 -2 {skill.SkillType - 1}";
-            attacker.LastSkillUse = DateTime.Now;
-            attacker.Mp -= skill.MpCost;
-            attacker.MapInstance.Broadcast(attacker.GenerateEff((int)skill?.Effect));
-            Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {id} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-            Session.CurrentMapInstance?.Broadcast(st);
-        }
-
-        public void AttackMonster(Mate attacker, NpcMonsterSkill skill, MapMonster target)
-        {
-            AttackMonster(attacker, skill.Skill, target);
-        }
-
-        public void AttackMonster(Mate attacker, Skill skill, MapMonster target)
-        {
-            if (target == null || attacker == null || !target.IsAlive || skill?.MpCost > attacker.Mp)
-            {
-                return;
-            }
-            if (skill == null)
-            {
-                skill = new Skill
-                {
-                    SkillVNum = attacker.Monster.BasicSkill
-                };
-            }
-            
-            else
-            {
-                attacker.LastSkillUse = DateTime.Now;
-                attacker.Mp -= skill.MpCost;
-                target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
-                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {target.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
-            }
-        }
-
-        public void AttackMonster(Mate attacker, Skill skill, long id)
+        public void AttackMonster(Mate attacker, Skill skill, long targetId)
         {
             if (attacker == null || skill == null || skill?.MpCost > attacker.Mp)
             {
                 return;
             }
-
-            if (attacker.MateTransportId == id)
+            attacker.LastSkillUse = DateTime.Now;
+            attacker.Mp -= skill.MpCost;
+            /*
+                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {target.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+             */
+            if (skill.TargetType == 1 && skill.HitType == 1)
             {
-                attacker.LastSkillUse = DateTime.Now;
-                attacker.Mp -= skill.MpCost;
-                if (skill.TargetRange == 0)
+                if (Session.HasCurrentMapInstance && skill.TargetRange != 0)
                 {
-                    foreach (BCard selfCard in skill.BCards)
+                    //Probably some pvp stuff in here
+                    foreach (MapMonster mon in attacker.MapInstance.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange).Where(s => s.CurrentHp > 0))
                     {
-                        attacker.AddBuff(new Buff(selfCard.SecondData));
+                        attacker.BattleEntity.TargetHit(mon, TargetHitType.AOETargetHit, skill, skill.Effect);
+                        Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {mon.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                     }
                 }
-                //TODO: Review this rushed code
-                if (skill.HitType == 1)
+            }
+            else if (skill.TargetType == 2 && skill.HitType == 0)
+            {
+                //Not sure about this CT packet
+                ClientSession target = attacker.Owner.Session ?? Session;
+                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {targetId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                skill.BCards.ToList().ForEach(s =>
                 {
-                    List<MapMonster> monstersInRange = attacker.MapInstance?.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
-                    if (monstersInRange == null)
-                    {
-                        return;
-                    }
-                    int bonusBuff = 0;
-                    Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(monstersInRange.FirstOrDefault()?.MapMonsterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                    foreach (MapMonster target in monstersInRange)
-                    {
-                        foreach (BCard bc in skill.BCards)
+                    // Apply skill bcards to ower and pet 
+                    s.ApplyBCards(target.Character);
+                    s.ApplyBCards(attacker);
+                });
+            }
+            else if (skill.TargetType == 1 && skill.HitType != 1)
+            {
+                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                Session.CurrentMapInstance?.Broadcast($"su 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill?.Effect} 0 0 1 100 0 -1 0");
+                switch (skill.HitType)
+                {
+                    case 2:
+                        IEnumerable<IBattleEntity> entityInRange = attacker.MapInstance?.GetBattleEntitiesInRange(attacker.GetPos(), skill.TargetRange)
+                            .Where(b => b.SessionType() == SessionType.Character || b.SessionType() == SessionType.MateAndNpc);
+                        if (entityInRange != null)
                         {
-                            Buff bf;
-                            Card cData;
-                            switch (attacker.MateType)
+                            foreach (IBattleEntity target in entityInRange)
                             {
-                                case MateType.Pet:
-                                    cData = ServerManager.Instance.GetCardByCardId((short?)bc.SecondData);
-                                    if (cData == null)
+                                foreach (BCard s in skill.BCards)
+                                {
+                                    if (s.Type != (short)BCardType.CardType.Buff)
                                     {
+                                        s.ApplyBCards(target, attacker);
                                         continue;
                                     }
-                                    bf = new Buff(bc.SecondData, cData.Level);
-                                    target.AddBuff(bf);
-                                    break;
-                                case MateType.Partner:
-                                    if (attacker.SpInstance != null && attacker.IsUsingSp)
-                                    {
-                                        if (skill.SkillVNum == attacker.SpInstance.PartnerSkill1)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank1 - 1;
-                                        }
-                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill2)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank2 - 1;
-                                        }
-                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill3)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank3 - 1;
-                                        }
-                                    }
-                                    cData = ServerManager.Instance.GetCardByCardId((short?)(bc.SecondData + bonusBuff));
-                                    if (cData == null)
-                                    {
-                                        continue;
-                                    }
-                                    bf = new Buff(bc.SecondData + bonusBuff, cData.Level);
-                                    if (cData.BuffType == BuffType.Bad)
-                                    {
-                                        target.AddBuff(bf);
-                                    }
-                                    break;
-                            }
-                        }
-                        target.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(attacker));
-                        attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
-                    }
-                }
-                else if (skill.HitType == 2)
-                {
-                    IEnumerable<Character> sessionsInRange = attacker.MapInstance?.GetCharactersInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange);
-                    if (sessionsInRange == null)
-                    {
-                        return;
-                    }
 
-                    //Todo: review this rushed code
-                    int bonusBuff = 0;
-                    Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {(sessionsInRange.FirstOrDefault()?.CharacterId)} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                    foreach (Character target in sessionsInRange)
+                                    switch (attacker.MapInstance.MapInstanceType)
+                                    {
+                                        case MapInstanceType.Act4Instance:
+                                            //later
+                                            break;
+                                        case MapInstanceType.ArenaInstance:
+                                            // later
+                                            break;
+                                        default:
+                                            s.ApplyBCards(target);
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case 4:
+                    case 0:
+                        foreach (BCard bc in skill.BCards)
+                        {
+                            int bonusbuff = 0;
+
+                            if (attacker.SpInstance?.PartnerSkill1 == skill.SkillVNum)
+                            {
+                                bonusbuff = (int)(attacker.SpInstance?.SkillRank1 - 1);
+                            }
+                            else if (attacker.SpInstance?.PartnerSkill2 == skill.SkillVNum)
+                            {
+                                bonusbuff = (int)(attacker.SpInstance?.SkillRank2 - 1);
+                            }
+                            else if (attacker.SpInstance?.PartnerSkill3 == skill.SkillVNum)
+                            {
+                                bonusbuff = (int)(attacker.SpInstance?.SkillRank3 - 1);
+                            }
+
+                            Buff bf = null;
+                            if (bc.Type == (short)BCardType.CardType.Buff)
+                            {
+                                BCard nvalue = bc;
+                                nvalue.SecondData += bonusbuff;
+                                nvalue.ApplyBCards(attacker);
+                                nvalue.ApplyBCards(attacker.Owner);
+                            }
+                            else
+                            {
+                                bc.ApplyBCards(attacker);
+                            }
+                            //Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                        }
+                        break;
+                }
+            }
+            else if (skill.TargetType == 0 && Session.HasCurrentMapInstance)
+            {
+                MapMonster monsterToAttack = attacker.MapInstance.GetMonster(targetId);
+                if (monsterToAttack != null && attacker.Mp > skill.MpCost)
+                {
+                    if (Map.GetDistance(new MapCell { X = monsterToAttack.MapX, Y = monsterToAttack.MapY }, new MapCell { X = monsterToAttack.MapX, Y = monsterToAttack.MapY }) <
+                        skill.Range + 1 + monsterToAttack.Monster.BasicArea)
                     {
                         foreach (BCard bc in skill.BCards)
                         {
-                            Buff bf;
-                            Card cData;
-                            switch (attacker.MateType)
+                            var bf = new Buff(bc.SecondData);
+                            if (bf.Card?.BuffType == BuffType.Bad || bf.Card?.BuffType == BuffType.Neutral)
                             {
-                                case MateType.Pet:
-                                    cData = ServerManager.Instance.GetCardByCardId((short?)bc.SecondData);
-                                    if (cData == null)
-                                    {
-                                        continue;
-                                    }
-                                    bf = new Buff(bc.SecondData, cData.Level);
-                                    target.AddBuff(bf);
-                                    break;
-                                case MateType.Partner:
-                                    if (attacker.SpInstance != null && attacker.IsUsingSp)
-                                    {
-                                        if (skill.SkillVNum == attacker.SpInstance.PartnerSkill1)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank1 - 1;
-                                        }
-                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill2)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank2 - 1;
-                                        }
-                                        else if (skill.SkillVNum == attacker.SpInstance.PartnerSkill3)
-                                        {
-                                            bonusBuff = attacker.SpInstance.SkillRank3 - 1;
-                                        }
-                                    }
-                                    cData = ServerManager.Instance.GetCardByCardId((short?)(bc.SecondData + bonusBuff));
-                                    if (cData == null)
-                                    {
-                                        continue;
-                                    }
-                                    bf = new Buff(bc.SecondData + bonusBuff, cData.Level);
-                                    if (cData.BuffType == BuffType.Good)
-                                    {
-                                        target.AddBuff(bf);
-                                        if (attacker.Buffs.All(s => s.Card.CardId != (bc.SecondData + bonusBuff)))
-                                        {
-                                            attacker.AddBuff(bf);
-                                        }
-                                    }
-                                    break;
+                                bc.ApplyBCards(monsterToAttack, attacker);
                             }
                         }
-                        attacker.BattleEntity.TargetHit(target, TargetHitType.SingleTargetHit, skill);
+
+                        Session.SendPacket(attacker.GenerateStatInfo());
+                        Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+
+                        if (skill.HitType == 3)
+                        {
+                            attacker.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleAOETargetHit, skill, skill.Effect);
+                        }
+                        else
+                        {
+                            if (skill.TargetRange != 0)
+                            {
+                                IEnumerable<MapMonster> monstersInAorRange = attacker.MapInstance?.GetListMonsterInRange(monsterToAttack.MapX, monsterToAttack.MapY, skill.TargetRange)
+                                    .Where(s => s.IsFactionTargettable(attacker.Owner.Faction));
+
+                                attacker.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleAOETargetHit, skill, skill.Effect);
+
+                                if (monstersInAorRange != null)
+                                {
+                                    foreach (MapMonster mon in monstersInAorRange)
+                                    {
+                                        attacker.BattleEntity.TargetHit(mon, TargetHitType.SingleAOETargetHit, skill, skill.Effect);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                if (!monsterToAttack.IsAlive)
+                                {
+                                    Session.SendPacket("cancel 2 0");
+                                    return;
+                                }
+
+                                attacker.BattleEntity.TargetHit(monsterToAttack, TargetHitType.SingleTargetHit, skill);
+                            }
+                        }
                     }
                 }
             }

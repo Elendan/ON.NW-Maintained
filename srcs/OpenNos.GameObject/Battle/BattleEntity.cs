@@ -192,6 +192,16 @@ namespace OpenNos.GameObject.Battle
                     // Charge buff types
                     case 0:
                         return character.ChargeValue > 7000 ? 7000 : character.ChargeValue;
+                    //Imp hat
+                    case 2154:
+                    case 2155:
+                    case 2156:
+                    case 2157:
+                    case 2158:
+                    case 2159:
+                    case 2160:
+                        return ServerManager.Instance.RandomNumber(100, 200);
+                        break;
                 }
             }
             return -1;
@@ -225,6 +235,12 @@ namespace OpenNos.GameObject.Battle
                     character.Session.SendPacket(character.GenerateSay(
                         string.Format(Language.Instance.GetMessageFromKey("UNDER_EFFECT"), indicator.Card.Name), 20));
                 }
+            }
+
+            if (Session is Mate mate)
+            {
+                randomTime = RandomTimeBuffs(indicator);
+                mate.Owner?.Session.SendPacket($"bf 1 {mate.Owner?.CharacterId} 0.{indicator.Card.CardId}.{(indicator.Card.Duration == 0 ? randomTime : indicator.Card.Duration)} {Level}");
             }
 
             if (!indicator.StaticBuff)
