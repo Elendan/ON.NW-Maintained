@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.RightsManagement;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Data;
@@ -61,11 +62,30 @@ namespace OpenNos.GameObject.Item.Instance
             SlElement = specialistInstance.SlElement;
             SlDamage = specialistInstance.SlDamage;
             SlHP = specialistInstance.SlHP;
+            PartnerSkill1 = specialistInstance.PartnerSkill1;
+            PartnerSkill2 = specialistInstance.PartnerSkill2;
+            PartnerSkill3 = specialistInstance.PartnerSkill3;
+            SkillRank1 = specialistInstance.SkillRank1;
+            SkillRank2 = specialistInstance.SkillRank2;
+            SkillRank3 = specialistInstance.SkillRank3;
         }
 
         #endregion
 
         #region Properties
+
+        public short PartnerSkill1 { get; set; }
+
+        public short PartnerSkill2 { get; set; }
+
+        public short PartnerSkill3 { get; set; }
+
+        public byte SkillRank1 { get; set; }
+
+        public byte SkillRank2 { get; set; }
+
+        public byte SkillRank3 { get; set; }
+
 
         public short SlDamage { get; set; }
 
@@ -113,8 +133,10 @@ namespace OpenNos.GameObject.Item.Instance
 
         #region Methods
 
-        public string GeneratePslInfo() =>
-            $"pslinfo {Item.VNum} {Item.Element} {Item.ElementRate} {Item.LevelJobMinimum} {Item.Speed} {Item.FireResistance} {Item.WaterResistance} {Item.LightResistance} {Item.DarkResistance} 0.0 0.0 0.0";
+        public string GeneratePslInfo()
+        {
+            return $"pslinfo {Item.VNum} {Item.Element} {Item.ElementRate} {Item.LevelJobMinimum} {Item.Speed} {Item.FireResistance} {Item.WaterResistance} {Item.LightResistance} {Item.DarkResistance} {PartnerSkill1}.{SkillRank1} {PartnerSkill2}.{SkillRank2} {PartnerSkill3}.{SkillRank3}";
+        }
 
         public void RestorePoints(ClientSession session, SpecialistInstance specialistInstance)
         {

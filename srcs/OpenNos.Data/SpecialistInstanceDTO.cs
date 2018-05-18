@@ -20,6 +20,18 @@ namespace OpenNos.Data
     {
         #region Properties
 
+        public short PartnerSkill1 { get; set; }
+
+        public short PartnerSkill2 { get; set; }
+
+        public short PartnerSkill3 { get; set; }
+
+        public byte SkillRank1 { get; set; }
+
+        public byte SkillRank2 { get; set; }
+
+        public byte SkillRank3 { get; set; }
+
         public short SlDamage { get; set; }
 
         public short SlDefence { get; set; }

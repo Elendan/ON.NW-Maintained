@@ -194,7 +194,7 @@ namespace OpenNos.GameObject
             }
         }
 
-        public ItemInstance SpInstance { get; set; }
+        public SpecialistInstance SpInstance { get; set; }
 
         public ItemInstance WeaponInstance { get; set; }
 
@@ -259,7 +259,7 @@ namespace OpenNos.GameObject
         {
             int weaponUpgrade = WeaponInstance.Upgrade;
             int armorUpgrade = ArmorInstance.Upgrade;
-            return $"e_info 10 {NpcMonsterVNum} {Level} {Monster.Element} {Monster.AttackClass} {Monster.ElementRate} {(MateType == MateType.Partner ? armorUpgrade : Attack)} {DamageMinimum} {DamageMaximum} {Concentrate} {Monster.CriticalChance} {Monster.CriticalRate} {(MateType == MateType.Partner ? armorUpgrade : Defence)} {Monster.CloseDefence} {Monster.DefenceDodge} {Monster.DistanceDefence} {Monster.DistanceDefenceDodge} {Monster.MagicDefence} {Monster.FireResistance} {Monster.WaterResistance} {Monster.LightResistance} {Monster.DarkResistance} {Monster.MaxHP} {Monster.MaxMP} -1 {Name.Replace(' ', '^')}";
+            return $"e_info 10 {NpcMonsterVNum} {Level} {Monster.Element} {Monster.AttackClass} {Monster.ElementRate} {(MateType == MateType.Partner ? weaponUpgrade : Attack)} {DamageMinimum} {DamageMaximum} {Concentrate} {Monster.CriticalChance} {Monster.CriticalRate} {(MateType == MateType.Partner ? armorUpgrade : Defence)} {Monster.CloseDefence} {Monster.DefenceDodge} {Monster.DistanceDefence} {Monster.DistanceDefenceDodge} {Monster.MagicDefence} {Monster.FireResistance} {Monster.WaterResistance} {Monster.LightResistance} {Monster.DarkResistance} {Monster.MaxHP} {Monster.MaxMP} -1 {Name.Replace(' ', '^')}";
         }
 
         public string GenerateIn(bool foe = false, bool isAct4 = false)
@@ -466,7 +466,7 @@ namespace OpenNos.GameObject
             ArmorInstance = inv.FirstOrDefault(s => s.Item.EquipmentSlot == EquipmentType.Armor);
             GlovesInstance = inv.FirstOrDefault(s => s.Item.EquipmentSlot == EquipmentType.Gloves);
             BootsInstance = inv.FirstOrDefault(s => s.Item.EquipmentSlot == EquipmentType.Boots);
-            SpInstance = inv.FirstOrDefault(s => s.Item.EquipmentSlot == EquipmentType.Sp);
+            SpInstance = (SpecialistInstance)inv.FirstOrDefault(s => s.Item.EquipmentSlot == EquipmentType.Sp);
         }
 
         public int MpLoad()

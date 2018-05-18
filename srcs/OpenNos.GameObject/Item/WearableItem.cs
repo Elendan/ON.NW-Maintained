@@ -242,7 +242,7 @@ namespace OpenNos.GameObject.Item
                                 {
                                     if (MateHelper.Instance.CanWearItem(inv.ItemVNum, mate.Monster.NpcMonsterVNum, session))
                                     {
-                                        mate.SpInstance = inv;
+                                        mate.SpInstance = (SpecialistInstance)inv;
                                     }
                                     else
                                     {
