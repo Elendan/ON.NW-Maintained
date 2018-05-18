@@ -56,7 +56,7 @@ namespace OpenNos.GameObject.Item
                     if (option != 0)
                     {
                         mate = session.Character.Mates.FirstOrDefault(s =>
-                            s.MateType == MateType.Partner && s.PetId == (option - 1) && s.IsTeamMember);
+                            s.MateType == MateType.Partner && s.PetId == (option - 1));
                     }
 
                     short slot = inv.Slot;
@@ -210,7 +210,14 @@ namespace OpenNos.GameObject.Item
                             case EquipmentType.Armor:
                                 if (ItemSubType == 4)
                                 {
-                                    mate.ArmorInstance = inv;
+                                    if (MateHelper.Instance.CanWearItem(inv.ItemVNum, mate.Monster.NpcMonsterVNum, session))
+                                    {
+                                        mate.ArmorInstance = inv;
+                                    }
+                                    else
+                                    {
+                                        goto default;
+                                    }
                                     break;
                                 }
                                 else
@@ -221,7 +228,14 @@ namespace OpenNos.GameObject.Item
                             case EquipmentType.MainWeapon:
                                 if (ItemSubType == 12)
                                 {
-                                    mate.WeaponInstance = inv;
+                                    if (MateHelper.Instance.CanWearItem(inv.ItemVNum, mate.Monster.NpcMonsterVNum, session))
+                                    {
+                                        mate.WeaponInstance = inv;
+                                    }
+                                    else
+                                    {
+                                        goto default;
+                                    }
                                     break;
                                 }
                                 else

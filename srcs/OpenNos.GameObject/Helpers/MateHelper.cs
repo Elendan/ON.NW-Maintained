@@ -74,6 +74,8 @@ namespace OpenNos.GameObject.Helpers
                 case 4804:
                 case 4818:
                 case 4807:
+                case 990:
+                case 997:
                     switch (partnerVnum)
                     {
                         case 318:
@@ -82,7 +84,7 @@ namespace OpenNos.GameObject.Helpers
                         case 2618:
                             return true;
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Tom, Kill & Ragnar", 12));
+                            session.SendPacket(session.Character.GenerateSay("This Item goes on Tom, Kill & Ragnar", 12));
                             break;
                     }
                     break;
@@ -99,6 +101,8 @@ namespace OpenNos.GameObject.Helpers
                 case 4823:
                 case 2651:
                 case 2673:
+                case 992:
+                case 995:
                     switch (partnerVnum)
                     {
                         case 417:
@@ -110,7 +114,7 @@ namespace OpenNos.GameObject.Helpers
                             return true;
 
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Sakura, Graham & Erdimien", 12));
+                            session.SendPacket(session.Character.GenerateSay("This Item goes on Sakura, Graham & Erdimien", 12));
                             break;
                     }
                     break;
@@ -122,6 +126,8 @@ namespace OpenNos.GameObject.Helpers
                 case 4821:
                 case 4824:
                 case 4802:
+                case 991:
+                case 996:
                     switch (partnerVnum)
                     {
                         case 317:
@@ -131,7 +137,7 @@ namespace OpenNos.GameObject.Helpers
                             return true;
 
                         default:
-                            session.SendPacket(session.Character.GenerateSay("This sp goes on Leona, Bob & Frigg", 12));
+                            session.SendPacket(session.Character.GenerateSay("This Item goes on Leona, Bob & Frigg", 12));
                             break;
                     }
                     break;
