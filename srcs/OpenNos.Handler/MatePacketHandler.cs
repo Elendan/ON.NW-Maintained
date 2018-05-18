@@ -369,6 +369,34 @@ namespace OpenNos.Handler
                     case 2:
                         IEnumerable<IBattleEntity> entityInRange = attacker.MapInstance?.GetBattleEntitiesInRange(attacker.GetPos(), skill.TargetRange)
                             .Where(b => b.SessionType() == SessionType.Character || b.SessionType() == SessionType.MateAndNpc);
+                        foreach (BCard sb in skill.BCards)
+                        {
+                            if (sb.Type == (short)BCardType.CardType.Buff)
+                            {
+                                Buff bf = new Buff(sb.SecondData);
+                                if (bf.Card.BuffType == BuffType.Good)
+                                {
+                                    int bonusbuff = 0;
+
+                                    if (attacker.SpInstance?.PartnerSkill1 == skill.SkillVNum)
+                                    {
+                                        bonusbuff = (int)(attacker.SpInstance?.SkillRank1 - 1);
+                                    }
+                                    else if (attacker.SpInstance?.PartnerSkill2 == skill.SkillVNum)
+                                    {
+                                        bonusbuff = (int)(attacker.SpInstance?.SkillRank2 - 1);
+                                    }
+                                    else if (attacker.SpInstance?.PartnerSkill3 == skill.SkillVNum)
+                                    {
+                                        bonusbuff = (int)(attacker.SpInstance?.SkillRank3 - 1);
+                                    }
+
+                                    sb.ApplyBCards(attacker, partnerBuffLevel: (short?)bonusbuff);
+                                    sb.ApplyBCards(attacker.Owner, partnerBuffLevel: (short?)bonusbuff);
+                                }
+                            }
+                        }
+
                         if (entityInRange != null)
                         {
                             foreach (IBattleEntity target in entityInRange)
