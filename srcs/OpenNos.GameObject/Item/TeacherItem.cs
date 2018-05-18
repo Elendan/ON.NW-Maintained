@@ -201,6 +201,7 @@ namespace OpenNos.GameObject.Item
                     monster.Initialize(session.CurrentMapInstance);
                     session.CurrentMapInstance.AddMonster(monster);
                     session.CurrentMapInstance.Broadcast(monster.GenerateIn());
+                    session.Character.Inventory.RemoveItemAmount(inv.ItemVNum);
                     break;
 
                 default:
