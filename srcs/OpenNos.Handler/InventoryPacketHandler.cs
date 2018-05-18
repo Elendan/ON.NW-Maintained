@@ -1026,6 +1026,14 @@ namespace OpenNos.Handler
 
                     case EquipmentType.Sp:
                         mate.SpInstance = null;
+                        mate.GenerateCond();
+                        mate.GenerateCMode(-1);
+                        mate.GeneratePski();
+                        mate.GenerateScPacket();
+                        Session.CurrentMapInstance.Broadcast(mate.GenerateOut());
+                        Session.CurrentMapInstance.Broadcast(mate.GenerateIn());
+                        Session.SendPacket(Session.Character.GeneratePinit());
+                        Session.SendPacket("psd 30");
                         break;
                 }
 

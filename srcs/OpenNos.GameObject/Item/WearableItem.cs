@@ -56,7 +56,7 @@ namespace OpenNos.GameObject.Item
                     if (option != 0)
                     {
                         mate = session.Character.Mates.FirstOrDefault(s =>
-                            s.MateType == MateType.Partner && s.PetId == (option - 1));
+                            s.MateType == MateType.Partner && s.PetId == (option - 1) && s.IsTeamMember);
                     }
 
                     short slot = inv.Slot;

@@ -515,6 +515,7 @@ namespace OpenNos.Handler
                     Session.Character.MapInstance.Broadcast(mate.GenerateOut());
                     Session.Character.MapInstance.Broadcast(mate.GenerateIn());
                     Session.SendPacket(Session.Character.GeneratePinit());
+                    Session.SendPacket("psd 30");
                     Session.Character.RemoveBuff(3000, true);
                     Session.Character.RemoveBuff(3001, true);
                     Session.Character.RemoveBuff(3002, true);

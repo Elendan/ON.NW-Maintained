@@ -320,7 +320,7 @@ namespace OpenNos.GameObject
                 return $"pski {(SpInstance.PartnerSkill1 == 0 ? "" : $"{SpInstance.PartnerSkill1}")} {(SpInstance.PartnerSkill2 == 0 ? "" : $"{SpInstance.PartnerSkill2}")} {(SpInstance.PartnerSkill3 == 0 ? "" : $"{SpInstance.PartnerSkill3}")}";
             }
 
-            return "pski";
+            return "dpski";
         }
 
         public string GenerateRc(int heal) => $"rc 2 {MateTransportId} {heal} 0";
