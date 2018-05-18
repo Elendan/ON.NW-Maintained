@@ -88,7 +88,7 @@ namespace OpenNos.GameObject.Helpers
                     break;
 
 
-                // magical (sakura, graham, erdimien)
+                // magical (sakura, graham, erdimien & Yertirand)
                 case 4819:
                 case 4813:
                 case 4810:
@@ -97,6 +97,8 @@ namespace OpenNos.GameObject.Helpers
                 case 4803:
                 case 4820:
                 case 4823:
+                case 2651:
+                case 2673:
                     switch (partnerVnum)
                     {
                         case 417:
