@@ -1385,7 +1385,7 @@ namespace OpenNos.Handler
                                     return;
                             }
                             Session.Character.Inventory.DeleteFromSlotAndType(slot, inventoryType);
-                            Session.Character.Inventory.AddToInventory(newItem, InventoryType.Equipment);
+                            Session.Character.Inventory.AddToInventoryWithSlotAndType(newItem, InventoryType.Equipment, slot);
                             Session.Character.Inventory.RemoveItemAmount(donaVnum);
                             Session.Character.Gold -= price;
                             Session.SendPacket(Session.Character.GenerateGold());
