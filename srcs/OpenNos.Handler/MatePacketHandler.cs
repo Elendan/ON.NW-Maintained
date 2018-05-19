@@ -17,6 +17,7 @@ using OpenNos.GameObject.Packets.ServerPackets;
 
 namespace OpenNos.Handler
 {
+    //TODO: REVIEW MY RUSHED CODE
     public class MatePacketHandler : IPacketHandler
     {
         public MatePacketHandler(ClientSession session) => Session = session;
