@@ -55,6 +55,10 @@ namespace OpenNos.GameObject.Item
                     Mate mate = null;
                     if (option != 0)
                     {
+                        if (session.Character.Mates.Count(s => s.MateType == MateType.Partner) == 1 && option == 2)
+                        {
+                            option = 1;
+                        }
                         mate = session.Character.Mates.FirstOrDefault(s =>
                             s.MateType == MateType.Partner && s.PetId == (option - 1));
                     }

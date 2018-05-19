@@ -331,13 +331,13 @@ namespace OpenNos.Handler
 
         public void AttackMonster(Mate attacker, Skill skill, long targetId)
         {
-            if (attacker == null || skill == null || skill?.MpCost > attacker.Mp)
+            if (skill?.MpCost > attacker.Mp)
             {
                 return;
             }
             attacker.LastSkillUse = DateTime.Now;
-            attacker.Mp -= skill.MpCost;
-            if (skill.TargetType == 1 && skill.HitType == 1)
+            attacker.Mp -= skill?.MpCost ?? 0;
+            if (skill?.TargetType == 1 && skill?.HitType == 1)
             {
                 if (Session.HasCurrentMapInstance && skill.TargetRange != 0)
                 {
@@ -349,7 +349,7 @@ namespace OpenNos.Handler
                     }
                 }
             }
-            else if (skill.TargetType == 2 && skill.HitType == 0)
+            else if (skill?.TargetType == 2 && skill.HitType == 0)
             {
                 ClientSession target = attacker.Owner.Session ?? Session;
                 Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {targetId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
@@ -360,7 +360,7 @@ namespace OpenNos.Handler
                     s.ApplyBCards(attacker);
                 });
             }
-            else if (skill.TargetType == 1 && skill.HitType != 1)
+            else if (skill?.TargetType == 1 && skill.HitType != 1)
             {
                 Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                 Session.CurrentMapInstance?.Broadcast($"su 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill?.Effect} 0 0 1 100 0 -1 0");
