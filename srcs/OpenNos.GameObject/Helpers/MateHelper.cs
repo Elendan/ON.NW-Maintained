@@ -56,7 +56,9 @@ namespace OpenNos.GameObject.Helpers
 
         #region Methods
 
-        #region PartnerSkills
+
+        //TODO: review this bullshit region
+        #region Partners
 
         public bool CanWearItem(short vnum, short partnerVnum, ClientSession session)
         {
