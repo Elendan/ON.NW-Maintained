@@ -399,6 +399,12 @@ namespace OpenNos.GameObject.Buff
                                     }
                                 });
 
+                                if (hpCard == null)
+                                {
+                                    mateObservable?.Dispose();
+                                    break;
+                                }
+
                                 Observable.Timer(TimeSpan.FromSeconds(hpCard.Duration * 0.1)).Subscribe(s =>
                                 {
                                     mateObservable?.Dispose();
@@ -518,6 +524,12 @@ namespace OpenNos.GameObject.Buff
                                         mate.Mp = mate.MpLoad();
                                     }
                                 });
+
+                                if (restoreMpCard == null)
+                                {
+                                    restoreMateMp?.Dispose();
+                                    break;
+                                }
 
                                 Observable.Timer(TimeSpan.FromSeconds(restoreMpCard.Duration * 0.1)).Subscribe(s =>
                                 {
