@@ -38,6 +38,11 @@ namespace OpenNos.Handler
 
         #region Methods
 
+        public void ScpCts(ScpCtsPacket packet)
+        {
+            // idk
+        }
+
         public void CClose(CClosePacket packet)
         {
             // idk
