@@ -257,8 +257,8 @@ namespace OpenNos.GameObject
 
         public string GenerateEInfo()
         {
-            int weaponUpgrade = WeaponInstance.Upgrade;
-            int armorUpgrade = ArmorInstance.Upgrade;
+            int? weaponUpgrade = WeaponInstance?.Upgrade ?? 0;
+            int? armorUpgrade = ArmorInstance?.Upgrade ?? 0;
             return $"e_info 10 {NpcMonsterVNum} {Level} {Monster.Element} {Monster.AttackClass} {Monster.ElementRate} {(MateType == MateType.Partner ? weaponUpgrade : Attack)} {DamageMinimum} {DamageMaximum} {Concentrate} {Monster.CriticalChance} {Monster.CriticalRate} {(MateType == MateType.Partner ? armorUpgrade : Defence)} {Monster.CloseDefence} {Monster.DefenceDodge} {Monster.DistanceDefence} {Monster.DistanceDefenceDodge} {Monster.MagicDefence} {Monster.FireResistance} {Monster.WaterResistance} {Monster.LightResistance} {Monster.DarkResistance} {Monster.MaxHP} {Monster.MaxMP} -1 {Name.Replace(' ', '^')}";
         }
 
