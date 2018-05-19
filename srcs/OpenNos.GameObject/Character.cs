@@ -1095,7 +1095,7 @@ namespace OpenNos.GameObject
 
                 var amulet =
                     Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Amulet, InventoryType.Wear);
-                if (amulet != null)
+                if (amulet != null && !Invisible && !InvisibleGm)
                 {
                     if (amulet.ItemVNum == 4503 || amulet.ItemVNum == 4504)
                     {
