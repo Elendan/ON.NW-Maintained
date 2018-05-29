@@ -445,7 +445,7 @@ namespace OpenNos.Handler
 
                 ServerManager.Instance.ChangeMap(Session.Character.CharacterId, Session.Character.MapId, Session.Character.MapX, Session.Character.MapY);
             }
-            else if (Session.CurrentMapInstance?.MapInstanceType == MapInstanceType.RaidInstance)
+            else if (Session.CurrentMapInstance?.MapInstanceType == MapInstanceType.RaidInstance && Session.Character.Group?.Characters != null)
             {
                 foreach (ClientSession s in Session.Character.Group.Characters)
                 {
