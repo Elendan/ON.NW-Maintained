@@ -3439,7 +3439,7 @@ namespace OpenNos.Handler
             }
 
             short vnum = packet.VNum;
-            byte amount = packet.Amount;
+            int amount = packet.Amount;
             int count = packet.Count;
             int time = packet.Time;
 
