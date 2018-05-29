@@ -2272,7 +2272,7 @@ namespace OpenNos.Handler
 
         public void PetExp(PetExpPacket petExpPacket)
         {
-            Mate pet = Session?.Character?.Mates?.Where(x => x.IsTeamMember && x.MateType == MateType.Pet).First();
+            Mate pet = Session?.Character?.Mates?.Where(x => x.IsTeamMember && x.MateType == MateType.Pet).FirstOrDefault();
             if (pet == null)
             {
                 return;
