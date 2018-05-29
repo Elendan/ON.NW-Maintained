@@ -2120,16 +2120,7 @@ namespace OpenNos.GameObject
                 }
                 else
                 {
-                    if (monsterToAttack.DamageList?.FirstOrDefault().Key == this ||
-                        monsterToAttack.DamageList?.FirstOrDefault().Key == Mates.FirstOrDefault(m => m.IsTeamMember))
-                    {
                         GenerateXp(monsterToAttack, true);
-                    }
-                    else
-                    {
-                        Session.SendPacket(GenerateSay(Language.Instance.GetMessageFromKey("XP_NOTFIRSTHIT"), 10));
-                        GenerateXp(monsterToAttack, false);
-                    }
                 }
 
                 // TODO ADD A CONFIGURATION FOR THAT

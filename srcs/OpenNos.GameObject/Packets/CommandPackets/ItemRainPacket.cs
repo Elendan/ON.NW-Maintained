@@ -15,7 +15,7 @@ namespace OpenNos.GameObject.Packets.CommandPackets
         public short VNum { get; set; }
 
         [PacketIndex(1)]
-        public byte Amount { get; set; }
+        public int Amount { get; set; }
 
         [PacketIndex(2)]
         public int Count { get; set; }
