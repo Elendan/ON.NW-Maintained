@@ -1338,7 +1338,7 @@ namespace OpenNos.Handler
                     int price = 20000;
                     if (inventory != null)
                     {
-                        if (inventory.EquipmentOptions != null)
+                        if (inventory.EquipmentOptions.Any())
                         {
                             Session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("ce stuff a une rune", 10));
                             return;
