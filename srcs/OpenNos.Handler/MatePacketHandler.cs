@@ -301,27 +301,32 @@ namespace OpenNos.Handler
                 return;
             }
 
-            IEnumerable<NpcMonsterSkill> mateSkills = attacker.IsUsingSp ? attacker.SpSkills.ToList() : attacker.Monster.Skills;
-            if (mateSkills != null)
+            NpcMonsterSkill ski = null;
+            if (attacker.MateType == MateType.Partner)
             {
-                NpcMonsterSkill ski = mateSkills.FirstOrDefault(s => s?.Skill?.CastId == suctlPacket.CastId);
-                if (ski == null)
+                ski = new NpcMonsterSkill
                 {
-                    ski = new NpcMonsterSkill
-                    {
-                        SkillVNum = 200
-                    };
-                }
-                switch (suctlPacket.TargetType)
+                    SkillVNum = 200
+                };
+            }
+            else
+            {
+                IEnumerable<NpcMonsterSkill> mateSkills = attacker.IsUsingSp ? attacker.SpSkills.ToList() : attacker.Monster.Skills;
+                ski = mateSkills.FirstOrDefault(s => s?.Skill?.CastId == suctlPacket.CastId) ?? new NpcMonsterSkill
                 {
-                    case UserType.Monster:
-                        if (attacker.Hp > 0)
-                        {
-                            AttackMonster(attacker, ski, suctlPacket.TargetId);
-                        }
+                    SkillVNum = 200
+                };
+            }
 
-                        return;
-                }
+            switch (suctlPacket.TargetType)
+            {
+                case UserType.Monster:
+                    if (attacker.Hp > 0)
+                    {
+                        AttackMonster(attacker, ski, suctlPacket.TargetId);
+                    }
+
+                    return;
             }
         }
 
@@ -346,14 +351,14 @@ namespace OpenNos.Handler
                     foreach (MapMonster mon in attacker.MapInstance.GetListMonsterInRange(attacker.PositionX, attacker.PositionY, skill.TargetRange).Where(s => s.CurrentHp > 0))
                     {
                         attacker.BattleEntity.TargetHit(mon, TargetHitType.AOETargetHit, skill, skill.Effect);
-                        Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {mon.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                        Session.CurrentMapInstance?.Broadcast($"ct {(attacker.MateType == MateType.Partner ? 2 : 3)} {attacker.MateTransportId} 2 {mon.MapMonsterId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                     }
                 }
             }
             else if (skill?.TargetType == 2 && skill.HitType == 0)
             {
                 ClientSession target = attacker.Owner.Session ?? Session;
-                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {targetId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                Session.CurrentMapInstance?.Broadcast($"ct {(attacker.MateType == MateType.Partner ? 2 : 3)} {attacker.MateTransportId} 2 {targetId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
                 skill.BCards.ToList().ForEach(s =>
                 {
                     // Apply skill bcards to ower and pet 
@@ -363,8 +368,8 @@ namespace OpenNos.Handler
             }
             else if (skill?.TargetType == 1 && skill.HitType != 1)
             {
-                Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
-                Session.CurrentMapInstance?.Broadcast($"su 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill?.Effect} 0 0 1 100 0 -1 0");
+                Session.CurrentMapInstance?.Broadcast($"ct {(attacker.MateType == MateType.Partner ? 2 : 3)} {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                Session.CurrentMapInstance?.Broadcast($"su {(attacker.MateType == MateType.Partner ? 2 : 3)} {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill.SkillVNum} {skill.Cooldown} {skill.AttackAnimation} {skill?.Effect} 0 0 1 100 0 -1 0");
                 switch (skill.HitType)
                 {
                     case 2:
@@ -476,7 +481,7 @@ namespace OpenNos.Handler
                         }
 
                         Session.SendPacket(attacker.GenerateStatInfo());
-                        Session.CurrentMapInstance?.Broadcast($"ct 2 {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
+                        Session.CurrentMapInstance?.Broadcast($"ct {(attacker.MateType == MateType.Partner ? 2 : 3)} {attacker.MateTransportId} 2 {attacker.MateTransportId} {skill?.CastAnimation} {skill?.CastEffect} {skill?.SkillVNum}");
 
                         if (skill.HitType == 3)
                         {
