@@ -1752,7 +1752,7 @@ namespace OpenNos.Handler
                 return;
             }
 
-            if (wearPacket.Type > 1)
+            if (wearPacket.Type > Session.Character.Mates.Count(s => s.MateType == MateType.Partner))
             {
                 return;
             }
