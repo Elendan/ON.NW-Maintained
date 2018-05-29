@@ -1083,7 +1083,10 @@ namespace OpenNos.GameObject.Battle
                 return;
             }
 
-            ObservableBag[(short)id]?.Dispose();
+            if (ObservableBag.ContainsKey((short)id))
+            {
+                ObservableBag[(short)id]?.Dispose();
+            }
             Buffs.RemoveWhere(s => s.Card.CardId != id, out ConcurrentBag<Buff.Buff> buffs);
             Buffs = buffs;
 
