@@ -14,23 +14,52 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace OpenNos.Core.Threading
 {
     /// <summary>
-    ///     This class is used to process items sequentially in a multithreaded manner.
+    /// This class is used to process items sequentially in a multithreaded manner.
     /// </summary>
     /// <typeparam name="TItem">Type of item to process</typeparam>
     public class SequentialItemProcessor<TItem>
     {
+        #region Members
+
+        /// <summary>
+        /// The method delegate that is called to actually process items.
+        /// </summary>
+        private readonly Action<TItem> _processMethod;
+
+        /// <summary>
+        /// Item queue. Used to process items sequentially.
+        /// </summary>
+        private readonly Queue<TItem> _queue;
+
+        /// <summary>
+        /// An object to synchronize threads.
+        /// </summary>
+        private readonly object _syncObj = new object();
+
+        /// <summary>
+        /// Indicates state of the item processing.
+        /// </summary>
+        private bool _isProcessing;
+
+        /// <summary>
+        /// A boolean value to control running of SequentialItemProcessor.
+        /// </summary>
+        private bool _isRunning;
+
+        #endregion
+
         #region Instantiation
 
         /// <summary>
-        ///     Creates a new SequentialItemProcessor object.
+        /// Creates a new SequentialItemProcessor object.
         /// </summary>
         /// <param name="processMethod">
-        ///     The method delegate that is called to actually process items
+        /// The method delegate that is called to actually process items
         /// </param>
         public SequentialItemProcessor(Action<TItem> processMethod)
         {
@@ -40,52 +69,18 @@ namespace OpenNos.Core.Threading
 
         #endregion
 
-        #region Members
-
-        /// <summary>
-        ///     The method delegate that is called to actually process items.
-        /// </summary>
-        private readonly Action<TItem> _processMethod;
-
-        /// <summary>
-        ///     Item queue. Used to process items sequentially.
-        /// </summary>
-        private readonly Queue<TItem> _queue;
-
-        /// <summary>
-        ///     An object to synchronize threads.
-        /// </summary>
-        private readonly object _syncObj = new object();
-
-        /// <summary>
-        ///     A reference to the current Task that is processing an item in ProcessItem method.
-        /// </summary>
-        private Task _currentProcessTask;
-
-        /// <summary>
-        ///     Indicates state of the item processing.
-        /// </summary>
-        private bool _isProcessing;
-
-        /// <summary>
-        ///     A boolean value to control running of SequentialItemProcessor.
-        /// </summary>
-        private bool _isRunning;
-
-        #endregion
-
         #region Methods
 
         public void ClearQueue() => _queue.Clear();
 
         /// <summary>
-        ///     Adds an item to queue to process the item.
+        /// Adds an item to queue to process the item.
         /// </summary>
         /// <param name="item">Item to add to the queue</param>
         public void EnqueueMessage(TItem item)
         {
             // Add the item to the queue and start a new Task if needed
-            lock(_syncObj)
+            lock (_syncObj)
             {
                 if (!_isRunning)
                 {
@@ -96,53 +91,39 @@ namespace OpenNos.Core.Threading
 
                 if (!_isProcessing)
                 {
-                    _currentProcessTask = Task.Factory.StartNew(processItem);
+                    ThreadPool.QueueUserWorkItem(ProcessItem);
                 }
             }
         }
 
         /// <summary>
-        ///     Starts processing of items.
+        /// Starts processing of items.
         /// </summary>
         public void Start() => _isRunning = true;
 
         /// <summary>
-        ///     Stops processing of items and waits stopping of current item.
+        /// Stops processing of items and waits stopping of current item.
         /// </summary>
         public void Stop()
         {
             _isRunning = false;
 
-            // Clear all incoming messages
-            lock(_syncObj)
+            //Clear all incoming messages
+            lock (_syncObj)
             {
                 _queue.Clear();
-            }
-
-            // Check if is there a message that is being processed now
-            if (!_isProcessing)
-            {
-                return;
-            }
-
-            // Wait current processing task to finish
-            try
-            {
-                _currentProcessTask.Wait();
-            }
-            catch
-            {
             }
         }
 
         /// <summary>
-        ///     This method runs on a new seperated Task (thread) to process items on the queue.
+        /// This method runs on a new seperated Task (thread) to process items on the queue.
         /// </summary>
-        private void processItem()
+        /// <param name="state">todo: describe state parameter on processItem</param>
+        private void ProcessItem(object state)
         {
-            // Try to get an item from queue to process it.
+            //Try to get an item from queue to process it.
             TItem itemToProcess;
-            lock(_syncObj)
+            lock (_syncObj)
             {
                 if (!_isRunning || _isProcessing)
                 {
@@ -158,11 +139,18 @@ namespace OpenNos.Core.Threading
                 itemToProcess = _queue.Dequeue();
             }
 
-            // Process the item (by calling the _processMethod delegate)
-            _processMethod(itemToProcess);
+            try
+            {
+                //Process the item (by calling the _processMethod delegate)
+                _processMethod(itemToProcess);
+            }
+            catch (Exception)
+            {
+                // do nothing
+            }
 
-            // Process next item if available
-            lock(_syncObj)
+            //Process next item if available
+            lock (_syncObj)
             {
                 _isProcessing = false;
                 if (!_isRunning || _queue.Count <= 0)
@@ -170,8 +158,8 @@ namespace OpenNos.Core.Threading
                     return;
                 }
 
-                // Start a new task
-                _currentProcessTask = Task.Factory.StartNew(processItem);
+                //Start a new task
+                ThreadPool.QueueUserWorkItem(ProcessItem);
             }
         }
 
