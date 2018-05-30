@@ -17,7 +17,7 @@ namespace OpenNos.GameObject.Event.ACT4
 
         public void GenerateRaid(byte type, byte faction)
         {
-            ScriptedInstance raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type);
+            ScriptedInstance raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type)?.GetClone();
             MapInstance lobby = ServerManager.Instance.Act4Maps.FirstOrDefault(m => m.Map.MapId == 134);
 
             if (raid == null || lobby == null)
@@ -68,7 +68,7 @@ namespace OpenNos.GameObject.Event.ACT4
                     {
                         continue;
                     }
-                    family.Act4Raid.MapInstanceDictionary?.Values.ToList().ForEach(m => m?.Dispose());
+                    family.Act4Raid?.MapInstanceDictionary?.Values.ToList().ForEach(m => m?.Dispose());
                     family.Act4Raid = null;
                 }
             });
