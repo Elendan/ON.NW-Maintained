@@ -731,7 +731,12 @@ namespace OpenNos.Handler
                         return;
                     case (sbyte)PortalType.BlueRaid:
                     case (sbyte)PortalType.DarkRaid:
-                        ScriptedInstance raid = Session.Character.Family?.Act4Raid;
+                        if (Session.Character.Family == null)
+                        {
+                            break;
+                        }
+
+                        ScriptedInstance raid = Session.Character.Family.Act4Raid;
                         if ((byte)Session.Character.Faction == (portal.Type - 9) && raid?.FirstMap != null)
                         {
                             if (raid.LevelMinimum > Session.Character.Level)
