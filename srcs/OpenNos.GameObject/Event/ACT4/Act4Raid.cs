@@ -46,8 +46,12 @@ namespace OpenNos.GameObject.Event.ACT4
 
             lock(ServerManager.Instance.FamilyList)
             {
-                foreach (Family family in ServerManager.Instance.FamilyList.Where(f => f != null))
+                foreach (Family family in ServerManager.Instance.FamilyList.GetAllItems())
                 {
+                    if (family == null)
+                    {
+                        continue;
+                    }
                     family.Act4Raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type);
                     family.Act4Raid?.LoadScript(MapInstanceType.RaidInstance);
                 }
@@ -55,8 +59,12 @@ namespace OpenNos.GameObject.Event.ACT4
 
             await Task.Delay(60 * 60 * 1000);
 
-            foreach (Family family in ServerManager.Instance.FamilyList.Where(f => f?.Act4Raid != null))
+            foreach (Family family in ServerManager.Instance.FamilyList.GetAllItems())
             {
+                if (family == null)
+                {
+                    continue;
+                }
                 family.Act4Raid.MapInstanceDictionary?.Values.ToList().ForEach(m => m?.Dispose());
                 family.Act4Raid = null;
             }
