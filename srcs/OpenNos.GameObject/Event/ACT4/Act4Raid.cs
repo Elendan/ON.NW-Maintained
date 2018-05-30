@@ -17,7 +17,7 @@ namespace OpenNos.GameObject.Event.ACT4
 
         public void GenerateRaid(byte type, byte faction)
         {
-            ScriptedInstance raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type)?.GetClone();
+            ScriptedInstance raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type);
             MapInstance lobby = ServerManager.Instance.Act4Maps.FirstOrDefault(m => m.Map.MapId == 134);
 
             if (raid == null || lobby == null)
@@ -50,7 +50,7 @@ namespace OpenNos.GameObject.Event.ACT4
                     {
                         continue;
                     }
-                    family.Act4Raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type);
+                    family.Act4Raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type)?.GetClone();
                     family.Act4Raid?.LoadScript(MapInstanceType.RaidInstance);
                     if (family.Act4Raid?.FirstMap == null)
                     {
