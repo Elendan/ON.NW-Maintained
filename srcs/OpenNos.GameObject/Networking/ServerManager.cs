@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
+using OpenNos.Core.Networking.Communication.Scs.Threading;
 using OpenNos.Data;
 using OpenNos.DAL;
 using OpenNos.GameObject.Buff;
@@ -152,7 +153,7 @@ namespace OpenNos.GameObject.Networking
 
         public MapInstance CaligorMapInstance { get; set; }
         
-        public ConcurrentBag<Family> FamilyList { get; set; }
+        public ThreadSafeSortedList<long, Family> FamilyList { get; set; }
 
         public int GoldDropRate { get; set; }
 
@@ -2498,46 +2499,30 @@ namespace OpenNos.GameObject.Networking
 
         private void LoadFamilies()
         {
-            // TODO: Parallelization of family load
-            FamilyList = new ConcurrentBag<Family>();
-            ConcurrentDictionary<long, Family> families = new ConcurrentDictionary<long, Family>();
+            FamilyList = new ThreadSafeSortedList<long, Family>();
             Parallel.ForEach(DaoFactory.FamilyDao.LoadAll(), familyDto =>
             {
-                var family = (Family)familyDto;
-                family.FamilyCharacters = new List<FamilyCharacter>();
-                foreach (FamilyCharacterDTO famchar in DaoFactory.FamilyCharacterDao.LoadByFamilyId(family.FamilyId)
-                    .ToList())
+                var family = new Family(familyDto)
+                {
+                    FamilyCharacters = new List<FamilyCharacter>()
+                };
+                foreach (FamilyCharacterDTO famchar in DaoFactory.FamilyCharacterDao.LoadByFamilyId(family.FamilyId).ToList())
                 {
                     family.FamilyCharacters.Add((FamilyCharacter)famchar);
                 }
-
-                FamilyCharacter familyCharacter =
-                    family.FamilyCharacters.FirstOrDefault(s => s.Authority == FamilyAuthority.Head);
+                FamilyCharacter familyCharacter = family.FamilyCharacters.Find(s => s.Authority == FamilyAuthority.Head);
                 if (familyCharacter != null)
                 {
-                    family.Warehouse = new Inventory((Character)familyCharacter.Character);
-                    foreach (ItemInstanceDTO inventory in DaoFactory.IteminstanceDao
-                        .LoadByCharacterId(familyCharacter.CharacterId)
-                        .Where(s => s.Type == InventoryType.FamilyWareHouse).ToList())
+                    family.Warehouse = new Inventory((Character)(familyCharacter.Character));
+                    foreach (ItemInstanceDTO inventory in DaoFactory.IteminstanceDao.LoadByCharacterId(familyCharacter.CharacterId).Where(s => s.Type == InventoryType.FamilyWareHouse).ToList())
                     {
                         inventory.CharacterId = familyCharacter.CharacterId;
-                        family.Warehouse[inventory.Id] = (ItemInstance)inventory;
+                        family.Warehouse[inventory.Id] = (ItemInstance)(inventory);
                     }
                 }
-
-                if (family.LandOfDeath == null)
-                {
-                    family.LandOfDeath = GenerateMapInstance(150, MapInstanceType.LodInstance, new InstanceBag());
-                }
-
                 family.FamilyLogs = DaoFactory.FamilyLogDao.LoadByFamilyId(family.FamilyId).ToList();
-                families[family.FamilyId] = family;
+                FamilyList[family.FamilyId] = family;
             });
-            Logger.Log.Info("[LOD] LOD mapinstances initialized");
-            foreach (Family family in families.Select(s => s.Value))
-            {
-                FamilyList.Add(family);
-            }
         }
 
         private void LoadScriptedInstances()
@@ -2635,7 +2620,7 @@ namespace OpenNos.GameObject.Networking
             Tuple<long, bool> tuple = (Tuple<long, bool>)sender;
             long familyId = tuple.Item1;
             FamilyDTO famdto = DaoFactory.FamilyDao.LoadById(familyId);
-            Family fam = FamilyList.FirstOrDefault(s => s.FamilyId == familyId);
+            Family fam = FamilyList[familyId];
             lock(FamilyList)
             {
                 if (famdto != null)
@@ -2645,7 +2630,7 @@ namespace OpenNos.GameObject.Networking
                         MapInstance lod = fam.LandOfDeath;
                         lock(FamilyList)
                         {
-                            FamilyList.ToList().Remove(fam);
+                            FamilyList.Remove(fam);
                         }
                         fam = (Family)famdto;
                         fam.FamilyCharacters = new List<FamilyCharacter>();
@@ -2671,7 +2656,7 @@ namespace OpenNos.GameObject.Networking
 
                         fam.FamilyLogs = DaoFactory.FamilyLogDao.LoadByFamilyId(fam.FamilyId).ToList();
                         fam.LandOfDeath = lod;
-                        FamilyList.Add(fam);
+                        FamilyList[familyId] = fam;
                         Parallel.ForEach(
                             Sessions.Where(s =>
                                 fam.FamilyCharacters.Any(m => m.CharacterId == s.Character.CharacterId)), session =>
@@ -2710,7 +2695,7 @@ namespace OpenNos.GameObject.Networking
                         }
 
                         fami.FamilyLogs = DaoFactory.FamilyLogDao.LoadByFamilyId(fami.FamilyId).ToList();
-                        FamilyList.Add(fami);
+                        FamilyList[familyId] = fami;
                         Parallel.ForEach(
                             Sessions.Where(
                                 s => fami.FamilyCharacters.Any(m => m.CharacterId == s.Character.CharacterId)),
@@ -2730,7 +2715,7 @@ namespace OpenNos.GameObject.Networking
                 {
                     lock(FamilyList)
                     {
-                        FamilyList.ToList().Remove(fam);
+                        FamilyList.Remove(fam);
                     }
                 }
             }

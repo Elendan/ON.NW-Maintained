@@ -30,6 +30,27 @@ namespace OpenNos.GameObject
 
         public Family() => FamilyCharacters = new List<FamilyCharacter>();
 
+        public Family(FamilyDTO input)
+        {
+            FamilyCharacters = new List<FamilyCharacter>();
+            FamilyExperience = input.FamilyExperience;
+            FamilyHeadGender = input.FamilyHeadGender;
+            FamilyId = input.FamilyId;
+            FamilyLevel = input.FamilyLevel;
+            FamilyMessage = input.FamilyMessage;
+            FamilyFaction = input.FamilyFaction;
+            ManagerAuthorityType = input.ManagerAuthorityType;
+            ManagerCanGetHistory = input.ManagerCanGetHistory;
+            ManagerCanInvite = input.ManagerCanInvite;
+            ManagerCanNotice = input.ManagerCanNotice;
+            ManagerCanShout = input.ManagerCanShout;
+            MaxSize = input.MaxSize;
+            MemberAuthorityType = input.MemberAuthorityType;
+            MemberCanGetHistory = input.MemberCanGetHistory;
+            Name = input.Name;
+            WarehouseSize = input.WarehouseSize;
+        }
+
         #endregion
 
         #region Properties
