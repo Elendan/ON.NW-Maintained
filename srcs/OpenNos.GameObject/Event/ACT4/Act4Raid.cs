@@ -48,7 +48,7 @@ namespace OpenNos.GameObject.Event.ACT4
             {
                 foreach (Family family in ServerManager.Instance.FamilyList.Where(f => f != null))
                 {
-                    family.Act4Raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type)?.GetClone();
+                    family.Act4Raid = ServerManager.Instance.Act4Raids.FirstOrDefault(r => r.Id == type);
                     family.Act4Raid?.LoadScript(MapInstanceType.RaidInstance);
                 }
             }

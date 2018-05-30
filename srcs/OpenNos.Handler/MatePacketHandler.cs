@@ -325,7 +325,6 @@ namespace OpenNos.Handler
                             {
                                 MapMonster target = Session?.CurrentMapInstance?.GetMonster(suctlPacket.TargetId);
                                 BasicAttack(attacker, ski, target);
-                                Logger.Log.Warn(ski.SkillVNum);
                             }
                         }
 
