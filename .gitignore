@@ -283,3 +283,5 @@ crashlytics-build.properties
 fabric.properties
 
 \.idea/\.idea\.NosSharp/\.idea/
+
+*.DotSettings
