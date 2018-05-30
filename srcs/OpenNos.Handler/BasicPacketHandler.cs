@@ -770,17 +770,16 @@ namespace OpenNos.Handler
                         return;
                     case MapInstanceType.RaidInstance:
                         ClientSession leader = Session?.Character?.Group?.Characters?.OrderBy(s => s.Character.LastGroupJoin).ElementAt(0);
-                        if (leader != null && Session.Character.CharacterId != leader.Character.CharacterId
-                            && leader.CurrentMapInstance.MapInstanceId != portal.DestinationMapInstanceId
-                            && ServerManager.Instance.GetMapInstance(portal.DestinationMapInstanceId).Monsters.Any(m => m.IsBoss))
+                        if (leader != null && Session.Character.CharacterId != leader.Character.CharacterId && leader.CurrentMapInstance.MapInstanceId != portal.DestinationMapInstanceId && ServerManager.Instance.GetMapInstance(portal.DestinationMapInstanceId).Monsters.Any(m => m.IsBoss))
                         {
                             ServerManager.Instance.ChangeMapInstance(leader.Character.CharacterId, portal.DestinationMapInstanceId, portal.DestinationX, portal.DestinationY);
                         }
+                        //Yes, that's fucking disgusting.
                         else if (Session.Character?.Family?.Act4Raid?.FirstMap == Session.CurrentMapInstance && Session.Character?.Family?.Act4Raid?.StartX == portal.SourceX
                             && Session?.Character?.Family?.Act4Raid?.StartY == portal.SourceY)
                         {
                             ServerManager.Instance.ChangeMapInstance(Session.Character.CharacterId, ServerManager.Instance.Act4Maps.FirstOrDefault(m => m.Map.MapId == 134).MapInstanceId,
-                                portal.DestinationX, portal.DestinationY);
+                                142, 100);
                             return;
                         }
 
