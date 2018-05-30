@@ -1405,7 +1405,7 @@ namespace OpenNos.GameObject.Item.Instance
                         CharacterSession.Character.Name, itemVNum: wearable.ItemVNum, upgrade: wearable.Upgrade);
                 }
 
-                CharacterSession.SendPacket(wearable.GenerateInventoryAdd());
+                CharacterSession?.SendPacket(wearable?.GenerateInventoryAdd());
             }
 
             CharacterSession.SendPacket(CharacterSession.Character.GenerateGold());
