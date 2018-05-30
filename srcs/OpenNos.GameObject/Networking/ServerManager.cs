@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NosSharp.Enums;
 using OpenNos.Core;
+using OpenNos.Core.Extensions;
 using OpenNos.Data;
 using OpenNos.DAL;
 using OpenNos.GameObject.Buff;
@@ -150,8 +151,8 @@ namespace OpenNos.GameObject.Networking
         public MapInstance FamilyArenaInstance { get; private set; }
 
         public MapInstance CaligorMapInstance { get; set; }
-
-        public List<Family> FamilyList { get; set; }
+        
+        public ConcurrentBag<Family> FamilyList { get; set; }
 
         public int GoldDropRate { get; set; }
 
@@ -2498,7 +2499,7 @@ namespace OpenNos.GameObject.Networking
         private void LoadFamilies()
         {
             // TODO: Parallelization of family load
-            FamilyList = new List<Family>();
+            FamilyList = new ConcurrentBag<Family>();
             ConcurrentDictionary<long, Family> families = new ConcurrentDictionary<long, Family>();
             Parallel.ForEach(DaoFactory.FamilyDao.LoadAll(), familyDto =>
             {
@@ -2533,7 +2534,10 @@ namespace OpenNos.GameObject.Networking
                 families[family.FamilyId] = family;
             });
             Logger.Log.Info("[LOD] LOD mapinstances initialized");
-            FamilyList.AddRange(families.Select(s => s.Value));
+            foreach (Family family in families.Select(s => s.Value))
+            {
+                FamilyList.Add(family);
+            }
         }
 
         private void LoadScriptedInstances()
@@ -2639,7 +2643,10 @@ namespace OpenNos.GameObject.Networking
                     if (fam != null)
                     {
                         MapInstance lod = fam.LandOfDeath;
-                        FamilyList.Remove(fam);
+                        lock(FamilyList)
+                        {
+                            FamilyList.ToList().Remove(fam);
+                        }
                         fam = (Family)famdto;
                         fam.FamilyCharacters = new List<FamilyCharacter>();
                         foreach (FamilyCharacterDTO famchar in DaoFactory.FamilyCharacterDao.LoadByFamilyId(
@@ -2721,7 +2728,10 @@ namespace OpenNos.GameObject.Networking
                 }
                 else if (fam != null)
                 {
-                    FamilyList.Remove(fam);
+                    lock(FamilyList)
+                    {
+                        FamilyList.ToList().Remove(fam);
+                    }
                 }
             }
 
