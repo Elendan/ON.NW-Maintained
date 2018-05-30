@@ -1052,7 +1052,7 @@ namespace OpenNos.GameObject.Item.Instance
 
             if (Upgrade >= 15)
             {
-                if (CharacterSession.Character.Authority == AuthorityType.GameMaster)
+                if (CharacterSession.Character.Authority >= AuthorityType.GameMaster)
                 {
                     return;
                 }
