@@ -1225,7 +1225,7 @@ namespace OpenNos.GameObject.Battle
                         mapInstance.Broadcast(
                             $"su 1 {tchar.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tchar.Hp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         charact.Hp = charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
-                        charact.MapInstance.Broadcast(charact.GenerateStat());
+                        charact.Session.SendPacket(charact.GenerateStat());
                         target.DealtDamage = 0;
                     }
                 }
@@ -1242,7 +1242,7 @@ namespace OpenNos.GameObject.Battle
 
                         ushort damaged = (ushort)(damage > tmon.Monster.Level * multiplier ? tmon.Monster.Level * multiplier : damage);
                         charact.Hp -= charact.Hp - damaged <= 0 ? 1 : charact.Hp - damaged;
-                        charact.MapInstance.Broadcast(charact.GenerateStat());
+                        charact.Session.SendPacket(charact.GenerateStat());
                         mapInstance.Broadcast(
                             $"su 3 {tmon.GetId()} 1 {charact.GetId()} -1 0 -1 {skill.Effect} -1 -1 1 {(int)(tmon.CurrentHp / (double)target.MaxHp * 100)} {damaged} 0 1");
                         target.DealtDamage = 0;
