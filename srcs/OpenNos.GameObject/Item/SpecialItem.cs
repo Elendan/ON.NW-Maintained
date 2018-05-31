@@ -99,6 +99,14 @@ namespace OpenNos.GameObject.Item
                         session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1));
                         return;
                     }
+
+                    if (sPos == 0 && partner.SpInstance.PartnerSkill1 == 0 ||
+                        sPos == 1 && partner.SpInstance.PartnerSkill2 == 0 ||
+                        sPos == 2 && partner.SpInstance.PartnerSkill3 == 0)
+                    {
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Cette compétence n'est pas apprise !", 1));
+                        return;
+                    }
                     
                     if (sRequest == 3)
                     {
@@ -202,6 +210,13 @@ namespace OpenNos.GameObject.Item
                         session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Merci de retirer la sp du partenaire", 1));
                         return;
                     }
+
+                    if (partner.SpInstance.PartnerSkill1 == 0 && partner.SpInstance.PartnerSkill2 == 0 && partner.SpInstance.PartnerSkill3 == 0)
+                    {
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateModal("Vous ne connaissez aucune compétence", 1));
+                        return;
+                    }
+
                     if (request == 3)
                     {
                         partner.SpInstance.PartnerSkill1 = 0;
