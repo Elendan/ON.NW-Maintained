@@ -3457,6 +3457,29 @@ namespace OpenNos.Handler
                 }
             });
         }
+
+        /// <summary>
+        /// $ClearMap packet
+        /// </summary>
+        /// <param name="clearMapPacket"></param>
+        public void ClearMap(ClearMapPacket clearMapPacket)
+        {
+            if (clearMapPacket != null && Session.HasCurrentMapInstance)
+            {
+                Parallel.ForEach(Session.CurrentMapInstance.Monsters.Where(s => s.ShouldRespawn != true), monster =>
+                {
+                    Session.CurrentMapInstance.Broadcast(monster.GenerateOut());
+                    Session.CurrentMapInstance.RemoveMonster(monster);
+                });
+                Parallel.ForEach(Session.CurrentMapInstance.DroppedList, drop =>
+                {
+                    Session.CurrentMapInstance.Broadcast(drop.Value.GenerateOut(drop.Value.TransportId));
+                    Session.CurrentMapInstance.DroppedList.TryRemove(drop.Value.TransportId, out _);
+                });
+                Session.SendPacket(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("DONE"), 10));
+            }
+        }
+
         #endregion
     }
 }
