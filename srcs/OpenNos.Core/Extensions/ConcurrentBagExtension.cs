@@ -8,6 +8,11 @@ namespace OpenNos.Core.Extensions
     {
         #region Methods
 
+        public static ConcurrentBag<T> Replace<T>(this ConcurrentBag<T> queue, Func<T, bool> predicate)
+        {
+            return new ConcurrentBag<T>(queue.ToList().Where(predicate));
+        }
+
         public static void Clear<T>(this ConcurrentBag<T> queue)
         {
             while (!queue.IsEmpty)

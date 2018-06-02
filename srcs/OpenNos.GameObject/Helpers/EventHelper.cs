@@ -24,6 +24,7 @@ using OpenNos.Core.Extensions;
 using OpenNos.DAL;
 using OpenNos.GameObject.Event;
 using OpenNos.GameObject.Event.ACT4;
+using OpenNos.GameObject.Event.ARENA;
 using OpenNos.GameObject.Event.CALIGOR;
 using OpenNos.GameObject.Event.ICEBREAKER;
 using OpenNos.GameObject.Event.INSTANTBATTLE;
@@ -79,7 +80,7 @@ namespace OpenNos.GameObject.Helpers
                             InstantBattle.GenerateInstantBattle(useTimer);
                             break;
                         case EventType.TALENTARENA:
-                            //ArenaEvent.GenerateTalentArena();
+                            ArenaEvent.GenerateTalentArena();
                             break;
                         case EventType.LODDH:
                             Lod.GenerateLod(35);

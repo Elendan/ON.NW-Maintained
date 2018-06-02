@@ -477,7 +477,7 @@ namespace OpenNos.GameObject.Networking
                     goto default;
 
                 case MapInstanceType.TalentArenaMapInstance:
-                    /*ConcurrentBag<ArenaTeamMember> team = Instance.ArenaTeams.FirstOrDefault(s => s.Any(o => o.Session == session));
+                    ConcurrentBag<ArenaTeamMember> team = Instance.ArenaTeams.FirstOrDefault(s => s.Any(o => o.Session == session));
                     ArenaTeamMember member = team?.FirstOrDefault(s => s.Session == session);
                     if (member != null)
                     {
@@ -493,16 +493,16 @@ namespace OpenNos.GameObject.Networking
                                 session.CurrentMapInstance.Broadcast(s.Session.Character.GenerateTp());
                                 s.Session.SendPacket(UserInterfaceHelper.Instance.GenerateTaSt(TalentArenaOptionType.Watch));
                             });
-                            ArenaTeamMember killer = team.OrderBy(s => s.Order).FirstOrDefault(s => !s.Dead && s.ArenaTeamType != member.ArenaTeamType);
-                            session.CurrentMapInstance.Broadcast(session.Character.GenerateSay(string.Format("TEAM_WINNER_ARENA_ROUND", killer?.Session.Character.Name, killer?.ArenaTeamType), 10));
+                            ArenaTeamMember arenaKiller = team.OrderBy(s => s.Order).FirstOrDefault(s => !s.Dead && s.ArenaTeamType != member.ArenaTeamType);
+                            session.CurrentMapInstance.Broadcast(session.Character.GenerateSay(string.Format("TEAM_WINNER_ARENA_ROUND", arenaKiller?.Session.Character.Name, arenaKiller?.ArenaTeamType), 10));
                             session.CurrentMapInstance.Broadcast(
-                                UserInterfaceHelper.Instance.GenerateMsg(string.Format("TEAM_WINNER_ARENA_ROUND", killer?.Session.Character.Name, killer?.ArenaTeamType), 0));
-                            session.CurrentMapInstance.Sessions.Except(team.Where(s => s.ArenaTeamType == killer?.ArenaTeamType).Select(s => s.Session)).ToList().ForEach(o =>
+                                UserInterfaceHelper.Instance.GenerateMsg(string.Format("TEAM_WINNER_ARENA_ROUND", arenaKiller?.Session.Character.Name, arenaKiller?.ArenaTeamType), 0));
+                            session.CurrentMapInstance.Sessions.Except(team.Where(s => s.ArenaTeamType == arenaKiller?.ArenaTeamType).Select(s => s.Session)).ToList().ForEach(o =>
                             {
-                                if (killer?.ArenaTeamType == ArenaTeamType.ERENIA)
+                                if (arenaKiller?.ArenaTeamType == ArenaTeamType.ERENIA)
                                 {
-                                    o.SendPacket(killer.Session.Character.GenerateTaM(2));
-                                    o.SendPacket(killer.Session.Character.GenerateTaP(2, true));
+                                    o.SendPacket(arenaKiller.Session.Character.GenerateTaM(2));
+                                    o.SendPacket(arenaKiller.Session.Character.GenerateTaP(2, true));
                                 }
                                 else
                                 {
@@ -511,9 +511,9 @@ namespace OpenNos.GameObject.Networking
                                 }
                                 o.SendPacket($"taw_d {member.Session.Character.CharacterId}");
                                 o.SendPacket(member.Session.Character.GenerateSay(
-                                    string.Format("WINNER_ARENA_ROUND", killer?.Session.Character.Name, killer?.ArenaTeamType, member.Session.Character.Name), 10));
+                                    string.Format("WINNER_ARENA_ROUND", arenaKiller?.Session.Character.Name, arenaKiller?.ArenaTeamType, member.Session.Character.Name), 10));
                                 o.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
-                                    string.Format("WINNER_ARENA_ROUND", killer?.Session.Character.Name, killer?.ArenaTeamType, member.Session.Character.Name), 0));
+                                    string.Format("WINNER_ARENA_ROUND", arenaKiller?.Session.Character.Name, arenaKiller?.ArenaTeamType, member.Session.Character.Name), 0));
                             });
                         }
 
@@ -532,7 +532,7 @@ namespace OpenNos.GameObject.Networking
                         session.Character.Mp = (int) session.Character.MpLoad();
                         session.CurrentMapInstance?.Broadcast(session, session.Character.GenerateRevive());
                         session.SendPacket(session.Character.GenerateStat());
-                    }*/
+                    }
                     break;
 
                 default:

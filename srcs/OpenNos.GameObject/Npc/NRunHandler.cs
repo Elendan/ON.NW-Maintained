@@ -510,13 +510,13 @@ namespace OpenNos.GameObject.Npc
                             s.Session != null && !s.Dead && s.ArenaTeamType == ArenaTeamType.ZENAS);
                         ArenaTeamMember erenia = at.OrderBy(s => s.Order).FirstOrDefault(s =>
                             s.Session != null && !s.Dead && s.ArenaTeamType == ArenaTeamType.ERENIA);
-                        session.SendPacket(erenia.Session.Character.GenerateTaM(0));
-                        session.SendPacket(erenia.Session.Character.GenerateTaM(3));
+                        session.SendPacket(erenia?.Session.Character.GenerateTaM(0));
+                        session.SendPacket(erenia?.Session.Character.GenerateTaM(3));
                         session.SendPacket("taw_sv 0");
-                        session.SendPacket(zenas.Session.Character.GenerateTaP(0, true));
-                        session.SendPacket(erenia.Session.Character.GenerateTaP(2, true));
-                        session.SendPacket(zenas.Session.Character.GenerateTaFc(0));
-                        session.SendPacket(erenia.Session.Character.GenerateTaFc(1));
+                        session.SendPacket(zenas?.Session.Character.GenerateTaP(0, true));
+                        session.SendPacket(erenia?.Session.Character.GenerateTaP(2, true));
+                        session.SendPacket(zenas?.Session.Character.GenerateTaFc(0));
+                        session.SendPacket(erenia?.Session.Character.GenerateTaFc(1));
                     }
                     else
                     {
