@@ -28,7 +28,7 @@ namespace OpenNos.Data
 
         public short Probability { get; set; }
 
-        public byte ItemGeneratedAmount { get; set; }
+        public short ItemGeneratedAmount { get; set; }
 
         public short ItemGeneratedVNum { get; set; }
 

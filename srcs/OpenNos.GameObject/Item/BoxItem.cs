@@ -122,7 +122,7 @@ namespace OpenNos.GameObject.Item
                                     }
 
                                     newInv = session.Character.Inventory.AddNewToInventory(rollitem.ItemGeneratedVNum,
-                                        rollitem.ItemGeneratedAmount, rare: box.Rare,
+                                        (ushort)rollitem.ItemGeneratedAmount, rare: box.Rare,
                                         upgrade: rollitem.ItemGeneratedUpgrade);
                                     if (!newInv.Any())
                                     {

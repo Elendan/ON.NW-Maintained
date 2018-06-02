@@ -2522,7 +2522,7 @@ namespace OpenNos.Handler
             if (searchMonsterPacket != null)
             {
                 IEnumerable<NpcMonsterDTO> monsterlist = DaoFactory.NpcMonsterDao.FindByName(string.IsNullOrEmpty(searchMonsterPacket.Name) ? string.Empty : searchMonsterPacket.Name)
-                    .OrderBy(s => s.NpcMonsterVNum).Skip(searchMonsterPacket.Page * 200).Take(200).ToList();
+                    .OrderBy(s => s.NpcMonsterVNum).Take(200).ToList();
                 if (monsterlist.Any())
                 {
                     LogHelper.Instance.InsertCommandLog(Session.Character.CharacterId, searchMonsterPacket, Session.IpAddress);

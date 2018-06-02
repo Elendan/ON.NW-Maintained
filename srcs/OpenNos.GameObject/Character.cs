@@ -3620,7 +3620,7 @@ namespace OpenNos.GameObject
             return Reput <= 5000000 ? 26 : 27;
         }
 
-        public void GiftAdd(short itemVNum, byte amount, short design = 0, byte upgrade = 0, sbyte rare = 0,
+        public void GiftAdd(short itemVNum, ushort amount, short design = 0, byte upgrade = 0, sbyte rare = 0,
             bool isQuest = false)
         {
             //TODO add the rare support

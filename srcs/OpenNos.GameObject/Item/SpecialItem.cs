@@ -353,7 +353,7 @@ namespace OpenNos.GameObject.Item
                             {
                                 if (rollitem.Probability == 10000)
                                 {
-                                    session.Character.GiftAdd(rollitem.ItemGeneratedVNum, rollitem.ItemGeneratedAmount);
+                                    session.Character.GiftAdd(rollitem.ItemGeneratedVNum, (ushort)rollitem.ItemGeneratedAmount);
                                     continue;
                                 }
 
@@ -376,7 +376,7 @@ namespace OpenNos.GameObject.Item
                                     });
                                 }
 
-                                session.Character.GiftAdd(rollitem.ItemGeneratedVNum, rollitem.ItemGeneratedAmount, 0,
+                                session.Character.GiftAdd(rollitem.ItemGeneratedVNum, (ushort)rollitem.ItemGeneratedAmount, 0,
                                     rollitem.ItemGeneratedUpgrade);
                                 break;
                             }
@@ -1116,7 +1116,7 @@ namespace OpenNos.GameObject.Item
                         {
                             if (rollitem.Probability == 10000)
                             {
-                                session.Character.GiftAdd(rollitem.ItemGeneratedVNum, rollitem.ItemGeneratedAmount);
+                                session.Character.GiftAdd(rollitem.ItemGeneratedVNum, (ushort)rollitem.ItemGeneratedAmount);
                                 continue;
                             }
 
@@ -1127,7 +1127,7 @@ namespace OpenNos.GameObject.Item
                             }
 
                             newInv = session.Character.Inventory.AddNewToInventory(rollitem.ItemGeneratedVNum,
-                                rollitem.ItemGeneratedAmount, upgrade: rollitem.ItemGeneratedUpgrade);
+                                (ushort)rollitem.ItemGeneratedAmount, upgrade: rollitem.ItemGeneratedUpgrade);
                             short slot = inv.Slot;
                             if (!newInv.Any() || slot == -1)
                             {
