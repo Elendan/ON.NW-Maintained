@@ -500,7 +500,7 @@ namespace OpenNos.GameObject.Buff
 
                             if (mate != null)
                             {
-                                restoreMateMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(x => 
+                                restoreMateMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 <= 0 ? 2 : ThirdData + 1)).Subscribe(x => 
                                 {
                                     int heal = FirstData;
                                     if (IsLevelScaled)
