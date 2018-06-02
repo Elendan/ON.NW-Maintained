@@ -117,6 +117,9 @@ namespace OpenNos.Handler
 
                     return;
                 }
+                Session.Character.RemoveBuff(614);
+                Session.Character.RemoveBuff(615);
+                Session.Character.RemoveBuff(616);
 
                 if (useSkillPacket.MapX.HasValue && useSkillPacket.MapY.HasValue)
                 {
