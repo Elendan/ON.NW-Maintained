@@ -868,7 +868,7 @@ namespace OpenNos.GameObject.Buff
                             switch (session)
                             {
                                 case Character receiverCharacter:
-                                    int loss = (int)(receiverCharacter.HpLoad() * 0.08);
+                                    int loss = (int)(receiverCharacter.HpLoad() * (FirstData * 0.01));
 
                                     receiverCharacter.DotDebuff = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                     {
