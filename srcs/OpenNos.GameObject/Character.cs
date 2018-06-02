@@ -99,6 +99,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public IDisposable DotDebuff { get; set; }
+
         // <BuffId, BuffReflexion>
         public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
 

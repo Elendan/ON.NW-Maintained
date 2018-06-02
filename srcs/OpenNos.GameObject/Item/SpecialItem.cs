@@ -322,6 +322,7 @@ namespace OpenNos.GameObject.Item
                                 RemainingTime = 7200
                             });
                             session.Character.RemoveBuff(339, true);
+                            session.Character.DotDebuff?.Dispose();
                             session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
                             break;
                         case 5929:
@@ -331,6 +332,7 @@ namespace OpenNos.GameObject.Item
                                 CharacterId = session.Character.CharacterId,
                                 RemainingTime = 600
                             });
+                            session.Character.DotDebuff?.Dispose();
                             session.Character.RemoveBuff(339, true);
                             session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
                             break;

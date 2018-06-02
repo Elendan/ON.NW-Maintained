@@ -862,6 +862,24 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.RecoveryAndDamagePercent:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.RecoveryAndDamagePercent.HPReduced:
+                            switch (session)
+                            {
+                                case Character receiverCharacter:
+                                    int loss = (int)(receiverCharacter.HpLoad() * 0.08);
+
+                                    receiverCharacter.DotDebuff = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                    {
+                                        receiverCharacter.Hp = receiverCharacter.Hp - loss <= 0 ? 1 : receiverCharacter.Hp - loss;
+                                        receiverCharacter.Session.SendPacket(receiverCharacter.GenerateDm((ushort)loss));
+                                        receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                    });
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Count:

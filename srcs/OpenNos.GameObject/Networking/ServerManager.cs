@@ -1101,6 +1101,7 @@ namespace OpenNos.GameObject.Networking
                     true && session.Character.Buff.Any(s => s.Card.CardId == 339)) //Act5.2 debuff
                 {
                     session.Character.RemoveBuff(339, true);
+                    session.Character.DotDebuff?.Dispose();
                 }
                 else if (session.CurrentMapInstance?.Map.MapTypes.Any(s => s.MapTypeId == (short)MapTypeEnum.Act52) ==
                     true && session.Character.Buff.All(s => s.Card.CardId != 339 && s.Card.CardId != 340))
