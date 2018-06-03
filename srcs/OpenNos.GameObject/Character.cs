@@ -1116,9 +1116,9 @@ namespace OpenNos.GameObject
                 if (Group != null && (Group.GroupType == GroupType.Team || Group.GroupType == GroupType.BigTeam ||
                     Group.GroupType == GroupType.GiantTeam))
                 {
-                    Session.CurrentMapInstance?.Broadcast(Session, GenerateEff(828 + (Group.IsLeader(Session) ? 1 : 0)),
+                    Session?.CurrentMapInstance?.Broadcast(Session, GenerateEff(828 + (Group.IsLeader(Session) ? 1 : 0)),
                         ReceiverType.AllExceptGroup);
-                    Session.CurrentMapInstance?.Broadcast(Session, GenerateEff(830 + (Group.IsLeader(Session) ? 1 : 0)),
+                    Session?.CurrentMapInstance?.Broadcast(Session, GenerateEff(830 + (Group.IsLeader(Session) ? 1 : 0)),
                         ReceiverType.Group);
                 }
 
