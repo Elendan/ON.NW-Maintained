@@ -11,6 +11,8 @@ using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
+using OpenNos.Master.Library.Client;
+using OpenNos.Master.Library.Data;
 
 namespace OpenNos.GameObject.Event.ARENA
 {
@@ -18,6 +20,14 @@ namespace OpenNos.GameObject.Event.ARENA
     {
         internal static void GenerateTalentArena()
         {
+            CommunicationServiceClient.Instance.SendMessageToCharacter(new SCSCharacterMessage
+            {
+                DestinationCharacterId = null,
+                SourceCharacterId = 0,
+                SourceWorldId = ServerManager.Instance.WorldId,
+                Message = "L'arene des talents est ouverte !",
+                Type = MessageType.Shout
+            });
             long groupid = 0;
             int seconds = 0;
             IDisposable obs = Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(start2 =>
