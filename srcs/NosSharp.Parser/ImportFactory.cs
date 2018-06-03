@@ -4180,6 +4180,11 @@ namespace NosSharp.Parser
                                             item.EffectValue = 3;
                                             break;
 
+                                        case 4263: // Upgrade/reduce amulet
+                                            item.Effect = 798;
+                                            item.EffectValue = 1;
+                                            break;
+
                                         case 4261: // Amulet to reduce rarity
                                             item.Effect = 797;
                                             item.EffectValue = 1;

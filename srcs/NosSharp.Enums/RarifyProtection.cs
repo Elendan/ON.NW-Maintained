@@ -21,6 +21,7 @@ namespace NosSharp.Enums
         RedAmulet,
         HeroicAmulet,
         RandomHeroicAmulet,
+        ReduceHeroicAmulet,
         Scroll
     }
 }

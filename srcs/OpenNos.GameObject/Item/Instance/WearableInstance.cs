@@ -375,14 +375,14 @@ namespace OpenNos.GameObject.Item.Instance
 
             if (session != null)
             {
+                var amulet =
+                    session.Character.Inventory.LoadBySlotAndType<WearableInstance>(
+                        (short)EquipmentType.Amulet, InventoryType.Wear);
                 switch (mode)
                 {
                     case RarifyMode.Free:
                         break;
                     case RarifyMode.Reduce:
-                        var amulet =
-                            session.Character.Inventory.LoadBySlotAndType<WearableInstance>(
-                                (short)EquipmentType.Amulet, InventoryType.Wear);
                         if (amulet == null)
                         {
                             return;
@@ -396,7 +396,7 @@ namespace OpenNos.GameObject.Item.Instance
                             return;
                         }
 
-                        Rare -= 1;
+                        Rare -= (sbyte)ServerManager.Instance.RandomNumber(0, 7);
                         GenerateHeroicShell(protection);
                         SetRarityPoint();
                         ItemInstance inv = session.Character.Inventory.GetItemInstanceById(Id);
@@ -407,6 +407,10 @@ namespace OpenNos.GameObject.Item.Instance
                         session.SendPacket(session.Character.GenerateEquipment());
                         return;
                     case RarifyMode.Success:
+                        if (amulet == null)
+                        {
+                            return;
+                        }
                         if (Item.IsHeroic && Rare >= 8 || !Item.IsHeroic && Rare <= 7)
                         {
                             session.SendPacket(
@@ -417,10 +421,18 @@ namespace OpenNos.GameObject.Item.Instance
 
                         Rare += 1;
                         SetRarityPoint();
+                        if (Item.IsHeroic)
+                        {
+                            GenerateHeroicShell(RarifyProtection.RandomHeroicAmulet);
+                        }
                         ItemInstance inventory = session?.Character.Inventory.GetItemInstanceById(Id);
                         if (inventory != null)
                         {
                             session.SendPacket(inventory.GenerateInventoryAdd());
+                            session.Character.NotifyRarifyResult(Rare);
+                            session.Character.DeleteItemByItemInstanceId(amulet.Id);
+                            session.SendPacket($"info {Language.Instance.GetMessageFromKey("AMULET_DESTROYED")}");
+                            session.SendPacket(session.Character.GenerateEquipment());
                         }
 
                         return;
