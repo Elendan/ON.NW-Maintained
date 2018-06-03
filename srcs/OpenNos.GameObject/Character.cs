@@ -4032,7 +4032,7 @@ namespace OpenNos.GameObject
 
         public double MpLoad()
         {
-            int mp = 0;
+            int? mp = 0;
             double multiplicator = 1.0;
             if (UseSp)
             {
@@ -4054,7 +4054,7 @@ namespace OpenNos.GameObject
                         multiplicator += 0.5 + (point - 50.00) / 50.00;
                     }
 
-                    mp = SpInstance.MP + SpInstance.SpHP * 100;
+                    mp = SpInstance?.MP + SpInstance?.SpHP * 100;
                 }
             }
 
