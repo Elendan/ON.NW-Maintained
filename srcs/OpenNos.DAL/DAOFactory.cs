@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+using System.Net;
 using OpenNos.DAL.Interface;
 using OpenNos.DAL.EF;
 
@@ -33,6 +34,7 @@ namespace OpenNos.DAL
         private static ICharacterQuestDAO _characterQuestDao;
         private static IComboDAO _comboDao;
         private static IDropDAO _dropDao;
+        private static IExchangeLogDao _exchangeLogDao;
         private static IFamilyCharacterDAO _familycharacterDao;
         private static IFamilyDAO _familyDao;
         private static IFamilyLogDAO _familylogDao;
@@ -72,6 +74,7 @@ namespace OpenNos.DAL
         private static IStaticBonusDAO _staticBonusDao;
         private static IStaticBuffDAO _staticBuffDao;
         private static ITeleporterDAO _teleporterDao;
+        private static IUpgradeLogDao _upgradeLogDao;
 
         #endregion
 
@@ -334,6 +337,16 @@ namespace OpenNos.DAL
         public static IRollGeneratedItemDAO RollGeneratedItemDao
         {
             get { return _rollGeneratedItemDao ?? (_rollGeneratedItemDao = new RollGeneratedItemDAO()); }
+        }
+
+        public static IExchangeLogDao ExchangeLogDao
+        {
+            get { return _exchangeLogDao ?? (_exchangeLogDao = new ExchangeLogDao()); }
+        }
+
+        public static IUpgradeLogDao UpgradeLogDao
+        {
+            get { return _upgradeLogDao ?? (_upgradeLogDao = new UpgradeLogDao());  }
         }
 
         #endregion

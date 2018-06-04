@@ -179,6 +179,7 @@
     <Compile Include="CharacterQuestDAO.cs" />
     <Compile Include="Entities\CharacterHome.cs" />
     <Compile Include="Entities\CharacterQuest.cs" />
+    <Compile Include="Entities\ExchangeLog.cs" />
     <Compile Include="Entities\LogChat.cs" />
     <Compile Include="Entities\LogCommands.cs" />
     <Compile Include="Entities\LogPlayerAction.cs" />
@@ -192,6 +193,8 @@
     <Compile Include="Entities\Mate.cs" />
     <Compile Include="Entities\ScriptedInstance.cs" />
     <Compile Include="Entities\BCard.cs" />
+    <Compile Include="Entities\UpgradeLog.cs" />
+    <Compile Include="ExchangeLogDao.cs" />
     <Compile Include="LogChatDAO.cs" />
     <Compile Include="LogCommandsDAO.cs" />
     <Compile Include="LogVIPDAO.cs" />
@@ -422,6 +425,10 @@
     <Compile Include="Migrations\201806022247581_Aphrodite111.cs" />
     <Compile Include="Migrations\201806022247581_Aphrodite111.Designer.cs">
       <DependentUpon>201806022247581_Aphrodite111.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806041826326_Aphrodite112.cs" />
+    <Compile Include="Migrations\201806041826326_Aphrodite112.Designer.cs">
+      <DependentUpon>201806041826326_Aphrodite112.cs</DependentUpon>
     </Compile>
     <Compile Include="QuestDAO.cs" />
     <Compile Include="QuestLogDAO.cs" />
@@ -734,6 +741,7 @@
     <Compile Include="StaticBonusDAO.cs" />
     <Compile Include="TeleporterDAO.cs" />
     <Compile Include="ScriptedInstanceDAO.cs" />
+    <Compile Include="UpgradeLogDao.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -1106,6 +1114,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806022247581_Aphrodite111.resx">
       <DependentUpon>201806022247581_Aphrodite111.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806041826326_Aphrodite112.resx">
+      <DependentUpon>201806041826326_Aphrodite112.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

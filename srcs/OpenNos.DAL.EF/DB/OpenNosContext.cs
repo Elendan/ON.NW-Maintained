@@ -435,6 +435,8 @@ namespace OpenNos.DAL.EF.DB
 
         public virtual DbSet<EquipmentOption> EquipmentOption { get; set; }
 
+        public virtual DbSet<ExchangeLog> ExchangeLog { get; set; }
+
         public virtual DbSet<Character> Character { get; set; }
 
         public virtual DbSet<CharacterQuest> CharacterQuest { get; set; }
@@ -528,6 +530,8 @@ namespace OpenNos.DAL.EF.DB
         public virtual DbSet<CharacterHome> CharacterHome { get; set; }
 
         public virtual DbSet<StaticBuff> StaticBuff { get; set; }
+
+        public virtual DbSet<UpgradeLog> UpgradeLog { get; set; }
 
         #endregion
     }

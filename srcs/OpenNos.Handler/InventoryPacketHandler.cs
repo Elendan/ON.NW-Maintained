@@ -1898,6 +1898,7 @@ namespace OpenNos.Handler
                 if (invtemp != null && invtemp.Amount >= item.Amount)
                 {
                     sourceSession.Character.Inventory.RemoveItemAmountFromInventory(item.Amount, invtemp.Id);
+                    LogHelper.Instance.InsertExchangeLog(sourceSession, targetSession, invtemp.ItemVNum, (short)item.Amount, sourceSession.Character.ExchangeInfo.Gold);
                 }
                 else
                 {

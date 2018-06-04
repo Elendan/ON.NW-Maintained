@@ -325,6 +325,8 @@ namespace ON.NW.World
             DaoFactory.ScriptedInstanceDao.RegisterMapping(typeof(ScriptedInstance)).InitializeMapper();
             DaoFactory.LogChatDao.RegisterMapping(typeof(LogChatDTO)).InitializeMapper();
             DaoFactory.LogCommandsDao.RegisterMapping(typeof(LogCommandsDTO)).InitializeMapper();
+            DaoFactory.UpgradeLogDao.RegisterMapping(typeof(UpgradeLogDTO)).InitializeMapper();
+            DaoFactory.ExchangeLogDao.RegisterMapping(typeof(ExchangeLogDTO)).InitializeMapper();
         }
 
         public class NativeMethods

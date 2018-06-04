@@ -154,6 +154,7 @@
     <Compile Include="BoxItemDTO.cs" />
     <Compile Include="Character\CharacterHomeDTO.cs" />
     <Compile Include="Character\CharacterQuestDTO.cs" />
+    <Compile Include="ExchangeLogDTO.cs" />
     <Compile Include="LogChatDTO.cs" />
     <Compile Include="LogCommandsDTO.cs" />
     <Compile Include="LogVIPDTO.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="StaticBuffDTO.cs" />
     <Compile Include="TeleporterDTO.cs" />
     <Compile Include="ScriptedInstanceDTO.cs" />
+    <Compile Include="UpgradeLogDTO.cs" />
     <Compile Include="UsableInstanceDTO.cs" />
     <Compile Include="UserDTO.cs" />
     <Compile Include="WearableInstanceDTO.cs" />

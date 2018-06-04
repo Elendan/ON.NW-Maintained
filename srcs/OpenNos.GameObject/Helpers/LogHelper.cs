@@ -4,6 +4,7 @@ using NosSharp.Enums;
 using OpenNos.Core.Serializing;
 using OpenNos.Data;
 using OpenNos.DAL;
+using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Helpers
 {
@@ -82,6 +83,38 @@ namespace OpenNos.GameObject.Helpers
                 Time = time
             };
             DaoFactory.RaidLogDao.InsertOrUpdate(ref log);
+        }
+
+        public void InsertUpgradeLog(ClientSession session, string upgradeType, bool? hasAmulet)
+        {
+            var log = new UpgradeLogDTO
+            {
+                AccountId = session.Account.AccountId,
+                CharacterId = session.Character.CharacterId,
+                CharacterName = session.Character.Name,
+                UpgradeType = upgradeType,
+                HasAmulet = hasAmulet,
+                Date = DateTime.Now
+            };
+            DaoFactory.UpgradeLogDao.InsertOrUpdate(ref log);
+        }
+
+        public void InsertExchangeLog(ClientSession session, ClientSession targetSession, short itemVnum, short itemAmount, long gold)
+        {
+            var log = new ExchangeLogDTO
+            {
+                AccountId = session.Account.AccountId,
+                CharacterId = session.Character.CharacterId,
+                CharacterName = session.Character.Name,
+                TargetAccountId = targetSession.Account.AccountId,
+                TargetCharacterId = targetSession.Character.CharacterId,
+                TargetCharacterName = targetSession.Character.Name,
+                ItemVnum = itemVnum,
+                ItemAmount = itemAmount,
+                Gold = gold,
+                Date = DateTime.Now
+            };
+            DaoFactory.ExchangeLogDao.InsertOrUpdate(ref log);
         }
 
         #region Properties

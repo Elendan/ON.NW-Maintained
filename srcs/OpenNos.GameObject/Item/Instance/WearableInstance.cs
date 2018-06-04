@@ -405,6 +405,7 @@ namespace OpenNos.GameObject.Item.Instance
                         session.Character.DeleteItemByItemInstanceId(amulet.Id);
                         session.SendPacket($"info {Language.Instance.GetMessageFromKey("AMULET_DESTROYED")}");
                         session.SendPacket(session.Character.GenerateEquipment());
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet == null ? false : true);
                         return;
                     case RarifyMode.Success:
                         if (amulet == null)
@@ -434,7 +435,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket($"info {Language.Instance.GetMessageFromKey("AMULET_DESTROYED")}");
                             session.SendPacket(session.Character.GenerateEquipment());
                         }
-
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet == null ? false : true);
                         return;
 
                     case RarifyMode.Normal:
@@ -492,6 +493,7 @@ namespace OpenNos.GameObject.Item.Instance
                         session.Character.Gold -= goldprice;
                         session.Character.Inventory.RemoveItemAmount(cellaVnum, cella);
                         session.SendPacket(session.Character.GenerateGold());
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet != null);
                         break;
 
                     case RarifyMode.Drop:
@@ -518,6 +520,7 @@ namespace OpenNos.GameObject.Item.Instance
                     if (inventory != null)
                     {
                         session.SendPacket(inventory.GenerateInventoryAdd());
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", false);
                     }
 
                     return;
@@ -667,6 +670,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket(
                                 UserInterfaceHelper.Instance.GenerateMsg(
                                     Language.Instance.GetMessageFromKey("AMULET_FAIL_SAVED"), 0));
+                            LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet != null);
                             return;
                         case RarifyProtection.None:
                             session.Character.DeleteItemByItemInstanceId(Id);
@@ -676,6 +680,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket(
                                 UserInterfaceHelper.Instance.GenerateMsg(
                                     Language.Instance.GetMessageFromKey("RARIFY_FAILED"), 0));
+                            LogHelper.Instance.InsertUpgradeLog(session, "bet", false);
                             return;
                     }
 
@@ -687,6 +692,7 @@ namespace OpenNos.GameObject.Item.Instance
                             Language.Instance.GetMessageFromKey("RARIFY_FAILED_ITEM_SAVED"), 0));
                     session.CurrentMapInstance.Broadcast(session.Character.GenerateEff(3004), session.Character.MapX,
                         session.Character.MapY);
+                    LogHelper.Instance.InsertUpgradeLog(session, "bet", true);
                     return;
                 }
             }
