@@ -327,41 +327,48 @@ namespace OpenNos.GameObject.Buff
                                 {
                                     observable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                     {
-                                        int heal = FirstData;
-                                        bool change = false;
-                                        if (IsLevelScaled)
+                                        if (receiver.Hp > 0)
                                         {
-                                            if (IsLevelDivided)
+                                            int heal = FirstData;
+                                            bool change = false;
+                                            if (IsLevelScaled)
                                             {
-                                                heal /= receiver.Level;
+                                                if (IsLevelDivided)
+                                                {
+                                                    heal /= receiver.Level;
+                                                }
+                                                else
+                                                {
+                                                    heal *= receiver.Level;
+                                                }
+                                            }
+
+                                            if (receiver.Hp + heal < receiver.HpLoad())
+                                            {
+                                                receiver.Hp += heal;
+                                                receiver.Session?.CurrentMapInstance?.Broadcast(receiver.GenerateRc(heal));
+                                                change = true;
                                             }
                                             else
                                             {
-                                                heal *= receiver.Level;
-                                            }
-                                        }
+                                                if (receiver.Hp != (int)receiver.HpLoad())
+                                                {
+                                                    receiver.Session?.CurrentMapInstance?.Broadcast(
+                                                        receiver.GenerateRc((int)(receiver.HpLoad() - receiver.Hp)));
+                                                    change = true;
+                                                }
 
-                                        if (receiver.Hp + heal < receiver.HpLoad())
-                                        {
-                                            receiver.Hp += heal;
-                                            receiver.Session?.CurrentMapInstance?.Broadcast(receiver.GenerateRc(heal));
-                                            change = true;
+                                                receiver.Hp = (int)receiver.HpLoad();
+                                            }
+
+                                            if (change)
+                                            {
+                                                receiver.Session?.SendPacket(receiver.GenerateStat());
+                                            }
                                         }
                                         else
                                         {
-                                            if (receiver.Hp != (int)receiver.HpLoad())
-                                            {
-                                                receiver.Session?.CurrentMapInstance?.Broadcast(
-                                                    receiver.GenerateRc((int)(receiver.HpLoad() - receiver.Hp)));
-                                                change = true;
-                                            }
-
-                                            receiver.Hp = (int)receiver.HpLoad();
-                                        }
-
-                                        if (change)
-                                        {
-                                            receiver.Session?.SendPacket(receiver.GenerateStat());
+                                            observable?.Dispose();
                                         }
                                     });
 
@@ -414,7 +421,7 @@ namespace OpenNos.GameObject.Buff
                             break;
                         case AdditionalTypes.HealingBurningAndCasting.RestoreMP:
                             Card restoreMpCard = ServerManager.Instance.GetCardByCardId(CardId);
-                            IDisposable restoreCharMp;
+                            IDisposable restoreCharMp = null;
                             IDisposable restoreMateMp;
                             if (session is Character healReceiver)
                             {
@@ -457,38 +464,45 @@ namespace OpenNos.GameObject.Buff
                                 }
                                 restoreCharMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
                                 {
-                                    int heal = FirstData;
-                                    bool change = false;
-                                    if (IsLevelScaled)
+                                    if (healReceiver.Hp > 0)
                                     {
-                                        if (IsLevelDivided)
+                                        int heal = FirstData;
+                                        bool change = false;
+                                        if (IsLevelScaled)
                                         {
-                                            heal /= healReceiver.Level;
+                                            if (IsLevelDivided)
+                                            {
+                                                heal /= healReceiver.Level;
+                                            }
+                                            else
+                                            {
+                                                heal *= healReceiver.Level;
+                                            }
+                                        }
+
+                                        if (healReceiver.Mp + heal < healReceiver.MpLoad())
+                                        {
+                                            healReceiver.Mp += heal;
+                                            change = true;
                                         }
                                         else
                                         {
-                                            heal *= healReceiver.Level;
-                                        }
-                                    }
+                                            if (healReceiver.Mp != (int)healReceiver.MpLoad())
+                                            {
+                                                change = true;
+                                            }
 
-                                    if (healReceiver.Mp + heal < healReceiver.MpLoad())
-                                    {
-                                        healReceiver.Mp += heal;
-                                        change = true;
+                                            healReceiver.Mp = (int)healReceiver.MpLoad();
+                                        }
+
+                                        if (change)
+                                        {
+                                            healReceiver.Session?.SendPacket(healReceiver.GenerateStat());
+                                        }
                                     }
                                     else
                                     {
-                                        if (healReceiver.Mp != (int)healReceiver.MpLoad())
-                                        {
-                                            change = true;
-                                        }
-
-                                        healReceiver.Mp = (int)healReceiver.MpLoad();
-                                    }
-
-                                    if (change)
-                                    {
-                                        healReceiver.Session?.SendPacket(healReceiver.GenerateStat());
+                                        restoreCharMp?.Dispose();
                                     }
                                 });
 
@@ -557,27 +571,55 @@ namespace OpenNos.GameObject.Buff
                                     switch (session)
                                     {
                                         case Character receiverCharacter when caster is Character senderCharacter:
-                                            damage = (ushort)(senderCharacter.Level * scale);
-                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderCharacter.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case MapMonster receiverMonster when caster is Character senderCharacter:
-                                            damage = (ushort)(senderCharacter.Level * scale);
-                                            receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
-                                            receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                            if (receiverMonster.CurrentHp > 0)
+                                            {
+                                                damage = (ushort)(senderCharacter.Level * scale);
+                                                receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
+                                                receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case Character receiverCharacter when caster is MapMonster senderMapMonster:
-                                            damage = (ushort)(senderMapMonster.Monster.Level * scale);
-                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderMapMonster.Monster.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case Character receiverCharacter when caster is Mate senderMate:
-                                            damage = (ushort)(senderMate.Level * scale);
-                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderMate.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = (ushort)(senderCharacter.Level * scale);
@@ -606,10 +648,17 @@ namespace OpenNos.GameObject.Buff
                                     switch (session)
                                     {
                                         case Character receiverCharacter when caster is Character senderCharacter:
-                                            damage = senderCharacter.Level;
-                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = senderCharacter.Level;
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case MapMonster receiverMonster when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
@@ -617,10 +666,17 @@ namespace OpenNos.GameObject.Buff
                                             receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
                                             break;
                                         case Character receiverCharacter when caster is MapMonster senderMapMonster:
-                                            damage = senderMapMonster.Monster.Level;
-                                            receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                            receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = senderMapMonster.Monster.Level;
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
                                             break;
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
@@ -652,23 +708,37 @@ namespace OpenNos.GameObject.Buff
                             {
                                 int scale = FirstData + 1;
                                 ushort damage = 0;
-                                obs = Observable.Interval(TimeSpan.FromSeconds(mpTimer)).Subscribe(s =>
+                                mpObs = Observable.Interval(TimeSpan.FromSeconds(mpTimer)).Subscribe(s =>
                                 {
                                     switch (session)
                                     {
                                         case Character receiverCharacter when caster is Character senderCharacter:
-                                            damage = (ushort)(senderCharacter.Level * scale);
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderCharacter.Level * scale);
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                         case MapMonster receiverMonster when caster is Character senderCharacter:
                                             damage = (ushort)(senderCharacter.Level * scale);
                                             receiverMonster.CurrentMp = receiverMonster.CurrentMp - damage <= 0 ? 1 : receiverMonster.CurrentMp - damage;
                                             break;
                                         case Character receiverCharacter when caster is MapMonster senderMapMonster:
-                                            damage = (ushort)(senderMapMonster.Monster.Level * scale);
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderMapMonster.Monster.Level * scale);
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = (ushort)(senderCharacter.Level * scale);
@@ -681,13 +751,20 @@ namespace OpenNos.GameObject.Buff
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                         case Character receiverCharacter when caster is Mate senderMate:
-                                            damage = (ushort)(senderMate.Level * scale);
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(senderMate.Level * scale);
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                     }
                                 });
-                                Observable.Timer(TimeSpan.FromSeconds(mpCard.Duration * 0.1)).Subscribe(s => obs.Dispose());
+                                Observable.Timer(TimeSpan.FromSeconds(mpCard.Duration * 0.1)).Subscribe(s => mpObs.Dispose());
                             }
                             else
                             {
@@ -697,18 +774,32 @@ namespace OpenNos.GameObject.Buff
                                     switch (session)
                                     {
                                         case Character receiverCharacter when caster is Character senderCharacter:
-                                            damage = senderCharacter.Level;
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = senderCharacter.Level;
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                         case MapMonster receiverMonster when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
                                             receiverMonster.CurrentMp = receiverMonster.CurrentMp - damage <= 0 ? 1 : receiverMonster.CurrentMp - damage;
                                             break;
                                         case Character receiverCharacter when caster is MapMonster senderMapMonster:
-                                            damage = senderMapMonster.Monster.Level;
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = senderMapMonster.Monster.Level;
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
@@ -721,9 +812,16 @@ namespace OpenNos.GameObject.Buff
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                         case Character receiverCharacter when caster is Mate senderMate:
-                                            damage = senderMate.Level;
-                                            receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
-                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = senderMate.Level;
+                                                receiverCharacter.Mp = receiverCharacter.Mp - damage <= 0 ? 1 : receiverCharacter.Mp - damage;
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                mpObs?.Dispose();
+                                            }
                                             break;
                                     }
                                 });
@@ -865,6 +963,7 @@ namespace OpenNos.GameObject.Buff
                     switch (SubType)
                     {
                         case (byte)AdditionalTypes.RecoveryAndDamagePercent.HPRecovered:
+                            IDisposable obs = null;
                             switch (session)
                             {
                                 case Character receiverCharacter:
@@ -879,11 +978,18 @@ namespace OpenNos.GameObject.Buff
                                         int bonus = receiverCharacter.Level / FirstData;
                                         int heal = (int)(receiverCharacter.HpLoad() * (bonus * 0.01));
 
-                                        IDisposable obs = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 < 0 ? 2 : ThirdData + 1)).Subscribe(s =>
+                                        obs = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 < 0 ? 2 : ThirdData + 1)).Subscribe(s =>
                                             {
-                                                receiverCharacter.Hp = (int)(receiverCharacter.Hp + heal > receiverCharacter.HpLoad() ? receiverCharacter.HpLoad() : receiverCharacter.Hp + heal);
-                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateRc(heal));
-                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                                if (receiverCharacter.Hp > 0)
+                                                {
+                                                    receiverCharacter.Hp = (int)(receiverCharacter.Hp + heal > receiverCharacter.HpLoad() ? receiverCharacter.HpLoad() : receiverCharacter.Hp + heal);
+                                                    receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateRc(heal));
+                                                    receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                                }
+                                                else
+                                                {
+                                                   obs?.Dispose();
+                                                }
                                             });
 
                                         Observable.Timer(TimeSpan.FromSeconds(hcard.Duration * 0.1)).Subscribe(s =>
