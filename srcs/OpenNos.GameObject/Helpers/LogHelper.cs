@@ -4,6 +4,7 @@ using NosSharp.Enums;
 using OpenNos.Core.Serializing;
 using OpenNos.Data;
 using OpenNos.DAL;
+using OpenNos.GameObject.Item.Instance;
 using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Helpers
@@ -85,7 +86,7 @@ namespace OpenNos.GameObject.Helpers
             DaoFactory.RaidLogDao.InsertOrUpdate(ref log);
         }
 
-        public void InsertUpgradeLog(ClientSession session, string upgradeType, bool? hasAmulet)
+        public void InsertUpgradeLog(ClientSession session, string upgradeType, bool? hasAmulet, bool success, ItemInstance item)
         {
             var log = new UpgradeLogDTO
             {
@@ -94,7 +95,10 @@ namespace OpenNos.GameObject.Helpers
                 CharacterName = session.Character.Name,
                 UpgradeType = upgradeType,
                 HasAmulet = hasAmulet,
-                Date = DateTime.Now
+                Date = DateTime.Now,
+                Success = success,
+                ItemVnum = item.ItemVNum,
+                ItemName = item.Item.Name
             };
             DaoFactory.UpgradeLogDao.InsertOrUpdate(ref log);
         }

@@ -42,6 +42,12 @@ namespace OpenNos.DAL.EF.Entities
 
         public DateTime Date { get; set; }
 
+        public bool Success { get; set; }
+
+        public short ItemVnum { get; set; }
+
+        public string ItemName { get; set; }
+
         #endregion
     }
 }

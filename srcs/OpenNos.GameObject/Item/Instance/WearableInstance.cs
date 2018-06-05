@@ -405,7 +405,7 @@ namespace OpenNos.GameObject.Item.Instance
                         session.Character.DeleteItemByItemInstanceId(amulet.Id);
                         session.SendPacket($"info {Language.Instance.GetMessageFromKey("AMULET_DESTROYED")}");
                         session.SendPacket(session.Character.GenerateEquipment());
-                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet == null ? false : true);
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", true, true, inv);
                         return;
                     case RarifyMode.Success:
                         if (amulet == null)
@@ -435,7 +435,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket($"info {Language.Instance.GetMessageFromKey("AMULET_DESTROYED")}");
                             session.SendPacket(session.Character.GenerateEquipment());
                         }
-                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet == null ? false : true);
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", true, true, inventory);
                         return;
 
                     case RarifyMode.Normal:
@@ -493,7 +493,6 @@ namespace OpenNos.GameObject.Item.Instance
                         session.Character.Gold -= goldprice;
                         session.Character.Inventory.RemoveItemAmount(cellaVnum, cella);
                         session.SendPacket(session.Character.GenerateGold());
-                        LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet != null);
                         break;
 
                     case RarifyMode.Drop:
@@ -520,7 +519,7 @@ namespace OpenNos.GameObject.Item.Instance
                     if (inventory != null)
                     {
                         session.SendPacket(inventory.GenerateInventoryAdd());
-                        LogHelper.Instance.InsertUpgradeLog(session, "bet", false);
+                        LogHelper.Instance.InsertUpgradeLog(session, "bet", false, true, inventory);
                     }
 
                     return;
@@ -642,6 +641,7 @@ namespace OpenNos.GameObject.Item.Instance
             {
                 if (mode != RarifyMode.Drop && session != null)
                 {
+                    ItemInstance item = session.Character.Inventory.GetItemInstanceById(Id);
                     switch (protection)
                     {
                         case RarifyProtection.BlueAmulet:
@@ -670,7 +670,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket(
                                 UserInterfaceHelper.Instance.GenerateMsg(
                                     Language.Instance.GetMessageFromKey("AMULET_FAIL_SAVED"), 0));
-                            LogHelper.Instance.InsertUpgradeLog(session, "bet", amulet != null);
+                            LogHelper.Instance.InsertUpgradeLog(session, "bet", true, false, item);
                             return;
                         case RarifyProtection.None:
                             session.Character.DeleteItemByItemInstanceId(Id);
@@ -680,7 +680,7 @@ namespace OpenNos.GameObject.Item.Instance
                             session.SendPacket(
                                 UserInterfaceHelper.Instance.GenerateMsg(
                                     Language.Instance.GetMessageFromKey("RARIFY_FAILED"), 0));
-                            LogHelper.Instance.InsertUpgradeLog(session, "bet", false);
+                            LogHelper.Instance.InsertUpgradeLog(session, "bet", false, false, item);
                             return;
                     }
 
@@ -692,7 +692,7 @@ namespace OpenNos.GameObject.Item.Instance
                             Language.Instance.GetMessageFromKey("RARIFY_FAILED_ITEM_SAVED"), 0));
                     session.CurrentMapInstance.Broadcast(session.Character.GenerateEff(3004), session.Character.MapX,
                         session.Character.MapY);
-                    LogHelper.Instance.InsertUpgradeLog(session, "bet", true);
+                    LogHelper.Instance.InsertUpgradeLog(session, "bet", true, false, item);
                     return;
                 }
             }

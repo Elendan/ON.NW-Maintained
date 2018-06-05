@@ -22,5 +22,11 @@ namespace OpenNos.Data
         public bool? HasAmulet { get; set; }
 
         public DateTime Date { get; set; }
+
+        public bool Success { get; set; }
+
+        public short ItemVnum { get; set; }
+
+        public string ItemName { get; set; }
     }
 }
