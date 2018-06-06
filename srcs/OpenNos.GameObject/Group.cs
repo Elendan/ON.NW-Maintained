@@ -177,7 +177,7 @@ namespace OpenNos.GameObject
                 return false;
             }
 
-            return Characters.OrderBy(s => s.Character.LastGroupJoin).ElementAt(0) == session;
+            return Characters.OrderBy(s => s.Character.LastGroupJoin).Any() && Characters.OrderBy(s => s.Character.LastGroupJoin).ElementAt(0) == session;
         }
 
         public string GeneraterRaidmbf(MapInstance mapInstance) =>
