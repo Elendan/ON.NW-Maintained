@@ -48,6 +48,7 @@
     <Compile Include="NewCharCustomisation\BaseInventory.cs" />
     <Compile Include="NewCharCustomisation\BaseQuicklist.cs" />
     <Compile Include="NewCharCustomisation\BaseSkill.cs" />
+    <Compile Include="NewCharCustomisation\WrestlerBaseSkill.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

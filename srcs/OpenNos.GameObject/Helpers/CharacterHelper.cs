@@ -919,7 +919,7 @@ namespace OpenNos.GameObject.Helpers
             SpeedData[(int)ClassType.Swordman] = 11;
             SpeedData[(int)ClassType.Archer] = 12;
             SpeedData[(int)ClassType.Magician] = 10;
-            SpeedData[(int)ClassType.Wrestler] = 59;
+            SpeedData[(int)ClassType.Wrestler] = 12;
         }
 
         private void LoadSpxpData()

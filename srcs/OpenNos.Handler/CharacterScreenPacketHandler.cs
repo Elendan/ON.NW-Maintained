@@ -26,6 +26,7 @@ using OpenNos.Core.Utilities;
 using OpenNos.Data;
 using OpenNos.DAL;
 using OpenNos.GameObject;
+using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
@@ -57,6 +58,7 @@ namespace OpenNos.Handler
         /// <param name="characterCreatePacket"></param>
         public void CreateCharacter(CharacterCreatePacket characterCreatePacket)
         {
+            bool isWrestler = false;
             if (Session.HasCurrentMapInstance)
             {
                 return;
@@ -88,10 +90,30 @@ namespace OpenNos.Handler
                     }
 
                     CharacterDTO newCharacter = DependencyContainer.Instance.Get<BaseCharacter>().Character;
+                    if (characterCreatePacket.Slot == 3 && DaoFactory.CharacterDao.LoadByAccount(Session.Account.AccountId).Any(s => s.Level >= 80))
+                    {
+                        isWrestler = true;
+                        newCharacter = new CharacterDTO
+                        {
+                            Class = ClassType.Wrestler,
+                            Hp = 20,
+                            JobLevel = 80,
+                            Level = 81,
+                            MapId = 2551,
+                            MapX = 8,
+                            MapY = 26,
+                            Mp = 221,
+                            MaxMateCount = 10,
+                            Gold = 15000,
+                            SpPoint = 10000,
+                            SpAdditionPoint = 1000000,
+                            MinilandMessage = "Welcome",
+                        };
+                    }
                     newCharacter.AccountId = accountId;
                     newCharacter.Gender = characterCreatePacket.Gender;
                     newCharacter.HairColor = characterCreatePacket.HairColor;
-                    newCharacter.HairStyle = characterCreatePacket.HairStyle;
+                    newCharacter.HairStyle = isWrestler ? HairStyleType.HairStyleA : characterCreatePacket.HairStyle;
                     newCharacter.Name = characterName;
                     newCharacter.Slot = slot;
                     newCharacter.State = CharacterState.Active;
@@ -100,40 +122,66 @@ namespace OpenNos.Handler
                     // init quest
                     var firstQuest = new CharacterQuestDTO { CharacterId = newCharacter.CharacterId, QuestId = 1997, IsMainQuest = true };
                     DaoFactory.CharacterQuestDao.InsertOrUpdate(firstQuest);
-
+                    
                     // init skills
-                    var skills = DependencyContainer.Instance.Get<BaseSkill>();
-                    if (skills != null)
+                    if (!isWrestler)
                     {
-                        foreach (CharacterSkillDTO skill in skills.Skills)
+                        var skills = DependencyContainer.Instance.Get<BaseSkill>();
+                        if (skills != null)
                         {
-                            skill.CharacterId = newCharacter.CharacterId;
-                            DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
+                            foreach (CharacterSkillDTO skill in skills.Skills)
+                            {
+                                skill.CharacterId = newCharacter.CharacterId;
+                                DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var wSkills = DependencyContainer.Instance.Get<WrestlerBaseSkill>();
+                        if (wSkills != null)
+                        {
+                            foreach (CharacterSkillDTO skill in wSkills.Skills)
+                            {
+                                skill.CharacterId = newCharacter.CharacterId;
+                                DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
+                            }
                         }
                     }
 
 
                     // init quicklist
-                    var quicklist = DependencyContainer.Instance.Get<BaseQuicklist>();
-
-                    if (quicklist != null)
+                    if (!isWrestler)
                     {
-                        foreach (QuicklistEntryDTO quicklistEntry in quicklist.Quicklist)
+                        var quicklist = DependencyContainer.Instance.Get<BaseQuicklist>();
+
+                        if (quicklist != null)
                         {
-                            quicklistEntry.CharacterId = newCharacter.CharacterId;
-                            DaoFactory.QuicklistEntryDao.InsertOrUpdate(quicklistEntry);
+                            foreach (QuicklistEntryDTO quicklistEntry in quicklist.Quicklist)
+                            {
+                                quicklistEntry.CharacterId = newCharacter.CharacterId;
+                                DaoFactory.QuicklistEntryDao.InsertOrUpdate(quicklistEntry);
+                            }
                         }
                     }
 
                     // init inventory
                     var inventory = new Inventory((Character)newCharacter);
-                    var startupInventory = DependencyContainer.Instance.Get<BaseInventory>();
-                    if (startupInventory != null)
+                    if (!isWrestler)
                     {
-                        foreach (BaseInventory.StartupInventoryItem item in startupInventory.Items)
+                        var startupInventory = DependencyContainer.Instance.Get<BaseInventory>();
+                        if (startupInventory != null)
                         {
-                            inventory.AddNewToInventory(item.Vnum, item.Quantity, item.InventoryType);
+                            foreach (BaseInventory.StartupInventoryItem item in startupInventory.Items)
+                            {
+                                inventory.AddNewToInventory(item.Vnum, item.Quantity, item.InventoryType);
+                            }
                         }
+                    }
+                    else
+                    {
+                        inventory.AddNewToInventory(4719, 1, InventoryType.Equipment, 7, 8);
+                        inventory.AddNewToInventory(4737, 1, InventoryType.Equipment, 7, 8);
                     }
 
                     foreach (ItemInstance i in inventory.Select(s => s.Value))
