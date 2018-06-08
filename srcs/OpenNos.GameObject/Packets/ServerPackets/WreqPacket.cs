@@ -7,11 +7,11 @@ namespace OpenNos.GameObject.Packets.ServerPackets
     {
         #region Properties
 
-        [PacketIndex(1)]
-        public long? Param { get; set; }
-
         [PacketIndex(0)]
         public byte Value { get; set; }
+
+        [PacketIndex(1)]
+        public long? Param { get; set; }
 
         #endregion
     }

@@ -182,7 +182,7 @@ namespace OpenNos.Handler
             Guid mapInstanceId = ServerManager.Instance.GetBaseMapInstanceIdByMapId(Session.Character.MapId);
             MapInstance map = ServerManager.Instance.GetMapInstance(mapInstanceId);
             ScriptedInstance si = map.ScriptedInstances.FirstOrDefault(s => s.PositionX == Session.Character.MapX && s.PositionY == Session.Character.MapY);
-            if (si == null || map.InstanceBag.EndState != 5)
+            if (si == null)
             {
                 return;
             }
@@ -373,7 +373,7 @@ namespace OpenNos.Handler
                         {
                             X = portal.PositionX,
                             Y = portal.PositionY,
-                            RecordPress = record,
+                            RecordPress = 1,
                             StartPress = 1
                         });
                         break;

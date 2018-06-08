@@ -289,14 +289,12 @@ namespace OpenNos.GameObject
                 {
                     mapid = -1;
                 }
-
                 if (!short.TryParse(mapevent.Attributes["PositionX"]?.Value, out short positionX) ||
                     !short.TryParse(mapevent.Attributes["PositionY"]?.Value, out short positionY))
                 {
                     positionX = -1;
                     positionY = -1;
                 }
-
                 if (int.TryParse(mapevent.Attributes["ToMap"]?.Value, out int toMap))
                 {
                     MapInstance destmap = MapInstanceDictionary.First(s => s.Key == toMap).Value;

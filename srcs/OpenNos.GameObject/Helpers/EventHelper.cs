@@ -390,7 +390,7 @@ namespace OpenNos.GameObject.Helpers
                     switch (evt.MapInstance.MapInstanceType)
                     {
                         case MapInstanceType.TimeSpaceInstance:
-                            evt.MapInstance.InstanceBag.EndState = (byte)evt.Parameter;
+                            evt.MapInstance.InstanceBag.EndState = 5;
                             Guid mapInstanceId =
                                 ServerManager.Instance.GetBaseMapInstanceIdByMapId(client.Character.MapId);
                             MapInstance map = ServerManager.Instance.GetMapInstance(mapInstanceId);
