@@ -20,6 +20,6 @@ namespace NosSharp.Enums
         Swordman = 1,
         Archer = 2,
         Magician = 3,
-        Unknown = 4
+        Wrestler = 4
     }
 }

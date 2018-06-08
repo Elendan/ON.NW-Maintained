@@ -3508,7 +3508,6 @@ namespace NosSharp.Parser
                         {
                             continue;
                         }
-
                         skills.Add(skill);
                         counter++;
                     }

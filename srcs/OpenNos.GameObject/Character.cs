@@ -4720,6 +4720,8 @@ namespace OpenNos.GameObject
 
                 case ClassType.Magician:
                     return true;
+                case ClassType.Wrestler:
+                    return true;
             }
         }
 

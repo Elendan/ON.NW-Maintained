@@ -497,7 +497,8 @@ namespace OpenNos.Handler
                                 session.Character.ChangeClass(ClassType.Magician);
                                 break;
                             case "4":
-                                session.Character.ChangeClass(ClassType.Unknown);
+                            case "Wrestler":
+                                session.Character.ChangeClass(ClassType.Wrestler);
                                 break;
                         }
 
