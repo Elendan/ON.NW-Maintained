@@ -885,7 +885,7 @@ namespace OpenNos.GameObject.Helpers
                 MpData[(int)ClassType.Magician, i] = 3 * MpData[(int)ClassType.Adventurer, i];
             }
 
-            // UNKNOWN CLASS
+            // WRESTLER CLASS
             for (int i = 1; i < MpData.GetLength(1) - 1; i++)
             {
                 MpData[(int)ClassType.Wrestler, i] = MpData[(int)ClassType.Adventurer, i];
