@@ -792,9 +792,13 @@ namespace OpenNos.GameObject.Helpers
                     break;
 
                 case EventActionType.REMOVEPORTAL:
-                    Portal portalToRemove = evt.Parameter is Portal p
-                        ? evt.MapInstance.Portals.FirstOrDefault(s => s == p)
-                        : evt.MapInstance.Portals.FirstOrDefault(s => s.PortalId == (int)evt.Parameter);
+                    Portal portalToRemove = null;
+                    lock (evt.MapInstance.Portals)
+                    {
+                        portalToRemove = evt.Parameter is Portal p
+                            ? evt.MapInstance.Portals.FirstOrDefault(s => s == p)
+                            : evt.MapInstance.Portals.FirstOrDefault(s => s.PortalId == (int)evt.Parameter);
+                    }
                     if (portalToRemove == null)
                     {
                         return;
