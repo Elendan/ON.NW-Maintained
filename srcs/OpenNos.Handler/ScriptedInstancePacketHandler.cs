@@ -311,7 +311,12 @@ namespace OpenNos.Handler
                     ServerManager.Instance.GroupList.Remove(Session.Character.Group);
                 }
 
-                Session.Character.Group.Characters.Where(s => s.CurrentMapInstance.MapInstanceId != Session.CurrentMapInstance.MapInstanceId).ToList().ForEach(session =>
+                if (Session?.Character?.Group?.Characters == null)
+                {
+                    return;
+                }
+
+                Session?.Character?.Group?.Characters.Where(s => s.CurrentMapInstance?.MapInstanceId != Session.CurrentMapInstance?.MapInstanceId).ToList().ForEach(session =>
                 {
                     Session.Character.Group.LeaveGroup(session);
                     session.SendPacket(session.Character.GenerateRaid(1, true));
