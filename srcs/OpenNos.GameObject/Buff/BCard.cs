@@ -1281,7 +1281,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.TauntSkill:
-                    switch (SubType)
+                    /*switch (SubType)
                     {
                         case (byte)AdditionalTypes.TauntSkill.ReflectsMaximumDamageFromNegated:
                             switch (session)
@@ -1317,7 +1317,7 @@ namespace OpenNos.GameObject.Buff
                                     break;
                             }
                             break;
-                    }
+                    }*/
                     break;
 
                 case BCardType.CardType.FireCannoneerRangeBuff:
@@ -1327,7 +1327,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DamageConvertingSkill:
-                    switch (SubType)
+                    /*switch (SubType)
                     {
                         case (byte)AdditionalTypes.DamageConvertingSkill.ReflectMaximumReceivedDamage:
                             switch (session)
@@ -1362,7 +1362,7 @@ namespace OpenNos.GameObject.Buff
                                     break;
                             }
                             break;
-                    }
+                    }*/
                     break;
 
                 case BCardType.CardType.MeditationSkill:
