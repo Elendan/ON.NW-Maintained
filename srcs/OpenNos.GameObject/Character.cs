@@ -3323,7 +3323,14 @@ namespace OpenNos.GameObject
             return icoDignity;
         }
 
-        public List<Portal> GetExtraPortal() => MapInstancePortalHandler.GenerateMinilandEntryPortals(MapInstance.Map.MapId, Miniland.MapInstanceId);
+        public List<Portal> GetExtraPortal()
+        {
+            if (MapInstance?.Map == null || Miniland == null)
+            {
+                return new List<Portal>();
+            }
+            return MapInstancePortalHandler.GenerateMinilandEntryPortals(MapInstance.Map.MapId, Miniland.MapInstanceId);
+        } 
 
         public List<string> GetFamilyHistory()
         {
