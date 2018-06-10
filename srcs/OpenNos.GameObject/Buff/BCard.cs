@@ -1005,13 +1005,43 @@ namespace OpenNos.GameObject.Buff
                             {
                                 case Character receiverCharacter:
                                     int loss = (int)(receiverCharacter.HpLoad() * (FirstData * 0.01));
+                                    IDisposable rObs;
+                                    Card rCard = ServerManager.Instance.GetCardByCardId(CardId);
 
-                                    receiverCharacter.DotDebuff = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                    if (rCard == null)
                                     {
-                                        receiverCharacter.Hp = receiverCharacter.Hp - loss <= 0 ? 1 : receiverCharacter.Hp - loss;
-                                        receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm((ushort)loss));
-                                        receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                        return;
+                                    }
+
+                                    if (rCard.Duration <= 0)
+                                    {
+                                        receiverCharacter.DotDebuff = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                receiverCharacter.Hp = receiverCharacter.Hp - loss <= 0 ? 1 : receiverCharacter.Hp - loss;
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm((ushort)loss));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                        });
+                                        break;
+                                    }
+
+                                    rObs = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                    {
+                                        if (receiverCharacter.Hp > 0)
+                                        {
+                                            receiverCharacter.Hp = receiverCharacter.Hp - loss <= 0 ? 1 : receiverCharacter.Hp - loss;
+                                            receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm((ushort)loss));
+                                            receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                        }
                                     });
+
+                                    Observable.Timer(TimeSpan.FromSeconds(rCard.Duration * 0.1)).Subscribe(s =>
+                                    {
+                                        rObs.Dispose();
+                                    });
+
                                     break;
                             }
                             break;
