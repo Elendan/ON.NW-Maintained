@@ -1615,7 +1615,7 @@ namespace OpenNos.Handler
             }
             else
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo("You shall not use hacks!"));
+                //Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo("You shall not use hacks!"));
             }
         }
 
