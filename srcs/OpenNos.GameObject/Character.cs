@@ -103,6 +103,8 @@ namespace OpenNos.GameObject
 
         public ConcurrentBag<EquipmentOptionDTO> ShellOptionArmor => BattleEntity.ShellOptionArmor;
 
+        public int MaxHp => (int)HpLoad();
+
         #endregion
 
         public IDisposable DotDebuff { get; set; }
@@ -151,10 +153,6 @@ namespace OpenNos.GameObject
             get => Hp;
             set => Hp = value;
         }
-
-        public int MaxHp => (int)HpLoad();
-
-        public int MaxMp => (int)MpLoad();
 
         public short CurrentMinigame { get; set; }
 
