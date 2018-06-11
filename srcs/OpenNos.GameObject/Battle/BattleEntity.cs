@@ -41,6 +41,8 @@ namespace OpenNos.GameObject.Battle
             if (Session is Character character)
             {
                 Level = character.Level;
+                HpMax = character.MaxHp;
+                MpMax = character.MaxMp;
                 return;
             }
 
@@ -112,6 +114,10 @@ namespace OpenNos.GameObject.Battle
         public ConcurrentBag<Buff.Buff> Buffs { get; set; }
 
         public ConcurrentBag<BCard> StaticBcards { get; set; }
+
+        public int HpMax { get; set; }
+
+        public int MpMax { get; set; }
 
         public ConcurrentBag<BCard> SkillBcards { get; set; }
 
@@ -495,10 +501,998 @@ namespace OpenNos.GameObject.Battle
                 return new[] { value1, value2, value3, temp };
             }
 
-            /*int GetShellWeaponEffectValue(ShellOptionType effectType)
+            int GetShellWeaponEffectValue(ShellOptionType effectType)
             {
-                return StaticBcards.Where(s => s.)
-            }*/
+                return ShellOptionsMain.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
+            }
+
+            int GetShellArmorEffectValue(ShellOptionType effectType)
+            {
+                return ShellOptionArmor.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
+            }
+
+            if (skill != null)
+            {
+                attacker.BCards.AddRange(skill.BCards);
+            }
+
+            #region Basic Buff Initialisation
+
+            attacker.Morale +=
+                GetAttackerBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
+            attacker.Morale +=
+                GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
+            target.Morale +=
+                GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
+            target.Morale +=
+                GetAttackerBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
+
+            AttackUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.AttackPower,
+                (byte)AdditionalTypes.AttackPower.AttackLevelIncreased)[0];
+            AttackUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.AttackPower,
+                (byte)AdditionalTypes.AttackPower.AttackLevelDecreased)[0];
+            target.DefenceUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.Defence,
+                (byte)AdditionalTypes.Defence.DefenceLevelIncreased)[0];
+            target.DefenceUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.Defence,
+                (byte)AdditionalTypes.Defence.DefenceLevelDecreased)[0];
+
+            int[] attackerpercentdamage = GetAttackerBenefitingBuffs(CardType.RecoveryAndDamagePercent, 11);
+            int[] defenderpercentdefense = GetDefenderBenefitingBuffs(CardType.RecoveryAndDamagePercent, 2);
+
+            //int[] attackerpercentdamage2 = GetDefenderBenefitingBuffs(CardType.RecoveryAndDamagePercent, 11);
+            //int[] defenderpercentdefense2 = GetAttackerBenefitingBuffs(CardType.RecoveryAndDamagePercent, 2);
+
+            if (attackerpercentdamage[3] != 0)
+            {
+                return (ushort)(target.HpMax / 100 * attackerpercentdamage[2]);
+            }
+
+            if (defenderpercentdefense[3] != 0)
+            {
+                return (ushort)(target.HpMax / 100 * Math.Abs(defenderpercentdefense[2]));
+            }
+
+            /*
+             *
+             * Percentage Boost categories:
+             *  1.: Adds to Total Damage
+             *  2.: Adds to Normal Damage
+             *  3.: Adds to Base Damage
+             *  4.: Adds to Defense
+             *  5.: Adds to Element
+             *
+             * Buff Effects get added, whereas
+             * Shell Effects get multiplied afterwards.
+             *
+             * Simplified Example on Defense (Same for Attack):
+             *  - 1k Defense
+             *  - Costume(+5% Defense)
+             *  - Defense Potion(+20% Defense)
+             *  - S-Defense Shell with 20% Boost
+             *
+             * Calculation:
+             *  1000 * 1.25 * 1.2 = 1500
+             *  Def    Buff   Shell Total
+             *
+             * Keep in Mind that after each step, one has
+             * to round the current value down if necessary
+             *
+             * Static Boost categories:
+             *  1.: Adds to Total Damage
+             *  2.: Adds to Normal Damage
+             *  3.: Adds to Base Damage
+             *  4.: Adds to Defense
+             *  5.: Adds to Element
+             *
+             */
+
+            #region Definitions
+
+            double boostCategory1 = 1;
+            double boostCategory2 = 1;
+            double boostCategory3 = 1;
+            double boostCategory4 = 1;
+            double boostCategory5 = 1;
+            double shellBoostCategory1 = 1;
+            double shellBoostCategory2 = 1;
+            double shellBoostCategory3 = 1;
+            double shellBoostCategory4 = 1;
+            double shellBoostCategory5 = 1;
+            int staticBoostCategory1 = 0;
+            int staticBoostCategory2 = 0;
+            int staticBoostCategory3 = 0;
+            int staticBoostCategory4 = 0;
+            int staticBoostCategory5 = 0;
+
+            #endregion
+
+            #region Type 1
+
+            #region Static
+
+            // None for now
+
+            #endregion
+
+            #region Boost
+
+            boostCategory1 +=
+                GetAttackerBenefitingBuffs(BCardType.CardType.Damage, (byte)AdditionalTypes.Damage.DamageIncreased)
+                    [0] / 100D;
+            boostCategory1 +=
+                GetDefenderBenefitingBuffs(BCardType.CardType.Damage, (byte)AdditionalTypes.Damage.DamageDecreased)
+                    [0] / 100D;
+            boostCategory1 +=
+                GetAttackerBenefitingBuffs(BCardType.CardType.Item, (byte)AdditionalTypes.Item.AttackIncreased)[0]
+                / 100D;
+            boostCategory1 +=
+                GetDefenderBenefitingBuffs(BCardType.CardType.Item, (byte)AdditionalTypes.Item.DefenceIncreased)[0]
+                / 100D;
+            shellBoostCategory1 += GetShellWeaponEffectValue(ShellOptionType.SDamagePercentage) / 100D;
+
+            //Todo: Review condition
+            /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+            {*/
+                boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.SpecialisationBuffResistance,
+                                      (byte)AdditionalTypes.SpecialisationBuffResistance.IncreaseDamageInPVP)[0]
+                                  / 100D;
+                boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.LeonaPassiveSkill,
+                                      (byte)AdditionalTypes.LeonaPassiveSkill.AttackIncreasedInPVP)[0] / 100D;
+                shellBoostCategory1 += GetShellWeaponEffectValue(ShellOptionType.PvpDamagePercentage) / 100D;
+            //}
+
+            #endregion
+
+            #endregion
+
+            #region Type 2
+
+            #region Static
+
+            // None for now
+
+            #endregion
+
+            #region Boost
+
+            boostCategory2 +=
+                GetDefenderBenefitingBuffs(BCardType.CardType.Damage, (byte)AdditionalTypes.Damage.DamageDecreased)
+                    [0] / 100D;
+
+            //TODO: Review condition
+            /* ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+            {*/
+                boostCategory2 += GetDefenderBenefitingBuffs(BCardType.CardType.SpecialisationBuffResistance,
+                                      (byte)AdditionalTypes.SpecialisationBuffResistance.DecreaseDamageInPVP)[0]
+                                  / 100D;
+                boostCategory2 += GetDefenderBenefitingBuffs(BCardType.CardType.LeonaPassiveSkill,
+                                      (byte)AdditionalTypes.LeonaPassiveSkill.AttackDecreasedInPVP)[0] / 100D;
+           //}
+
+            #endregion
+
+            #endregion
+
+            #region Type 3
+
+            #region Static
+
+            staticBoostCategory3 += GetAttackerBenefitingBuffs(BCardType.CardType.AttackPower,
+                (byte)AdditionalTypes.AttackPower.AllAttacksIncreased)[0];
+            staticBoostCategory3 += GetDefenderBenefitingBuffs(BCardType.CardType.AttackPower,
+                (byte)AdditionalTypes.AttackPower.AllAttacksDecreased)[0];
+            staticBoostCategory3 += GetShellWeaponEffectValue(ShellOptionType.IncreaseDamage);
+
+            #endregion
+
+            #region Soft-Damage
+
+            int[] soft = GetAttackerBenefitingBuffs(BCardType.CardType.IncreaseDamage,
+                (byte)AdditionalTypes.IncreaseDamage.IncreasingPropability);
+            int[] skin = GetAttackerBenefitingBuffs(BCardType.CardType.EffectSummon,
+                (byte)AdditionalTypes.EffectSummon.DamageBoostOnHigherLvl);
+            if (Level < target.Level)
+            {
+                soft[0] += skin[0];
+                soft[1] += skin[1];
+            }
+
+            if (ServerManager.Instance.RandomNumber() < soft[0])
+            {
+                boostCategory3 += soft[1] / 100D;
+                //Todo: Add an EntityType to the BattleEntity
+                if (Session is Character c)
+                {
+                    c.Session?.CurrentMapInstance?.Broadcast(c.GenerateEff(15));
+                }
+            }
+
+            #endregion
+
+            #endregion
+
+            #region Type 4
+
+            #region Static
+
+            staticBoostCategory4 +=
+                GetDefenderBenefitingBuffs(BCardType.CardType.Defence, (byte)AdditionalTypes.Defence.AllIncreased)[0];
+            staticBoostCategory4 +=
+                GetAttackerBenefitingBuffs(BCardType.CardType.Defence, (byte)AdditionalTypes.Defence.AllDecreased)[0];
+
+            #endregion
+
+            #region Boost
+
+            boostCategory4 += GetDefenderBenefitingBuffs(BCardType.CardType.DodgeAndDefencePercent,
+                                  (byte)AdditionalTypes.DodgeAndDefencePercent.DefenceIncreased)[0] / 100D;
+            boostCategory4 += GetAttackerBenefitingBuffs(BCardType.CardType.DodgeAndDefencePercent,
+                                  (byte)AdditionalTypes.DodgeAndDefencePercent.DefenceReduced)[0] / 100D;
+            shellBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.SDefenseAllPercentage) / 100D;
+
+            //Todo: review condition
+            /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+            {*/
+                boostCategory4 += GetDefenderBenefitingBuffs(BCardType.CardType.LeonaPassiveSkill,
+                                      (byte)AdditionalTypes.LeonaPassiveSkill.DefenceIncreasedInPVP)[0] / 100D;
+                boostCategory4 += GetAttackerBenefitingBuffs(BCardType.CardType.LeonaPassiveSkill,
+                                      (byte)AdditionalTypes.LeonaPassiveSkill.DefenceDecreasedInPVP)[0] / 100D;
+                shellBoostCategory4 -=
+                    GetShellWeaponEffectValue(ShellOptionType.PvpDefensePercentage) / 100D;
+                shellBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.PvpDefensePercentage) / 100D;
+            //}
+
+            int[] def = GetAttackerBenefitingBuffs(BCardType.CardType.Block,
+                (byte)AdditionalTypes.Block.ChanceAllIncreased);
+            if (ServerManager.Instance.RandomNumber() < def[0])
+            {
+                boostCategory3 += def[1] / 100D;
+            }
+
+            #endregion
+
+            #endregion
+
+            #region Type 5
+
+            #region Static
+
+            staticBoostCategory5 +=
+                GetAttackerBenefitingBuffs(BCardType.CardType.Element, (byte)AdditionalTypes.Element.AllIncreased)[0];
+            staticBoostCategory5 +=
+                GetDefenderBenefitingBuffs(BCardType.CardType.Element, (byte)AdditionalTypes.Element.AllDecreased)[0];
+            staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.SIncreaseAllElements);
+
+            #endregion
+
+            #region Boost
+
+            // Nothing for now
+
+            #endregion
+
+            #endregion
+
+            #region All Type Class Dependant
+
+            int[] def2 = null;
+
+            switch (attacker.AttackType)
+            {
+                case AttackType.Close:
+                    def2 = GetAttackerBenefitingBuffs(BCardType.CardType.Block,
+                        (byte)AdditionalTypes.Block.ChanceMeleeIncreased);
+                    boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.MeleeIncreased)[0] / 100D;
+                    boostCategory1 += GetDefenderBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.MeleeDecreased)[0] / 100D;
+                    staticBoostCategory3 += GetAttackerBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksIncreased)[0];
+                    staticBoostCategory3 += GetDefenderBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksDecreased)[0];
+                    staticBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.CloseCombatDefense);
+                    break;
+
+                case AttackType.Ranged:
+                    def2 = GetAttackerBenefitingBuffs(BCardType.CardType.Block,
+                        (byte)AdditionalTypes.Block.ChanceRangedIncreased);
+                    boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.RangedIncreased)[0] / 100D;
+                    boostCategory1 += GetDefenderBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.RangedDecreased)[0] / 100D;
+                    staticBoostCategory3 += GetAttackerBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksIncreased)[0];
+                    staticBoostCategory3 += GetDefenderBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksDecreased)[0];
+                    staticBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.LongRangeDefense);
+                    break;
+
+                case AttackType.Magical:
+                    def2 = GetAttackerBenefitingBuffs(BCardType.CardType.Block,
+                        (byte)AdditionalTypes.Block.ChanceRangedIncreased);
+                    boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.MagicalIncreased)[0] / 100D;
+                    boostCategory1 += GetDefenderBenefitingBuffs(BCardType.CardType.Damage,
+                                          (byte)AdditionalTypes.Damage.MagicalDecreased)[0] / 100D;
+                    staticBoostCategory3 += GetAttackerBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksIncreased)[0];
+                    staticBoostCategory3 += GetDefenderBenefitingBuffs(BCardType.CardType.AttackPower,
+                        (byte)AdditionalTypes.AttackPower.MeleeAttacksDecreased)[0];
+                    staticBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.MagicalDefense);
+                    break;
+            }
+
+            if (def2 != null)
+            {
+                def[0] += def2[0];
+                def[1] += def2[1];
+            }
+            #endregion
+
+            #region Softdef finishing
+
+            if (ServerManager.Instance.RandomNumber() < def[0])
+            {
+                boostCategory3 += def[1] / 100D;
+            }
+
+            #endregion
+
+            #region Element Dependant
+
+            switch (Element)
+            {
+                case 1:
+                    target.FireResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
+                    target.FireResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
+                    target.FireResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.FireIncreased)[0];
+                    target.FireResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.FireDecreased)[0];
+                    target.FireResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
+                    target.FireResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
+                    target.FireResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.FireIncreased)[0];
+                    target.FireResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.FireDecreased)[0];
+
+
+                    //Todo: review this condition
+                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                        && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+                    {*/
+                    target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedFire);
+                    target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
+                    // }
+
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.FireResistanceIncrease);
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseFireElement);
+                    boostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.IncreaseDamage,
+                                          (byte)AdditionalTypes.IncreaseDamage.FireIncreased)[0] / 100D;
+                    staticBoostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.FireIncreased)[0];
+                    staticBoostCategory5 += GetDefenderBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.FireDecreased)[0];
+                    break;
+
+                case 2:
+                    target.WaterResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
+                    target.WaterResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
+                    target.WaterResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.WaterIncreased)[0];
+                    target.WaterResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.WaterDecreased)[0];
+                    target.WaterResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
+                    target.WaterResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
+                    target.WaterResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.WaterIncreased)[0];
+                    target.WaterResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.WaterDecreased)[0];
+
+                    //Todo: Review this condition
+                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                        && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+                    {*/
+                    target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedWater);
+                    target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
+                    //}
+
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.WaterResistanceIncrease);
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseWaterElement);
+                    boostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.IncreaseDamage,
+                                          (byte)AdditionalTypes.IncreaseDamage.WaterIncreased)[0] / 100D;
+                    staticBoostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.WaterIncreased)[0];
+                    staticBoostCategory5 += GetDefenderBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.WaterDecreased)[0];
+                    break;
+
+                case 3:
+                    target.LightResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
+                    target.LightResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
+                    target.LightResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.LightIncreased)[0];
+                    target.LightResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.LightDecreased)[0];
+                    target.LightResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
+                    target.LightResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
+                    target.LightResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.LightIncreased)[0];
+                    target.LightResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.LightDecreased)[0];
+
+                    //Todo: review this condition
+                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                        && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+                    {*/
+                        target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedLight);
+                        target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
+                    //}
+
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.LightResistanceIncrease);
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseLightElement);
+                    boostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.IncreaseDamage,
+                                          (byte)AdditionalTypes.IncreaseDamage.LightIncreased)[0] / 100D;
+                    staticBoostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.LightIncreased)[0];
+                    staticBoostCategory5 += GetDefenderBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.LightDecreased)[0];
+                    break;
+
+                case 4:
+                    target.DarkResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
+                    target.DarkResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
+                    target.DarkResistance += GetDefenderBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.DarkIncreased)[0];
+                    target.DarkResistance += GetAttackerBenefitingBuffs(BCardType.CardType.ElementResistance,
+                        (byte)AdditionalTypes.ElementResistance.DarkDecreased)[0];
+                    target.DarkResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
+                    target.DarkResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
+                    target.DarkResistance += GetDefenderBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.DarkIncreased)[0];
+                    target.DarkResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
+                        (byte)AdditionalTypes.EnemyElementResistance.DarkDecreased)[0];
+                    
+                    //Todo : review this condition
+                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                        && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+                    {*/
+                        target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedDark);
+                        target.FireResistance -=
+                            GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
+                    //}
+
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.DarkResistanceIncrease);
+                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseDarknessElement);
+                    boostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.IncreaseDamage,
+                                          (byte)AdditionalTypes.IncreaseDamage.DarkIncreased)[0] / 100D;
+                    staticBoostCategory5 += GetAttackerBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.DarkIncreased)[0];
+                    staticBoostCategory5 += GetDefenderBenefitingBuffs(BCardType.CardType.Element,
+                        (byte)AdditionalTypes.Element.DarkDecreased)[0];
+                    break;
+            }
+
+            #endregion
+
+            #endregion
+
+            #region Attack Type Related Variables
+
+            switch (attacker.AttackType)
+            {
+                case AttackType.Close:
+                    target.Defense = target.MeleeDefense;
+                    target.ArmorDefense = target.ArmorMeleeDefense;
+                    target.Dodge = target.MeleeDefenseDodge;
+                    break;
+
+                case AttackType.Ranged:
+                    target.Defense = target.RangeDefense;
+                    target.ArmorDefense = target.ArmorRangeDefense;
+                    target.Dodge = target.RangeDefenseDodge;
+                    break;
+
+                case AttackType.Magical:
+                    target.Defense = target.MagicalDefense;
+                    target.ArmorDefense = target.ArmorMagicalDefense;
+                    break;
+            }
+
+            #endregion
+
+            #region Too Near Range Attack Penalty (boostCategory2)
+
+            if (attacker.AttackType == AttackType.Range && Map.GetDistance(
+                    new MapCell { X = attacker.PositionX, Y = attacker.PositionY },
+                    new MapCell { X = target.PositionX, Y = target.PositionY }) < 4)
+            {
+                boostCategory2 -= 0.3;
+            }
+
+            #endregion
+
+            #region Morale and Dodge
+
+            attacker.Morale -= target.Morale;
+            double chance = 0;
+            if (attacker.AttackType != AttackType.Magical)
+            {
+                int hitrate = attacker.Hitrate + attacker.Morale;
+                double multiplier = target.Dodge / (hitrate > 1 ? hitrate : 1);
+
+                if (multiplier > 5)
+                {
+                    multiplier = 5;
+                }
+
+                chance = (-0.25 * Math.Pow(multiplier, 3)) - (0.57 * Math.Pow(multiplier, 2)) + (25.3 * multiplier)
+                         - 1.41;
+                if (chance <= 1)
+                {
+                    chance = 1;
+                }
+
+                //if (GetBuff(CardType.Buff, (byte)AdditionalTypes.DodgeAndDefencePercent.)[0] != 0)    TODO: Eagle Eyes AND Other Fixed Hitrates
+                //{
+                //    chance = 10;
+                //}
+            }
+
+            int bonus = 0;
+            if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+            {
+                switch (attacker.AttackType)
+                {
+                    case AttackType.Close:
+                        bonus += GetShellArmorEffectValue(ShellOptionType.CloseDefenceDodgeInPVP);
+                        break;
+
+                    case AttackType.Ranged:
+                        bonus += GetShellArmorEffectValue(ShellOptionType.DistanceDefenceDodgeInPVP);
+                        break;
+
+                    case AttackType.Magical:
+                        bonus += GetShellArmorEffectValue(ShellOptionType.IgnoreMagicDamage);
+                        break;
+                }
+
+                bonus += GetShellArmorEffectValue(ShellOptionType.DodgeAllAttacksInPVP);
+            }
+
+            if (!target.Invincible && ServerManager.Instance.RandomNumber() - bonus < chance)
+            {
+                hitmode = 1;
+                return 0;
+            }
+
+            #endregion
+
+            #region Base Damage
+
+            int baseDamage = ServerManager.Instance.RandomNumber(MinDamage, MaxDamage + 1);
+            int weaponDamage =
+                ServerManager.Instance.RandomNumber(attacker.WeaponDamageMinimum, attacker.WeaponDamageMaximum + 1);
+
+            #region Attack Level Calculation
+
+            int[] atklvlfix = GetDefenderBenefitingBuffs(BCardType.CardType.CalculatingLevel,
+                (byte)AdditionalTypes.CalculatingLevel.CalculatedAttackLevel);
+            int[] deflvlfix = GetAttackerBenefitingBuffs(BCardType.CardType.CalculatingLevel,
+                (byte)AdditionalTypes.CalculatingLevel.CalculatedDefenceLevel);
+
+            if (atklvlfix[3] != 0)
+            {
+                attacker.AttackUpgrade = (short)atklvlfix[0];
+            }
+
+            if (deflvlfix[3] != 0)
+            {
+                attacker.DefenseUpgrade = (short)deflvlfix[0];
+            }
+
+            attacker.AttackUpgrade -= target.DefenseUpgrade;
+
+            if (attacker.AttackUpgrade < -10)
+            {
+                attacker.AttackUpgrade = -10;
+            }
+            else if (attacker.AttackUpgrade > ServerManager.Instance.Configuration.MaxUpgrade)
+            {
+                attacker.AttackUpgrade = ServerManager.Instance.Configuration.MaxUpgrade;
+            }
+
+            switch (attacker.AttackUpgrade)
+            {
+                case 0:
+                    weaponDamage += 0;
+                    break;
+
+                case 1:
+                    weaponDamage += (int)(weaponDamage * 0.1);
+                    break;
+
+                case 2:
+                    weaponDamage += (int)(weaponDamage * 0.15);
+                    break;
+
+                case 3:
+                    weaponDamage += (int)(weaponDamage * 0.22);
+                    break;
+
+                case 4:
+                    weaponDamage += (int)(weaponDamage * 0.32);
+                    break;
+
+                case 5:
+                    weaponDamage += (int)(weaponDamage * 0.43);
+                    break;
+
+                case 6:
+                    weaponDamage += (int)(weaponDamage * 0.54);
+                    break;
+
+                case 7:
+                    weaponDamage += (int)(weaponDamage * 0.65);
+                    break;
+
+                case 8:
+                    weaponDamage += (int)(weaponDamage * 0.9);
+                    break;
+
+                case 9:
+                    weaponDamage += (int)(weaponDamage * 1.2);
+                    break;
+
+                case 10:
+                    weaponDamage += weaponDamage * 2;
+                    break;
+
+                    //default:
+                    //    if (attacker.AttackUpgrade > 0)
+                    //    {
+                    //        weaponDamage *= attacker.AttackUpgrade / 5;
+                    //    }
+
+                    //    break;
+            }
+
+            #endregion
+
+            baseDamage = (int)((int)((baseDamage + staticBoostCategory3 + weaponDamage + 15) * boostCategory3)
+                                * shellBoostCategory3);
+
+            #endregion
+
+            #region Defense
+
+            switch (attacker.AttackUpgrade)
+            {
+                //default:
+                //    if (attacker.AttackUpgrade < 0)
+                //    {
+                //        target.ArmorDefense += target.ArmorDefense / 5;
+                //    }
+
+                //break;
+
+                case -10:
+                    target.ArmorDefense += target.ArmorDefense * 2;
+                    break;
+
+                case -9:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 1.2);
+                    break;
+
+                case -8:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.9);
+                    break;
+
+                case -7:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.65);
+                    break;
+
+                case -6:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.54);
+                    break;
+
+                case -5:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.43);
+                    break;
+
+                case -4:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.32);
+                    break;
+
+                case -3:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.22);
+                    break;
+
+                case -2:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.15);
+                    break;
+
+                case -1:
+                    target.ArmorDefense += (int)(target.ArmorDefense * 0.1);
+                    break;
+
+                case 0:
+                    target.ArmorDefense += 0;
+                    break;
+            }
+
+            int defense =
+                (int)((int)((target.Defense + target.ArmorDefense + staticBoostCategory4) * boostCategory4)
+                       * shellBoostCategory4);
+
+            if (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
+                    (byte)AdditionalTypes.SpecialDefence.AllDefenceNullified)[3] != 0
+                || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
+                        (byte)AdditionalTypes.SpecialDefence.MeleeDefenceNullified)[3] != 0
+                    && attacker.AttackType.Equals(AttackType.Melee))
+                || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
+                        (byte)AdditionalTypes.SpecialDefence.RangedDefenceNullified)[3] != 0
+                    && attacker.AttackType.Equals(AttackType.Range))
+                || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
+                        (byte)AdditionalTypes.SpecialDefence.MagicDefenceNullified)[3] != 0
+                    && attacker.AttackType.Equals(AttackType.Magical)))
+            {
+                defense = 0;
+            }
+
+            #endregion
+
+            #region Normal Damage
+
+            int normalDamage = (int)((int)((baseDamage + staticBoostCategory2 - defense) * boostCategory2)
+                                      * shellBoostCategory2);
+
+            if (normalDamage < 0)
+            {
+                normalDamage = 0;
+            }
+
+            #endregion
+
+            #region Crit Damage
+
+            attacker.CritChance += GetShellWeaponEffectValue(ShellOptionType.CriticalChance);
+            attacker.CritChance -= GetShellArmorEffectValue(ShellOptionType.ReducedCritChanceRecive);
+            attacker.CritRate += GetShellWeaponEffectValue(ShellOptionType.CriticalDamage);
+
+            if (target.CellonOptions != null)
+            {
+                attacker.CritRate -= target.CellonOptions.Where(s => s.Type == CellonOptionType.CritReduce)
+                    .Sum(s => s.Value);
+            }
+
+            if (ServerManager.RandomNumber() < attacker.CritChance && attacker.AttackType != AttackType.Magical)
+            {
+                double multiplier = attacker.CritRate / 100D;
+                if (multiplier > 3)
+                {
+                    multiplier = 3;
+                }
+
+                normalDamage += (int)(normalDamage * multiplier);
+                hitMode = 3;
+            }
+
+            #endregion
+
+            #region Fairy Damage
+
+            int fairyDamage = (int)((baseDamage + 100) * attacker.ElementRate / 100D);
+
+            #endregion
+
+            #region Elemental Damage Advantage
+
+            double elementalBoost = 0;
+
+            switch (attacker.Element)
+            {
+                case 0:
+                    break;
+
+                case 1:
+                    target.Resistance = target.FireResistance;
+                    switch (target.Element)
+                    {
+                        case 0:
+                            elementalBoost = 1.3; // Damage vs no element
+                            break;
+
+                        case 1:
+                            elementalBoost = 1; // Damage vs fire
+                            break;
+
+                        case 2:
+                            elementalBoost = 2; // Damage vs water
+                            break;
+
+                        case 3:
+                            elementalBoost = 1; // Damage vs light
+                            break;
+
+                        case 4:
+                            elementalBoost = 1.5; // Damage vs darkness
+                            break;
+                    }
+
+                    break;
+
+                case 2:
+                    target.Resistance = target.WaterResistance;
+                    switch (target.Element)
+                    {
+                        case 0:
+                            elementalBoost = 1.3;
+                            break;
+
+                        case 1:
+                            elementalBoost = 2;
+                            break;
+
+                        case 2:
+                            elementalBoost = 1;
+                            break;
+
+                        case 3:
+                            elementalBoost = 1.5;
+                            break;
+
+                        case 4:
+                            elementalBoost = 1;
+                            break;
+                    }
+
+                    break;
+
+                case 3:
+                    target.Resistance = target.LightResistance;
+                    switch (target.Element)
+                    {
+                        case 0:
+                            elementalBoost = 1.3;
+                            break;
+
+                        case 1:
+                            elementalBoost = 1.5;
+                            break;
+
+                        case 2:
+                        case 3:
+                            elementalBoost = 1;
+                            break;
+
+                        case 4:
+                            elementalBoost = 3;
+                            break;
+                    }
+
+                    break;
+
+                case 4:
+                    target.Resistance = target.DarkResistance;
+                    switch (target.Element)
+                    {
+                        case 0:
+                            elementalBoost = 1.3;
+                            break;
+
+                        case 1:
+                            elementalBoost = 1;
+                            break;
+
+                        case 2:
+                            elementalBoost = 1.5;
+                            break;
+
+                        case 3:
+                            elementalBoost = 3;
+                            break;
+
+                        case 4:
+                            elementalBoost = 1;
+                            break;
+                    }
+
+                    break;
+            }
+
+            if (skill?.Element == 0 || (skill?.Element != attacker.Element && attacker.EntityType == EntityType.Player))
+            {
+                elementalBoost = 0;
+            }
+
+            #endregion
+
+            #region Elemental Damage
+
+            int elementalDamage =
+                (int)((int)((int)((int)((staticBoostCategory5 + fairyDamage) * elementalBoost)
+                                     * (1 - (target.Resistance / 100D))) * boostCategory5) * shellBoostCategory5);
+
+            if (elementalDamage < 0)
+            {
+                elementalDamage = 0;
+            }
+
+            #endregion
+
+            #region Total Damage
+
+            int totalDamage =
+                (int)((int)((normalDamage + elementalDamage + attacker.Morale + staticBoostCategory1)
+                              * boostCategory1) * shellBoostCategory1);
+
+            if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+            {
+                totalDamage /= 2;
+            }
+
+            if (target.EntityType == EntityType.Monster || target.EntityType == EntityType.NPC)
+            {
+                totalDamage -= GetMonsterDamageBonus(target.Level);
+            }
+
+            if (totalDamage < 5)
+            {
+                totalDamage = ServerManager.RandomNumber(1, 6);
+            }
+
+            if (attacker.EntityType == EntityType.Monster || attacker.EntityType == EntityType.NPC)
+            {
+                totalDamage += GetMonsterDamageBonus(attacker.Level);
+            }
+
+            #endregion
+
+            #region Onyx Wings
+
+            int[] onyxBuff = GetAttackerBenefitingBuffs(BCardType.CardType.StealBuff,
+                (byte)AdditionalTypes.StealBuff.ChanceSummonOnyxDragon);
+            if (onyxBuff[0] > ServerManager.RandomNumber())
+            {
+                onyxWings = true;
+            }
+
+            #endregion
+
+            return totalDamage;
 
             return ushort.MaxValue;
         }

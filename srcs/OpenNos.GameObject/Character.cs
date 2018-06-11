@@ -154,6 +154,8 @@ namespace OpenNos.GameObject
 
         public int MaxHp => (int)HpLoad();
 
+        public int MaxMp => (int)MpLoad();
+
         public short CurrentMinigame { get; set; }
 
         public int DarkResistance
