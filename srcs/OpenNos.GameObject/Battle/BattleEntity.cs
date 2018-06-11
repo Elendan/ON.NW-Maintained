@@ -30,7 +30,7 @@ namespace OpenNos.GameObject.Battle
             Session = entity.GetSession();
             Buffs = new ConcurrentBag<Buff.Buff>();
             StaticBcards = new ConcurrentBag<BCard>();
-            SkillBcards = new ConcurrentBag<BCard>();
+            SkillBcards = new List<BCard>();
             OnDeathEvents = new ConcurrentBag<EventContainer>();
             OnHitEvents = new ConcurrentBag<EventContainer>();
             ObservableBag = new ConcurrentDictionary<short, IDisposable>();
@@ -41,8 +41,22 @@ namespace OpenNos.GameObject.Battle
             if (Session is Character character)
             {
                 Level = character.Level;
+                Morale = character.Level;
                 HpMax = character.MaxHp;
                 MpMax = character.MaxMp;
+                EntityType = EntityType.Player;
+                MinDamage = character.MinHit;
+                MaxDamage = character.MaxHit;
+                HitRate = character.HitRate;
+                CriticalChance = character.HitCriticalRate;
+                CriticalRate = character.HitCritical;
+                Morale = character.Level;
+                FireResistance = character.FireResistance;
+                WaterResistance = character.WaterResistance;
+                LightResistance = character.LightResistance;
+                DarkResistance = character.DarkResistance;
+                PositionX = character.PositionX;
+                PositionY = character.PositionY;
                 return;
             }
 
@@ -57,6 +71,7 @@ namespace OpenNos.GameObject.Battle
             }
 
             Level = npcMonster.Level;
+            Morale = npcMonster.Level;
             Element = npcMonster.Element;
             ElementRate = npcMonster.ElementRate;
             FireResistance = npcMonster.FireResistance;
@@ -69,8 +84,8 @@ namespace OpenNos.GameObject.Battle
             RangedDefence = npcMonster.DistanceDefence;
             MagicDefence = npcMonster.MagicDefence;
             AttackUpgrade = npcMonster.AttackUpgrade;
-            CriticalRate = npcMonster.CriticalChance;
-            Critical = npcMonster.CriticalRate - 30;
+            CriticalChance = npcMonster.CriticalChance;
+            CriticalRate = npcMonster.CriticalRate - 30;
             MinDamage = npcMonster.DamageMinimum;
             MaxDamage = npcMonster.DamageMaximum;
             HitRate = npcMonster.Concentrate;
@@ -105,6 +120,8 @@ namespace OpenNos.GameObject.Battle
 
         #region Porperties
 
+        public AttackType AttackType { get; set; }
+
         public ConcurrentBag<EquipmentOptionDTO> ShellOptionsMain { get; set; }
 
         public ConcurrentBag<EquipmentOptionDTO> ShellOptionsSecondary { get; set; }
@@ -117,9 +134,19 @@ namespace OpenNos.GameObject.Battle
 
         public int HpMax { get; set; }
 
+        public int Morale { get; set; }
+
+        public short PositionX { get; set; }
+
+        public short PositionY { get; set; }
+
         public int MpMax { get; set; }
 
-        public ConcurrentBag<BCard> SkillBcards { get; set; }
+        public int Resistance { get; set; }
+
+        public EntityType EntityType { get; set; }
+
+        public List<BCard> SkillBcards { get; set; }
 
         public ConcurrentBag<EventContainer> OnDeathEvents { get; set; }
 
@@ -155,9 +182,9 @@ namespace OpenNos.GameObject.Battle
 
         #region Attack
 
-        public byte AttackUpgrade { get; set; }
+        public short AttackUpgrade { get; set; }
 
-        public int Critical { get; set; }
+        public int CriticalChance { get; set; }
 
         public int CriticalRate { get; set; }
 
@@ -165,7 +192,35 @@ namespace OpenNos.GameObject.Battle
 
         public int MaxDamage { get; set; }
 
+        public int WeaponDamageMinimum { get; set; }
+
+        public int WeaponDamageMaximum { get; set; }
+
         public int HitRate { get; set; }
+
+        public int DefenseUpgrade { get; set; }
+
+        public int ArmorMeleeDefense { get; set; }
+
+        public int ArmorRangeDefense { get; set; }
+
+        public int ArmorMagicalDefense { get; set; }
+
+        public int MeleeDefense { get; set; }
+
+        public int MeleeDefenseDodge { get; set; }
+
+        public int RangeDefense { get; set; }
+
+        public int RangeDefenseDodge { get; set; }
+
+        public int MagicalDefense { get; set; }
+
+        public int Defense { get; set; }
+
+        public int ArmorDefense { get; set; }
+
+        public int Dodge { get; set; }
 
         #endregion
 
@@ -188,6 +243,259 @@ namespace OpenNos.GameObject.Battle
         #endregion
 
         #region Methods
+
+        public void DefineAttackType(Skill skill)
+        {
+            WearableInstance weapon = null;
+
+            if (Session is Character character)
+            {
+                if (skill != null)
+                {
+                    switch (skill.Type)
+                    {
+                        case 0:
+                            AttackType = AttackType.Close;
+                            if (character.Class == ClassType.Archer)
+                            {
+                                MinDamage = character.MinDistance;
+                                MaxDamage = character.MaxDistance;
+                                HitRate = character.DistanceRate;
+                                CriticalChance = character.DistanceCriticalRate;
+                                CriticalRate = character.DistanceCritical;
+                                weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.SecondaryWeapon, InventoryType.Wear);
+                            }
+                            else
+                            {
+                                weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                            }
+                            break;
+
+                        case 1:
+                            AttackType = AttackType.Ranged;
+                            if (character.Class == ClassType.Adventurer || character.Class == ClassType.Swordman || character.Class == ClassType.Magician)
+                            {
+                                MinDamage = character.MinDistance;
+                                MaxDamage = character.MaxDistance;
+                                HitRate = character.DistanceRate;
+                                CriticalChance = character.DistanceCriticalRate;
+                                CriticalRate = character.DistanceCritical;
+                                weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.SecondaryWeapon, InventoryType.Wear);
+                            }
+                            else
+                            {
+                                weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                            }
+                            break;
+
+                        case 2:
+                            AttackType = AttackType.Magical;
+                            weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                            break;
+
+                        case 3:
+                            weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                            switch (character.Class)
+                            {
+                                case ClassType.Adventurer:
+                                case ClassType.Swordman:
+                                    AttackType = AttackType.Close;
+                                    break;
+
+                                case ClassType.Archer:
+                                    AttackType = AttackType.Ranged;
+                                    break;
+
+                                case ClassType.Magician:
+                                    AttackType = AttackType.Magical;
+                                    break;
+                            }
+                            break;
+
+                        case 5:
+                            AttackType = AttackType.Close;
+                            switch (character.Class)
+                            {
+                                case ClassType.Adventurer:
+                                case ClassType.Swordman:
+                                case ClassType.Magician:
+                                    weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.MainWeapon, InventoryType.Wear);
+                                    break;
+
+                                case ClassType.Archer:
+                                    weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.SecondaryWeapon, InventoryType.Wear);
+                                    break;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    weapon = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.SecondaryWeapon, InventoryType.Wear);
+                    switch (character.Class)
+                    {
+                        case ClassType.Adventurer:
+                        case ClassType.Swordman:
+                            AttackType = AttackType.Close;
+                            break;
+
+                        case ClassType.Archer:
+                            AttackType = AttackType.Ranged;
+                            break;
+
+                        case ClassType.Magician:
+                            AttackType = AttackType.Magical;
+                            break;
+                    }
+                }
+
+                if (weapon != null)
+                {
+                    AttackUpgrade = weapon.Upgrade;
+                    WeaponDamageMinimum = weapon.DamageMinimum + weapon.Item.DamageMinimum;
+                    WeaponDamageMaximum = weapon.DamageMaximum + weapon.Item.DamageMinimum;
+                }
+
+                var armor = character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Armor, InventoryType.Wear);
+                if (armor != null)
+                {
+                    DefenseUpgrade = armor.Upgrade;
+                    ArmorMeleeDefense = armor.CloseDefence + armor.Item.CloseDefence;
+                    ArmorRangeDefense = armor.DistanceDefence + armor.Item.DistanceDefence;
+                    ArmorMagicalDefense = armor.MagicDefence + armor.Item.MagicDefence;
+                }
+
+                //Todo: Get cellon options !
+                //CellonOptions = Session.Character.CellonOptions.GetAllItems();
+
+                MeleeDefense = character.Defence - ArmorMeleeDefense;
+                MeleeDefenseDodge = character.DefenceRate;
+                RangeDefense = character.DistanceDefence - ArmorRangeDefense;
+                RangeDefenseDodge = character.DistanceDefenceRate;
+                MagicalDefense = character.MagicalDefence - ArmorMagicalDefense;
+                Element = character.Element;
+                ElementRate = character.ElementRate + character.ElementRateSp;
+            }
+            else if (Session is Mate mate)
+            {
+                HpMax = mate.MaxHp;
+                MpMax = mate.MaxMp;
+
+                var mateWeapon = (WearableInstance)mate.WeaponInstance;
+                var mateArmor = (WearableInstance)mate.ArmorInstance;
+                var mateGloves = (WearableInstance)mate.GlovesInstance;
+                var mateBoots = (WearableInstance)mate.BootsInstance;
+
+                Buffs = mate.Buffs;
+                //BCards = mate.Monster.BCards.ToList();
+                Level = mate.Level;
+                EntityType = EntityType.Mate;
+                MinDamage = (mateWeapon?.DamageMinimum ?? 0) /*+ mate.BaseDamage*/ + mate.Monster.DamageMinimum;
+                MaxDamage = (mateWeapon?.DamageMaximum ?? 0) /*+ mate.BaseDamage */ + mate.Monster.DamageMaximum;
+                WeaponDamageMinimum = (mateWeapon?.DamageMinimum ?? MinDamage);
+                WeaponDamageMaximum = (mateWeapon?.DamageMaximum ?? MaxDamage);
+                PositionX = mate.PositionX;
+                PositionY = mate.PositionY;
+                HitRate = mate.Monster.Concentrate + (mateWeapon?.HitRate ?? 0);
+                CriticalChance = mate.Monster.CriticalChance + (mateWeapon?.CriticalLuckRate ?? 0);
+                CriticalRate = mate.Monster.CriticalRate + (mateWeapon?.CriticalRate ?? 0);
+                Morale = mate.Level;
+                AttackUpgrade = mateWeapon?.Upgrade ?? mate.Attack;
+                FireResistance = mate.Monster.FireResistance + (mateGloves?.FireResistance ?? 0) + (mateBoots?.FireResistance ?? 0);
+                WaterResistance = mate.Monster.WaterResistance + (mateGloves?.FireResistance ?? 0) + (mateBoots?.FireResistance ?? 0);
+                LightResistance = mate.Monster.LightResistance + (mateGloves?.FireResistance ?? 0) + (mateBoots?.FireResistance ?? 0);
+                DarkResistance = mate.Monster.DarkResistance + (mateGloves?.FireResistance ?? 0) + (mateBoots?.FireResistance ?? 0);
+                AttackType = (AttackType)mate.Monster.AttackClass;
+
+                DefenseUpgrade = mateArmor?.Upgrade ?? mate.Defence;
+                MeleeDefense = (mateArmor?.CloseDefence ?? 0)/* + mate.MeleeDefense */ + mate.Monster.CloseDefence;
+                RangeDefense = (mateArmor?.DistanceDefence ?? 0) /*+ mate.RangeDefense */ + mate.Monster.DistanceDefence;
+                MagicalDefense = (mateArmor?.MagicDefence ?? 0) /*+ mate.MagicalDefense */ + mate.Monster.MagicDefence;
+                MeleeDefenseDodge = (mateArmor?.DefenceDodge ?? 0) /*+ mate.MeleeDefenseDodge */ + mate.Monster.DefenceDodge;
+                RangeDefenseDodge = (mateArmor?.DistanceDefenceDodge ?? 0) /*+ mate.RangeDefenseDodge */ + mate.Monster.DistanceDefenceDodge;
+
+                ArmorMeleeDefense = mateArmor?.CloseDefence ?? MeleeDefense;
+                ArmorRangeDefense = mateArmor?.DistanceDefence ?? RangeDefense;
+                ArmorMagicalDefense = mateArmor?.MagicDefence ?? MagicalDefense;
+
+                Element = mate.Monster.Element;
+                ElementRate = mate.Monster.ElementRate;
+            }
+            else if (Session is MapMonster monster)
+            {
+                HpMax = monster.Monster.MaxHP;
+                MpMax = monster.Monster.MaxMP;
+                Buffs = monster.Buffs;
+                //BCards = monster.Monster.BCards.ToList();
+                Level = monster.Monster.Level;
+                EntityType = EntityType.Monster;
+                MinDamage = 0;
+                MaxDamage = 0;
+                WeaponDamageMinimum = monster.Monster.DamageMinimum;
+                WeaponDamageMaximum = monster.Monster.DamageMaximum;
+                HitRate = monster.Monster.Concentrate;
+                CriticalChance = monster.Monster.CriticalChance;
+                CriticalRate = monster.Monster.CriticalRate;
+                Morale = monster.Monster.Level;
+                AttackUpgrade = monster.Monster.AttackUpgrade;
+                FireResistance = monster.Monster.FireResistance;
+                WaterResistance = monster.Monster.WaterResistance;
+                LightResistance = monster.Monster.LightResistance;
+                DarkResistance = monster.Monster.DarkResistance;
+                PositionX = monster.MapX;
+                PositionY = monster.MapY;
+                AttackType = (AttackType)monster.Monster.AttackClass;
+                DefenseUpgrade = monster.Monster.DefenceUpgrade;
+                MeleeDefense = monster.Monster.CloseDefence;
+                MeleeDefenseDodge = monster.Monster.DefenceDodge;
+                RangeDefense = monster.Monster.DistanceDefence;
+                RangeDefenseDodge = monster.Monster.DistanceDefenceDodge;
+                MagicalDefense = monster.Monster.MagicDefence;
+                ArmorMeleeDefense = monster.Monster.CloseDefence;
+                ArmorRangeDefense = monster.Monster.DistanceDefence;
+                ArmorMagicalDefense = monster.Monster.MagicDefence;
+                Element = monster.Monster.Element;
+                ElementRate = monster.Monster.ElementRate;
+            }
+            else if (Session is MapNpc npc)
+            {
+                HpMax = npc.Npc.MaxHP;
+                MpMax = npc.Npc.MaxMP;
+
+                //npc.Buff.CopyTo(Buffs);
+                //BCards = npc.Npc.BCards.ToList();
+                Level = npc.Npc.Level;
+                EntityType = EntityType.Monster;
+                MinDamage = 0;
+                MaxDamage = 0;
+                WeaponDamageMinimum = npc.Npc.DamageMinimum;
+                WeaponDamageMaximum = npc.Npc.DamageMaximum;
+                HitRate = npc.Npc.Concentrate;
+                CriticalChance = npc.Npc.CriticalChance;
+                CriticalRate = npc.Npc.CriticalRate;
+                Morale = npc.Npc.Level;
+                AttackUpgrade = npc.Npc.AttackUpgrade;
+                FireResistance = npc.Npc.FireResistance;
+                WaterResistance = npc.Npc.WaterResistance;
+                LightResistance = npc.Npc.LightResistance;
+                DarkResistance = npc.Npc.DarkResistance;
+                PositionX = npc.MapX;
+                PositionY = npc.MapY;
+                AttackType = (AttackType)npc.Npc.AttackClass;
+                DefenseUpgrade = npc.Npc.DefenceUpgrade;
+                MeleeDefense = npc.Npc.CloseDefence;
+                MeleeDefenseDodge = npc.Npc.DefenceDodge;
+                RangeDefense = npc.Npc.DistanceDefence;
+                RangeDefenseDodge = npc.Npc.DistanceDefenceDodge;
+                MagicalDefense = npc.Npc.MagicDefence;
+                ArmorMeleeDefense = npc.Npc.CloseDefence;
+                ArmorRangeDefense = npc.Npc.DistanceDefence;
+                ArmorMagicalDefense = npc.Npc.MagicDefence;
+                Element = npc.Npc.Element;
+                ElementRate = npc.Npc.ElementRate;
+            }
+
+        }
 
         public int RandomTimeBuffs(Buff.Buff indicator)
         {
@@ -443,9 +751,10 @@ namespace OpenNos.GameObject.Battle
             return new[] { value1, value2, value3 };
         }
 
-        public ushort GenerateDamage2(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
+        public int GenerateDamage(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
         {
             BattleEntity target = targetEntity?.BattleEntity;
+            DefineAttackType(skill);
             if (target == null)
             {
                 return 0;
@@ -513,14 +822,15 @@ namespace OpenNos.GameObject.Battle
 
             if (skill != null)
             {
-                attacker.BCards.AddRange(skill.BCards);
+                //Todo: Clean this afterwards
+                SkillBcards.AddRange(skill.BCards);
             }
 
             #region Basic Buff Initialisation
 
-            attacker.Morale +=
+            Morale +=
                 GetAttackerBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
-            attacker.Morale +=
+            Morale +=
                 GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
             target.Morale +=
                 GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
@@ -631,7 +941,7 @@ namespace OpenNos.GameObject.Battle
             shellBoostCategory1 += GetShellWeaponEffectValue(ShellOptionType.SDamagePercentage) / 100D;
 
             //Todo: Review condition
-            /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+            /*if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {*/
                 boostCategory1 += GetAttackerBenefitingBuffs(BCardType.CardType.SpecialisationBuffResistance,
@@ -661,7 +971,7 @@ namespace OpenNos.GameObject.Battle
                     [0] / 100D;
 
             //TODO: Review condition
-            /* ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+            /* ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {*/
                 boostCategory2 += GetDefenderBenefitingBuffs(BCardType.CardType.SpecialisationBuffResistance,
@@ -733,7 +1043,7 @@ namespace OpenNos.GameObject.Battle
             shellBoostCategory4 += GetShellArmorEffectValue(ShellOptionType.SDefenseAllPercentage) / 100D;
 
             //Todo: review condition
-            /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+            /*if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {*/
                 boostCategory4 += GetDefenderBenefitingBuffs(BCardType.CardType.LeonaPassiveSkill,
@@ -780,7 +1090,7 @@ namespace OpenNos.GameObject.Battle
 
             int[] def2 = null;
 
-            switch (attacker.AttackType)
+            switch (AttackType)
             {
                 case AttackType.Close:
                     def2 = GetAttackerBenefitingBuffs(BCardType.CardType.Block,
@@ -864,15 +1174,14 @@ namespace OpenNos.GameObject.Battle
                         (byte)AdditionalTypes.EnemyElementResistance.FireDecreased)[0];
 
 
-                    //Todo: review this condition
-                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                    if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
-                    {*/
+                    {
                     target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedFire);
                     target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
-                    // }
+                     }
 
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.FireResistanceIncrease);
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
@@ -903,15 +1212,14 @@ namespace OpenNos.GameObject.Battle
                     target.WaterResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.WaterDecreased)[0];
 
-                    //Todo: Review this condition
-                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                    if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
-                    {*/
+                    {
                     target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedWater);
                     target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
-                    //}
+                    }
 
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.WaterResistanceIncrease);
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
@@ -942,15 +1250,15 @@ namespace OpenNos.GameObject.Battle
                     target.LightResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.LightDecreased)[0];
 
-                    //Todo: review this condition
-                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                    
+                    if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
-                    {*/
+                    {
                         target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedLight);
                         target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
-                    //}
+                    }
 
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.LightResistanceIncrease);
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
@@ -981,15 +1289,14 @@ namespace OpenNos.GameObject.Battle
                     target.DarkResistance += GetAttackerBenefitingBuffs(BCardType.CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.DarkDecreased)[0];
                     
-                    //Todo : review this condition
-                    /*if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+                    if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
-                    {*/
+                    {
                         target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedDark);
                         target.FireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
-                    //}
+                    }
 
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.DarkResistanceIncrease);
                     target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
@@ -1009,7 +1316,7 @@ namespace OpenNos.GameObject.Battle
 
             #region Attack Type Related Variables
 
-            switch (attacker.AttackType)
+            switch (AttackType)
             {
                 case AttackType.Close:
                     target.Defense = target.MeleeDefense;
@@ -1033,8 +1340,8 @@ namespace OpenNos.GameObject.Battle
 
             #region Too Near Range Attack Penalty (boostCategory2)
 
-            if (attacker.AttackType == AttackType.Range && Map.GetDistance(
-                    new MapCell { X = attacker.PositionX, Y = attacker.PositionY },
+            if (AttackType == AttackType.Ranged && Map.Map.GetDistance(
+                    new MapCell { X = PositionX, Y = PositionY },
                     new MapCell { X = target.PositionX, Y = target.PositionY }) < 4)
             {
                 boostCategory2 -= 0.3;
@@ -1044,11 +1351,11 @@ namespace OpenNos.GameObject.Battle
 
             #region Morale and Dodge
 
-            attacker.Morale -= target.Morale;
+            Morale -= target.Morale;
             double chance = 0;
-            if (attacker.AttackType != AttackType.Magical)
+            if (AttackType != AttackType.Magical)
             {
-                int hitrate = attacker.Hitrate + attacker.Morale;
+                int hitrate = HitRate + Morale;
                 double multiplier = target.Dodge / (hitrate > 1 ? hitrate : 1);
 
                 if (multiplier > 5)
@@ -1070,30 +1377,31 @@ namespace OpenNos.GameObject.Battle
             }
 
             int bonus = 0;
-            if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+            if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {
-                switch (attacker.AttackType)
+                switch (AttackType)
                 {
                     case AttackType.Close:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.CloseDefenceDodgeInPVP);
+                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeClose);
                         break;
 
                     case AttackType.Ranged:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.DistanceDefenceDodgeInPVP);
+                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeRanged);
                         break;
 
                     case AttackType.Magical:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.IgnoreMagicDamage);
+                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeMagic);
                         break;
                 }
 
-                bonus += GetShellArmorEffectValue(ShellOptionType.DodgeAllAttacksInPVP);
+                bonus += GetShellArmorEffectValue(ShellOptionType.SPvpDodgeAll);
             }
 
-            if (!target.Invincible && ServerManager.Instance.RandomNumber() - bonus < chance)
+            if (ServerManager.Instance.RandomNumber() - bonus < chance)
             {
                 hitmode = 1;
+                SkillBcards.Clear();
                 return 0;
             }
 
@@ -1103,7 +1411,7 @@ namespace OpenNos.GameObject.Battle
 
             int baseDamage = ServerManager.Instance.RandomNumber(MinDamage, MaxDamage + 1);
             int weaponDamage =
-                ServerManager.Instance.RandomNumber(attacker.WeaponDamageMinimum, attacker.WeaponDamageMaximum + 1);
+                ServerManager.Instance.RandomNumber(WeaponDamageMinimum, WeaponDamageMaximum + 1);
 
             #region Attack Level Calculation
 
@@ -1114,26 +1422,26 @@ namespace OpenNos.GameObject.Battle
 
             if (atklvlfix[3] != 0)
             {
-                attacker.AttackUpgrade = (short)atklvlfix[0];
+                AttackUpgrade = (short)atklvlfix[0];
             }
 
             if (deflvlfix[3] != 0)
             {
-                attacker.DefenseUpgrade = (short)deflvlfix[0];
+                DefenseUpgrade = (short)deflvlfix[0];
             }
 
-            attacker.AttackUpgrade -= target.DefenseUpgrade;
+            AttackUpgrade -= (short)target.DefenseUpgrade;
 
-            if (attacker.AttackUpgrade < -10)
+            if (AttackUpgrade < -10)
             {
-                attacker.AttackUpgrade = -10;
+                AttackUpgrade = -10;
             }
-            else if (attacker.AttackUpgrade > ServerManager.Instance.Configuration.MaxUpgrade)
+            else if (AttackUpgrade > 10)
             {
-                attacker.AttackUpgrade = ServerManager.Instance.Configuration.MaxUpgrade;
+                AttackUpgrade = 10;
             }
 
-            switch (attacker.AttackUpgrade)
+            switch (AttackUpgrade)
             {
                 case 0:
                     weaponDamage += 0;
@@ -1180,9 +1488,9 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                     //default:
-                    //    if (attacker.AttackUpgrade > 0)
+                    //    if (AttackUpgrade > 0)
                     //    {
-                    //        weaponDamage *= attacker.AttackUpgrade / 5;
+                    //        weaponDamage *= AttackUpgrade / 5;
                     //    }
 
                     //    break;
@@ -1197,10 +1505,10 @@ namespace OpenNos.GameObject.Battle
 
             #region Defense
 
-            switch (attacker.AttackUpgrade)
+            switch (AttackUpgrade)
             {
                 //default:
-                //    if (attacker.AttackUpgrade < 0)
+                //    if (AttackUpgrade < 0)
                 //    {
                 //        target.ArmorDefense += target.ArmorDefense / 5;
                 //    }
@@ -1260,13 +1568,13 @@ namespace OpenNos.GameObject.Battle
                     (byte)AdditionalTypes.SpecialDefence.AllDefenceNullified)[3] != 0
                 || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
                         (byte)AdditionalTypes.SpecialDefence.MeleeDefenceNullified)[3] != 0
-                    && attacker.AttackType.Equals(AttackType.Melee))
+                    && AttackType.Equals(AttackType.Close))
                 || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
                         (byte)AdditionalTypes.SpecialDefence.RangedDefenceNullified)[3] != 0
-                    && attacker.AttackType.Equals(AttackType.Range))
+                    && AttackType.Equals(AttackType.Ranged))
                 || (GetAttackerBenefitingBuffs(BCardType.CardType.SpecialDefence,
                         (byte)AdditionalTypes.SpecialDefence.MagicDefenceNullified)[3] != 0
-                    && attacker.AttackType.Equals(AttackType.Magical)))
+                    && AttackType.Equals(AttackType.Magical)))
             {
                 defense = 0;
             }
@@ -1287,33 +1595,36 @@ namespace OpenNos.GameObject.Battle
 
             #region Crit Damage
 
-            attacker.CritChance += GetShellWeaponEffectValue(ShellOptionType.CriticalChance);
-            attacker.CritChance -= GetShellArmorEffectValue(ShellOptionType.ReducedCritChanceRecive);
-            attacker.CritRate += GetShellWeaponEffectValue(ShellOptionType.CriticalDamage);
+            CriticalChance += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritChance);
+            CriticalChance -= GetShellArmorEffectValue(ShellOptionType.ReduceCriticalChance);
+            CriticalRate += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritDamages);
 
+            //Todo: Cellon options
+            /*
             if (target.CellonOptions != null)
             {
-                attacker.CritRate -= target.CellonOptions.Where(s => s.Type == CellonOptionType.CritReduce)
+                CriticalRate -= target.CellonOptions.Where(s => s.Type == CellonOptionType.CritReduce)
                     .Sum(s => s.Value);
             }
+            */
 
-            if (ServerManager.RandomNumber() < attacker.CritChance && attacker.AttackType != AttackType.Magical)
+            if (ServerManager.Instance.RandomNumber() < CriticalChance && AttackType != AttackType.Magical)
             {
-                double multiplier = attacker.CritRate / 100D;
+                double multiplier = CriticalRate / 100D;
                 if (multiplier > 3)
                 {
                     multiplier = 3;
                 }
 
                 normalDamage += (int)(normalDamage * multiplier);
-                hitMode = 3;
+                hitmode = 3;
             }
 
             #endregion
 
             #region Fairy Damage
 
-            int fairyDamage = (int)((baseDamage + 100) * attacker.ElementRate / 100D);
+            int fairyDamage = (int)((baseDamage + 100) * ElementRate / 100D);
 
             #endregion
 
@@ -1321,7 +1632,7 @@ namespace OpenNos.GameObject.Battle
 
             double elementalBoost = 0;
 
-            switch (attacker.Element)
+            switch (Element)
             {
                 case 0:
                     break;
@@ -1432,7 +1743,7 @@ namespace OpenNos.GameObject.Battle
                     break;
             }
 
-            if (skill?.Element == 0 || (skill?.Element != attacker.Element && attacker.EntityType == EntityType.Player))
+            if (skill?.Element == 0 || (skill?.Element != Element && EntityType == EntityType.Player))
             {
                 elementalBoost = 0;
             }
@@ -1455,10 +1766,10 @@ namespace OpenNos.GameObject.Battle
             #region Total Damage
 
             int totalDamage =
-                (int)((int)((normalDamage + elementalDamage + attacker.Morale + staticBoostCategory1)
+                (int)((int)((normalDamage + elementalDamage + Morale + staticBoostCategory1)
                               * boostCategory1) * shellBoostCategory1);
 
-            if ((attacker.EntityType == EntityType.Player || attacker.EntityType == EntityType.Mate)
+            if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {
                 totalDamage /= 2;
@@ -1471,12 +1782,12 @@ namespace OpenNos.GameObject.Battle
 
             if (totalDamage < 5)
             {
-                totalDamage = ServerManager.RandomNumber(1, 6);
+                totalDamage = ServerManager.Instance.RandomNumber(1, 6);
             }
 
-            if (attacker.EntityType == EntityType.Monster || attacker.EntityType == EntityType.NPC)
+            if (EntityType == EntityType.Monster || EntityType == EntityType.NPC)
             {
-                totalDamage += GetMonsterDamageBonus(attacker.Level);
+                totalDamage += GetMonsterDamageBonus(Level);
             }
 
             #endregion
@@ -1485,19 +1796,45 @@ namespace OpenNos.GameObject.Battle
 
             int[] onyxBuff = GetAttackerBenefitingBuffs(BCardType.CardType.StealBuff,
                 (byte)AdditionalTypes.StealBuff.ChanceSummonOnyxDragon);
-            if (onyxBuff[0] > ServerManager.RandomNumber())
+            if (onyxBuff[0] > ServerManager.Instance.RandomNumber())
             {
-                onyxWings = true;
+                onyxEffect = true;
             }
 
             #endregion
-
+            SkillBcards.Clear();
             return totalDamage;
-
-            return ushort.MaxValue;
         }
 
-        public ushort GenerateDamage(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
+        private static int GetMonsterDamageBonus(byte level)
+        {
+            if (level < 45)
+            {
+                return 0;
+            }
+            else if (level < 55)
+            {
+                return level;
+            }
+            else if (level < 60)
+            {
+                return level * 2;
+            }
+            else if (level < 65)
+            {
+                return level * 3;
+            }
+            else if (level < 70)
+            {
+                return level * 4;
+            }
+            else
+            {
+                return level * 5;
+            }
+        }
+
+        public ushort GenerateDamageOld(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
         {
             BattleEntity target = targetEntity?.BattleEntity;
             if (target == null)
@@ -1519,7 +1856,7 @@ namespace OpenNos.GameObject.Battle
             int morale = Level + GetBuff(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0] -
                 GetBuff(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
             short upgrade = AttackUpgrade;
-            int critChance = Critical;
+            int critChance = CriticalChance;
             int critHit = CriticalRate;
             int minDmg = MinDamage;
             int maxDmg = MaxDamage;
@@ -2209,6 +2546,7 @@ namespace OpenNos.GameObject.Battle
 
         public bool HasBuff(CardType type, byte subtype, bool removeWeaponEffects = false)
         {
+            return false;
             if (removeWeaponEffects)
             {
                 return Buffs.Any(buff => buff.Card.BCards.Any(b =>
@@ -2333,7 +2671,7 @@ namespace OpenNos.GameObject.Battle
             MapInstance mapInstance = target.MapInstance;
             int hitmode = 0;
             bool onyxWings = false;
-            ushort damage = GenerateDamage(target, skill, ref hitmode, ref onyxWings);
+            int damage = GenerateDamage(target, skill, ref hitmode, ref onyxWings);
 
             if (Session is Character charact && mapInstance != null)
             {

@@ -148,6 +148,7 @@
     <Compile Include="BazaarListType.cs" />
     <Compile Include="CancelType.cs" />
     <Compile Include="ChatType.cs" />
+    <Compile Include="EntityType.cs" />
     <Compile Include="FactionType.cs" />
     <Compile Include="FixedUpMode.cs" />
     <Compile Include="LoginFailType.cs" />
