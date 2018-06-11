@@ -96,6 +96,12 @@ namespace OpenNos.GameObject
         public ConcurrentBag<Buff.Buff> Buff => BattleEntity.Buffs;
 
         public void DisableBuffs(List<BuffType> types, int level = 100) => BattleEntity.DisableBuffs(types, level);
+    
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsMain => BattleEntity.ShellOptionsMain;
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsSecondary => BattleEntity.ShellOptionsSecondary;
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionArmor => BattleEntity.ShellOptionArmor;
 
         #endregion
 
@@ -1647,16 +1653,42 @@ namespace OpenNos.GameObject
                     continue;
                 }
 
-                switch (item.Item.EquipmentSlot)
+                switch (item.Item.ItemType)
                 {
-                    case EquipmentType.Armor:
+                    case ItemType.Armor:
                         armorRare = item.Rare;
                         armorUpgrade = item.Upgrade;
-                        break;
+                        ShellOptionArmor.Clear();
 
-                    case EquipmentType.MainWeapon:
-                        weaponRare = item.Rare;
-                        weaponUpgrade = item.Upgrade;
+                        foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                        {
+                            ShellOptionArmor.Add(dto);
+                        }
+                        break;
+                    case ItemType.Weapon:
+
+                        switch (item.Item.EquipmentSlot)
+                        {
+                            case EquipmentType.SecondaryWeapon:
+                                ShellOptionsSecondary.Clear();
+
+                                foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                                {
+                                    ShellOptionsSecondary.Add(dto);
+                                }
+                                break;
+
+                            case EquipmentType.MainWeapon:
+                                ShellOptionsMain.Clear();
+
+                                foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                                {
+                                    ShellOptionsMain.Add(dto);
+                                }
+                                weaponRare = item.Rare;
+                                weaponUpgrade = item.Upgrade;
+                                break;
+                        }
                         break;
                 }
 

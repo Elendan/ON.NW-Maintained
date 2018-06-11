@@ -34,6 +34,9 @@ namespace OpenNos.GameObject.Battle
             OnDeathEvents = new ConcurrentBag<EventContainer>();
             OnHitEvents = new ConcurrentBag<EventContainer>();
             ObservableBag = new ConcurrentDictionary<short, IDisposable>();
+            ShellOptionArmor = new ConcurrentBag<EquipmentOptionDTO>();
+            ShellOptionsMain = new ConcurrentBag<EquipmentOptionDTO>();
+            ShellOptionsSecondary = new ConcurrentBag<EquipmentOptionDTO>();
 
             if (Session is Character character)
             {
@@ -99,6 +102,12 @@ namespace OpenNos.GameObject.Battle
         }
 
         #region Porperties
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsMain { get; set; }
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsSecondary { get; set; }
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionArmor { get; set; }
 
         public ConcurrentBag<Buff.Buff> Buffs { get; set; }
 
@@ -340,6 +349,158 @@ namespace OpenNos.GameObject.Battle
             }
 
             return 0;
+        }
+
+        private static int[] GetBuff(byte level, IReadOnlyCollection<Buff.Buff> buffs, IReadOnlyCollection<BCard> bcards, CardType type,
+            byte subtype, BuffType btype, ref int count)
+        {
+            int value1 = 0;
+            int value2 = 0;
+            int value3 = 0;
+
+            IEnumerable<BCard> cards;
+
+            if (bcards != null && btype.Equals(BuffType.Good))
+            {
+                cards = subtype % 10 == 1
+                    ? bcards.Where(s =>
+                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10)) && s.FirstData >= 0)
+                    : bcards.Where(s =>
+                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                        && (s.FirstData <= 0 || s.ThirdData < 0));
+
+                foreach (BCard entry in cards)
+                {
+                    if (entry.IsLevelScaled)
+                    {
+                        if (entry.IsLevelDivided)
+                        {
+                            value1 += level / entry.FirstData;
+                        }
+                        else
+                        {
+                            value1 += entry.FirstData * level;
+                        }
+                    }
+                    else
+                    {
+                        value1 += entry.FirstData;
+                    }
+
+                    value2 += entry.SecondData;
+                    value3 += entry.ThirdData;
+                    count++;
+                }
+            }
+
+            if (buffs != null)
+            {
+                foreach (Buff.Buff buff in buffs.Where(b => b.Card.BuffType.Equals(btype)))
+                {
+                    cards = subtype % 10 == 1
+                        ? buff.Card.BCards.Where(s =>
+                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                            && (s.CastType != 1 || (s.CastType == 1
+                                                 && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
+                            && s.FirstData >= 0)
+                        : buff.Card.BCards.Where(s =>
+                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                            && (s.CastType != 1 || (s.CastType == 1
+                                                 && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
+                            && s.FirstData <= 0);
+
+                    foreach (BCard entry in cards)
+                    {
+                        if (entry.IsLevelScaled)
+                        {
+                            if (entry.IsLevelDivided)
+                            {
+                                value1 += buff.Level / entry.FirstData;
+                            }
+                            else
+                            {
+                                value1 += entry.FirstData * buff.Level;
+                            }
+                        }
+                        else
+                        {
+                            value1 += entry.FirstData;
+                        }
+
+                        value2 += entry.SecondData;
+                        value3 += entry.ThirdData;
+                        count++;
+                    }
+                }
+            }
+
+            return new[] { value1, value2, value3 };
+        }
+
+        public ushort GenerateDamage2(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
+        {
+            BattleEntity target = targetEntity?.BattleEntity;
+            if (target == null)
+            {
+                return 0;
+            }
+
+            int[] GetAttackerBenefitingBuffs(BCardType.CardType type, byte subtype)
+            {
+                int value1 = 0;
+                int value2 = 0;
+                int value3 = 0;
+                int temp = 0;
+
+                int[] tmp = GetBuff(Level, Buffs, StaticBcards, type, subtype, BuffType.Good,
+                    ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+                tmp = GetBuff(Level, Buffs, StaticBcards, type, subtype, BuffType.Neutral,
+                    ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+                tmp = GetBuff(target.Level, target.Buffs, target.StaticBcards, type, subtype, BuffType.Bad, ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+
+                return new[] { value1, value2, value3, temp };
+            }
+
+            int[] GetDefenderBenefitingBuffs(BCardType.CardType type, byte subtype)
+            {
+                int value1 = 0;
+                int value2 = 0;
+                int value3 = 0;
+                int temp = 0;
+
+                int[] tmp = GetBuff(target.Level, target.Buffs, target.StaticBcards, type, subtype, BuffType.Good,
+                    ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+                tmp = GetBuff(target.Level, target.Buffs, target.StaticBcards, type, subtype, BuffType.Neutral,
+                    ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+                tmp = GetBuff(Level, Buffs, StaticBcards, type, subtype, BuffType.Bad, ref temp);
+                value1 += tmp[0];
+                value2 += tmp[1];
+                value3 += tmp[2];
+
+                return new[] { value1, value2, value3, temp };
+            }
+
+            /*int GetShellWeaponEffectValue(ShellOptionType effectType)
+            {
+                return StaticBcards.Where(s => s.)
+            }*/
+
+            return ushort.MaxValue;
         }
 
         public ushort GenerateDamage(IBattleEntity targetEntity, Skill skill, ref int hitmode, ref bool onyxEffect)
