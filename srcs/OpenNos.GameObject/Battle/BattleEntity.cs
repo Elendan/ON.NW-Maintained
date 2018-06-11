@@ -832,6 +832,15 @@ namespace OpenNos.GameObject.Battle
                 }
             }
 
+            if (Session is Character charactersession)
+            {
+                if (charactersession.Buff.Any(s => s.Card.CardId == 559))
+                {
+                    charactersession.TriggerAmbush = true;
+                    RemoveBuff(559);
+                }
+            }
+
             if (skill != null)
             {
                 //Todo: Clean this afterwards
