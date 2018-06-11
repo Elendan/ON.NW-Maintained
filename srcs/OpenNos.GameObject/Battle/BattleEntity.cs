@@ -41,15 +41,6 @@ namespace OpenNos.GameObject.Battle
             if (Session is Character character)
             {
                 Level = character.Level;
-                Morale = character.Level;
-                EntityType = EntityType.Player;
-                MinDamage = character.MinHit;
-                MaxDamage = character.MaxHit;
-                CriticalChance = character.HitCriticalRate;
-                CriticalRate = character.HitCritical;
-                Morale = character.Level;
-                PositionX = character.PositionX;
-                PositionY = character.PositionY;
                 return;
             }
 
@@ -64,7 +55,6 @@ namespace OpenNos.GameObject.Battle
             }
 
             Level = npcMonster.Level;
-            Morale = npcMonster.Level;
             Element = npcMonster.Element;
             ElementRate = npcMonster.ElementRate;
             FireResistance = npcMonster.FireResistance;
@@ -219,7 +209,7 @@ namespace OpenNos.GameObject.Battle
 
         #region Defence
 
-        public byte DefenceUpgrade { get; set; }
+        public short DefenceUpgrade { get; set; }
 
         public int DefenceRate { get; set; }
 
@@ -243,6 +233,19 @@ namespace OpenNos.GameObject.Battle
 
             if (Session is Character character)
             {
+                Morale = character.Level;
+                EntityType = EntityType.Player;
+                MinDamage = character.MinHit;
+                MaxDamage = character.MaxHit;
+                CriticalChance = character.HitCriticalRate;
+                CriticalRate = character.HitCritical;
+                DarkResistance = character.DarkResistance;
+                LightResistance = character.LightResistance;
+                WaterResistance = character.WaterResistance;
+                FireResistance = character.FireResistance;
+                Morale = character.Level;
+                PositionX = character.PositionX;
+                PositionY = character.PositionY;
                 if (skill != null)
                 {
                     switch (skill.Type)
@@ -371,6 +374,8 @@ namespace OpenNos.GameObject.Battle
             }
             else if (Session is Mate mate)
             {
+                Morale = mate.Level;
+
                 HpMax = mate.MaxHp;
                 MpMax = mate.MaxMp;
 
@@ -416,6 +421,8 @@ namespace OpenNos.GameObject.Battle
             }
             else if (Session is MapMonster monster)
             {
+                Morale = monster.Monster.Level;
+
                 HpMax = monster.Monster.MaxHP;
                 MpMax = monster.Monster.MaxMP;
                 Buffs = monster.Buffs;
@@ -452,6 +459,8 @@ namespace OpenNos.GameObject.Battle
             }
             else if (Session is MapNpc npc)
             {
+                Morale = npc.Npc.Level;
+
                 HpMax = npc.Npc.MaxHP;
                 MpMax = npc.Npc.MaxMP;
 
@@ -814,6 +823,15 @@ namespace OpenNos.GameObject.Battle
                 return ShellOptionArmor.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
             }
 
+            if (targetEntity is Character character)
+            {
+                if (character.HasGodMode)
+                {
+                    targetEntity.DealtDamage = 0;
+                    return 0;
+                }
+            }
+
             if (skill != null)
             {
                 //Todo: Clean this afterwards
@@ -822,22 +840,28 @@ namespace OpenNos.GameObject.Battle
 
             #region Basic Buff Initialisation
 
-            Morale +=
+            int morale = Morale;
+            int targetMorale = target.Morale;
+            int attackUpgrade = AttackUpgrade;
+            int targetDefenseUpgrade = target.DefenseUpgrade;
+            int defenseUpgrade = DefenseUpgrade;
+
+            morale +=
                 GetAttackerBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
-            Morale +=
+            morale +=
                 GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
-            target.Morale +=
+            targetMorale +=
                 GetDefenderBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
-            target.Morale +=
+            targetMorale +=
                 GetAttackerBenefitingBuffs(CardType.Morale, (byte)AdditionalTypes.Morale.MoraleDecreased)[0];
 
-            AttackUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.AttackPower,
+            attackUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.AttackPower,
                 (byte)AdditionalTypes.AttackPower.AttackLevelIncreased)[0];
-            AttackUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.AttackPower,
+            attackUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.AttackPower,
                 (byte)AdditionalTypes.AttackPower.AttackLevelDecreased)[0];
-            target.DefenceUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.Defence,
+            targetDefenseUpgrade += (byte)GetDefenderBenefitingBuffs(CardType.Defence,
                 (byte)AdditionalTypes.Defence.DefenceLevelIncreased)[0];
-            target.DefenceUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.Defence,
+            targetDefenseUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.Defence,
                 (byte)AdditionalTypes.Defence.DefenceLevelDecreased)[0];
 
             int[] attackerpercentdamage = GetAttackerBenefitingBuffs(CardType.RecoveryAndDamagePercent, 11);
@@ -1146,38 +1170,43 @@ namespace OpenNos.GameObject.Battle
 
             #region Element Dependant
 
+            int targetFireResistance = target.FireResistance;
+            int targetWaterResistance = target.WaterResistance;
+            int targetLightResistance = target.LightResistance;
+            int targetDarkResistance = target.DarkResistance;
+
             switch (Element)
             {
                 case 1:
-                    target.FireResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetFireResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
-                    target.FireResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetFireResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
-                    target.FireResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetFireResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.FireIncreased)[0];
-                    target.FireResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetFireResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.FireDecreased)[0];
-                    target.FireResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetFireResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
-                    target.FireResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetFireResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
-                    target.FireResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetFireResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.FireIncreased)[0];
-                    target.FireResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetFireResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.FireDecreased)[0];
 
 
                     if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
                     {
-                    target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedFire);
-                    target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
                      }
 
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.FireResistanceIncrease);
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.FireResistanceIncrease);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
                     staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseFireElement);
                     boostCategory5 += GetAttackerBenefitingBuffs(CardType.IncreaseDamage,
                                           (byte)AdditionalTypes.IncreaseDamage.FireIncreased)[0] / 100D;
@@ -1188,34 +1217,34 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 2:
-                    target.WaterResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetWaterResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
-                    target.WaterResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetWaterResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
-                    target.WaterResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetWaterResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.WaterIncreased)[0];
-                    target.WaterResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetWaterResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.WaterDecreased)[0];
-                    target.WaterResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetWaterResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
-                    target.WaterResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetWaterResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
-                    target.WaterResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetWaterResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.WaterIncreased)[0];
-                    target.WaterResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetWaterResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.WaterDecreased)[0];
 
                     if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
                     {
-                    target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedWater);
-                    target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
                     }
 
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.WaterResistanceIncrease);
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.WaterResistanceIncrease);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
                     staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseWaterElement);
                     boostCategory5 += GetAttackerBenefitingBuffs(CardType.IncreaseDamage,
                                           (byte)AdditionalTypes.IncreaseDamage.WaterIncreased)[0] / 100D;
@@ -1226,35 +1255,35 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 3:
-                    target.LightResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetLightResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
-                    target.LightResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetLightResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
-                    target.LightResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetLightResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.LightIncreased)[0];
-                    target.LightResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetLightResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.LightDecreased)[0];
-                    target.LightResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetLightResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
-                    target.LightResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetLightResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
-                    target.LightResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetLightResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.LightIncreased)[0];
-                    target.LightResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetLightResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.LightDecreased)[0];
 
                     
                     if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
                     {
-                        target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedLight);
-                        target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
                     }
 
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.LightResistanceIncrease);
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.LightResistanceIncrease);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
                     staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseLightElement);
                     boostCategory5 += GetAttackerBenefitingBuffs(CardType.IncreaseDamage,
                                           (byte)AdditionalTypes.IncreaseDamage.LightIncreased)[0] / 100D;
@@ -1265,34 +1294,34 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 4:
-                    target.DarkResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetDarkResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllIncreased)[0];
-                    target.DarkResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetDarkResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.AllDecreased)[0];
-                    target.DarkResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
+                    targetDarkResistance += GetDefenderBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.DarkIncreased)[0];
-                    target.DarkResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
+                    targetDarkResistance += GetAttackerBenefitingBuffs(CardType.ElementResistance,
                         (byte)AdditionalTypes.ElementResistance.DarkDecreased)[0];
-                    target.DarkResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetDarkResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllIncreased)[0];
-                    target.DarkResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetDarkResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.AllDecreased)[0];
-                    target.DarkResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetDarkResistance += GetDefenderBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.DarkIncreased)[0];
-                    target.DarkResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
+                    targetDarkResistance += GetAttackerBenefitingBuffs(CardType.EnemyElementResistance,
                         (byte)AdditionalTypes.EnemyElementResistance.DarkDecreased)[0];
                     
                     if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                         && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
                     {
-                        target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedDark);
-                        target.FireResistance -=
+                        targetFireResistance -=
                             GetShellWeaponEffectValue(ShellOptionType.PvpResistanceDecreasedAll);
                     }
 
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.DarkResistanceIncrease);
-                    target.FireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.DarkResistanceIncrease);
+                    targetFireResistance += GetShellArmorEffectValue(ShellOptionType.SIncreaseAllResistance);
                     staticBoostCategory5 += GetShellWeaponEffectValue(ShellOptionType.IncreaseDarknessElement);
                     boostCategory5 += GetAttackerBenefitingBuffs(CardType.IncreaseDamage,
                                           (byte)AdditionalTypes.IncreaseDamage.DarkIncreased)[0] / 100D;
@@ -1344,11 +1373,11 @@ namespace OpenNos.GameObject.Battle
 
             #region Morale and Dodge
 
-            Morale -= target.Morale;
+            morale -= targetMorale;
             double chance = 0;
             if (AttackType != AttackType.Magical)
             {
-                int hitrate = HitRate + Morale;
+                int hitrate = HitRate + morale;
                 double multiplier = target.Dodge / (hitrate > 1 ? hitrate : 1);
 
                 if (multiplier > 5)
@@ -1416,26 +1445,26 @@ namespace OpenNos.GameObject.Battle
 
             if (atklvlfix[3] != 0)
             {
-                AttackUpgrade = (short)atklvlfix[0];
+                attackUpgrade = (short)atklvlfix[0];
             }
 
             if (deflvlfix[3] != 0)
             {
-                DefenseUpgrade = (short)deflvlfix[0];
+                defenseUpgrade = (short)deflvlfix[0];
             }
 
-            AttackUpgrade -= (short)target.DefenseUpgrade;
+            attackUpgrade -= (short)targetDefenseUpgrade;
 
-            if (AttackUpgrade < -10)
+            if (attackUpgrade < -10)
             {
-                AttackUpgrade = -10;
+                attackUpgrade = -10;
             }
-            else if (AttackUpgrade > 10)
+            else if (attackUpgrade > 10)
             {
-                AttackUpgrade = 10;
+                attackUpgrade = 10;
             }
 
-            switch (AttackUpgrade)
+            switch (attackUpgrade)
             {
                 case 0:
                     weaponDamage += 0;
@@ -1482,9 +1511,9 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                     //default:
-                    //    if (AttackUpgrade > 0)
+                    //    if (attackUpgrade > 0)
                     //    {
-                    //        weaponDamage *= AttackUpgrade / 5;
+                    //        weaponDamage *= attackUpgrade / 5;
                     //    }
 
                     //    break;
@@ -1499,10 +1528,10 @@ namespace OpenNos.GameObject.Battle
 
             #region Defense
 
-            switch (AttackUpgrade)
+            switch (attackUpgrade)
             {
                 //default:
-                //    if (AttackUpgrade < 0)
+                //    if (attackUpgrade < 0)
                 //    {
                 //        target.ArmorDefense += target.ArmorDefense / 5;
                 //    }
@@ -1579,7 +1608,6 @@ namespace OpenNos.GameObject.Battle
 
             int normalDamage = (int)((int)((baseDamage + staticBoostCategory2 - defense) * boostCategory2)
                                       * shellBoostCategory2);
-
             if (normalDamage < 0)
             {
                 normalDamage = 0;
@@ -1632,7 +1660,7 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 1:
-                    target.Resistance = target.FireResistance;
+                    target.Resistance = targetFireResistance;
                     switch (target.Element)
                     {
                         case 0:
@@ -1659,7 +1687,7 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 2:
-                    target.Resistance = target.WaterResistance;
+                    target.Resistance = targetWaterResistance;
                     switch (target.Element)
                     {
                         case 0:
@@ -1686,7 +1714,7 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 3:
-                    target.Resistance = target.LightResistance;
+                    target.Resistance = targetLightResistance;
                     switch (target.Element)
                     {
                         case 0:
@@ -1710,7 +1738,7 @@ namespace OpenNos.GameObject.Battle
                     break;
 
                 case 4:
-                    target.Resistance = target.DarkResistance;
+                    target.Resistance = targetDarkResistance;
                     switch (target.Element)
                     {
                         case 0:
@@ -1760,7 +1788,7 @@ namespace OpenNos.GameObject.Battle
             #region Total Damage
 
             int totalDamage =
-                (int)((int)((normalDamage + elementalDamage + Morale + staticBoostCategory1)
+                (int)((int)((normalDamage + elementalDamage + morale + staticBoostCategory1)
                               * boostCategory1) * shellBoostCategory1);
 
             if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
