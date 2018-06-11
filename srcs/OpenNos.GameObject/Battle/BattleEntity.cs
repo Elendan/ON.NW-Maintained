@@ -42,19 +42,12 @@ namespace OpenNos.GameObject.Battle
             {
                 Level = character.Level;
                 Morale = character.Level;
-                //HpMax = (int)character.HpLoad();
-                //MpMax = (int)character.MpLoad();
                 EntityType = EntityType.Player;
                 MinDamage = character.MinHit;
                 MaxDamage = character.MaxHit;
-                //HitRate = character.HitRate;
                 CriticalChance = character.HitCriticalRate;
                 CriticalRate = character.HitCritical;
                 Morale = character.Level;
-                //FireResistance = character.FireResistance;
-                //WaterResistance = character.WaterResistance;
-                //LightResistance = character.LightResistance;
-                //DarkResistance = character.DarkResistance;
                 PositionX = character.PositionX;
                 PositionY = character.PositionY;
                 return;
@@ -678,9 +671,9 @@ namespace OpenNos.GameObject.Battle
             {
                 cards = subtype % 10 == 1
                     ? bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10)) && s.FirstData >= 0)
+                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype)) && s.FirstData >= 0)
                     : bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
                         && (s.FirstData <= 0 || s.ThirdData < 0));
 
                 foreach (BCard entry in cards)
@@ -713,12 +706,12 @@ namespace OpenNos.GameObject.Battle
                 {
                     cards = subtype % 10 == 1
                         ? buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData >= 0)
                         : buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype / 10))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData <= 0);
@@ -755,6 +748,7 @@ namespace OpenNos.GameObject.Battle
         {
             BattleEntity target = targetEntity?.BattleEntity;
             DefineAttackType(skill);
+
             if (target == null)
             {
                 return 0;
