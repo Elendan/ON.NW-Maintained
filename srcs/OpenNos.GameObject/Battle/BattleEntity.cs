@@ -243,6 +243,9 @@ namespace OpenNos.GameObject.Battle
                 LightResistance = character.LightResistance;
                 WaterResistance = character.WaterResistance;
                 FireResistance = character.FireResistance;
+                ShellOptionsMain = character.ShellOptionsMain;
+                ShellOptionsSecondary = character.ShellOptionsSecondary;
+                ShellOptionArmor = character.ShellOptionArmor;
                 Morale = character.Level;
                 PositionX = character.PositionX;
                 PositionY = character.PositionY;
@@ -818,13 +821,20 @@ namespace OpenNos.GameObject.Battle
                 return ShellOptionsMain.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
             }
 
-            int GetShellArmorEffectValue(ShellOptionType effectType)
+            int GetShellArmorEffectValue(ShellOptionType effectType, bool isTarget = false)
             {
+                if (isTarget)
+                {
+                    return target.ShellOptionArmor.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
+                }
                 return ShellOptionArmor.FirstOrDefault(s => s.Type == (byte)effectType)?.Value ?? 0;
             }
 
             if (targetEntity is Character character)
             {
+                targetEntity.BattleEntity.ShellOptionsMain = character.ShellOptionsMain;
+                targetEntity.BattleEntity.ShellOptionsSecondary = character.ShellOptionsSecondary;
+                targetEntity.BattleEntity.ShellOptionArmor = character.ShellOptionArmor;
                 if (character.HasGodMode)
                 {
                     targetEntity.DealtDamage = 0;
@@ -1407,34 +1417,49 @@ namespace OpenNos.GameObject.Battle
                 //}
             }
 
-            int bonus = 0;
+            double bonus = 0;
+            double magicBonus = 0;
             if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
                 && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
             {
                 switch (AttackType)
                 {
                     case AttackType.Close:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeClose);
+                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeClose, true);
                         break;
 
                     case AttackType.Ranged:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeRanged);
+                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeRanged, true);
                         break;
 
                     case AttackType.Magical:
-                        bonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeMagic);
+                        magicBonus += GetShellArmorEffectValue(ShellOptionType.PvpDodgeMagic, true);
                         break;
                 }
 
-                bonus += GetShellArmorEffectValue(ShellOptionType.SPvpDodgeAll);
+                bonus += GetShellArmorEffectValue(ShellOptionType.SPvpDodgeAll, true);
             }
 
-            if (ServerManager.Instance.RandomNumber() - bonus < chance)
+            if (AttackType != AttackType.Magical)
             {
-                hitmode = 1;
-                SkillBcards.Clear();
-                targetEntity.DealtDamage = 0;
-                return 0;
+                if (ServerManager.Instance.RandomNumber() - bonus < chance)
+                {
+                    hitmode = 1;
+                    SkillBcards.Clear();
+                    targetEntity.DealtDamage = 0;
+                    return 0;
+                }
+            }
+            else
+            {
+                int magicalEvasiveness = (int)((1 - (1 - bonus / 100) * (1 - magicBonus / 100)) * 100);
+                if (ServerManager.Instance.RandomNumber() < magicalEvasiveness)
+                {
+                    hitmode = 1;
+                    SkillBcards.Clear();
+                    targetEntity.DealtDamage = 0;
+                    return 0;
+                }
             }
 
             #endregion
@@ -1899,7 +1924,6 @@ namespace OpenNos.GameObject.Battle
 
         public bool HasBuff(CardType type, byte subtype, bool removeWeaponEffects = false)
         {
-            return false;
             if (removeWeaponEffects)
             {
                 return Buffs.Any(buff => buff.Card.BCards.Any(b =>
