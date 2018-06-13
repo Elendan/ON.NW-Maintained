@@ -20,6 +20,7 @@ using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
@@ -320,12 +321,24 @@ namespace OpenNos.GameObject.Item
                                     {
                                         case (byte)EquipmentType.Armor:
                                             session.Character.Inventory.Armor = wearableInstance;
+                                            session.Character.ShellOptionArmor.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionArmor.Add(dto);
+                                            }
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
                                                     wearableInstance.ItemVNum)
                                                 .ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
                                             break;
                                         case (byte)EquipmentType.MainWeapon:
+                                            session.Character.ShellOptionsMain.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionsMain.Add(dto);
+                                            }
                                             session.Character.Inventory.PrimaryWeapon = wearableInstance;
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
@@ -334,6 +347,12 @@ namespace OpenNos.GameObject.Item
                                             specialistInstance?.RestorePoints(session, specialistInstance);
                                             break;
                                         case (byte)EquipmentType.SecondaryWeapon:
+                                            session.Character.ShellOptionsSecondary.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionsSecondary.Add(dto);
+                                            }
                                             session.Character.Inventory.SecondaryWeapon = wearableInstance;
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
