@@ -37,6 +37,9 @@ namespace OpenNos.GameObject.Battle
             ShellOptionArmor = new ConcurrentBag<EquipmentOptionDTO>();
             ShellOptionsMain = new ConcurrentBag<EquipmentOptionDTO>();
             ShellOptionsSecondary = new ConcurrentBag<EquipmentOptionDTO>();
+            CostumeHatBcards = new ConcurrentBag<BCard>();
+            CostumeSuitBcards = new ConcurrentBag<BCard>();
+            CostumeBcards = new ConcurrentBag<BCard>();
 
             if (Session is Character character)
             {
@@ -110,6 +113,12 @@ namespace OpenNos.GameObject.Battle
         public ConcurrentBag<EquipmentOptionDTO> ShellOptionsSecondary { get; set; }
 
         public ConcurrentBag<EquipmentOptionDTO> ShellOptionArmor { get; set; }
+
+        public ConcurrentBag<BCard> CostumeSuitBcards { get; set; }
+
+        public ConcurrentBag<BCard> CostumeHatBcards { get; set; }
+
+        public ConcurrentBag<BCard> CostumeBcards { get; set; }
 
         public ConcurrentBag<Buff.Buff> Buffs { get; set; }
 
@@ -2260,6 +2269,77 @@ namespace OpenNos.GameObject.Battle
 
             if (!isBoss && skill != null && hitmode != 1)
             {
+                if ((target.BattleEntity.CostumeHatBcards == null || !target.BattleEntity.CostumeHatBcards.Any()) && target is Character targetCharacter)
+                {
+                    var hat = targetCharacter.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
+                    hat.Item.BCards.ForEach(s => target.BattleEntity.CostumeHatBcards.Add(s));
+                }
+                if ((target.BattleEntity.CostumeSuitBcards == null || !target.BattleEntity.CostumeSuitBcards.Any()) && target is Character targetCharacter2)
+                {
+                    var costume = targetCharacter2.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
+                    costume.Item.BCards.ForEach(s => target.BattleEntity.CostumeSuitBcards.Add(s));
+                }
+                foreach (BCard bcard in target.BattleEntity.CostumeSuitBcards.Where(s => s != null))
+                {
+                    switch ((CardType)bcard.Type)
+                    {
+                        case CardType.Buff:
+                            var b = new Buff.Buff(bcard.SecondData);
+                            switch (b.Card?.BuffType)
+                            {
+                                case BuffType.Bad:
+                                    bcard.ApplyBCards(Entity, Entity);
+                                    break;
+
+                                case BuffType.Good:
+                                case BuffType.Neutral:
+                                    bcard.ApplyBCards(target, Entity);
+                                    break;
+                            }
+
+                            break;
+                    }
+                }
+                foreach (BCard bcard in target.BattleEntity.CostumeSuitBcards.Where(s => s != null))
+                {
+                    switch ((CardType)bcard.Type)
+                    {
+                        case CardType.Buff:
+                            var b = new Buff.Buff(bcard.SecondData);
+                            switch (b.Card?.BuffType)
+                            {
+                                case BuffType.Bad:
+                                    bcard.ApplyBCards(Entity, Entity);
+                                    break;
+
+                                case BuffType.Good:
+                                case BuffType.Neutral:
+                                    bcard.ApplyBCards(target, Entity);
+                                    break;
+                            }
+
+                            break;
+                    }
+                }
+                foreach (BCard bc in StaticBcards.Where(s => s != null))
+                {
+                    switch ((CardType)bc.Type)
+                    {
+                        case CardType.Buff:
+                            var b = new Buff.Buff(bc.SecondData);
+                            switch (b.Card?.BuffType)
+                            {
+                                case BuffType.Bad:
+                                    bc.ApplyBCards(target, Entity);
+                                    break;
+                                case BuffType.Good:
+                                case BuffType.Neutral:
+                                    bc.ApplyBCards(Entity, Entity);
+                                    break;
+                            }
+                            break;
+                    }
+                }
                 foreach (BCard bcard in skill.BCards.Where(b => b != null))
                 {
                     switch ((CardType)bcard.Type)

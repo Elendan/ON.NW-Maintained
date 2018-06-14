@@ -302,7 +302,10 @@ namespace OpenNos.GameObject.Item
                         session.Character.BattleEntity.StaticBcards = eqBcards;
                     }
 
-                    inv.Item.BCards.ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                    if (inv.Item.ItemType != ItemType.Fashion)
+                    {
+                        inv.Item.BCards.ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                    }
 
                     if (inv is WearableInstance wearableInstance)
                     {
@@ -317,8 +320,25 @@ namespace OpenNos.GameObject.Item
                                 case ItemType.Armor:
                                 case ItemType.Weapon:
                                 case ItemType.Jewelery:
+                                case ItemType.Fashion:
                                     switch (wearableInstance.Slot)
                                     {
+                                        case (byte)EquipmentType.CostumeHat:
+                                            session.Character.BattleEntity.CostumeHatBcards.Clear();
+
+                                            foreach (BCard bc in wearableInstance.Item.BCards)
+                                            {
+                                                session.Character.BattleEntity.CostumeHatBcards.Add(bc);
+                                            }
+                                            break;
+                                        case (byte)EquipmentType.CostumeSuit:
+                                            session.Character.BattleEntity.CostumeSuitBcards.Clear();
+
+                                            foreach (BCard bc in wearableInstance.Item.BCards)
+                                            {
+                                                session.Character.BattleEntity.CostumeSuitBcards.Add(bc);
+                                            }
+                                            break;
                                         case (byte)EquipmentType.Armor:
                                             session.Character.Inventory.Armor = wearableInstance;
                                             session.Character.ShellOptionArmor.Clear();
