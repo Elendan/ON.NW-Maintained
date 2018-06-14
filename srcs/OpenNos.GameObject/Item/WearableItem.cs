@@ -387,6 +387,13 @@ namespace OpenNos.GameObject.Item
                                                 .CellonToBCards(wearableInstance.EquipmentOptions,
                                                     wearableInstance.ItemVNum)
                                                 .ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                                            session.Character.BattleEntity.CellonOptions.Clear();
+                                            WearableInstance ring = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
+                                            WearableInstance bracelet = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
+                                            WearableInstance necklace = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
+                                            session.Character.BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
+                                            session.Character.BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
+                                            session.Character.BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
                                             break;
                                     }
 

@@ -6,6 +6,7 @@ using System.Reactive.Linq;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
+using OpenNos.Core.Networking.Communication.Scs.Threading;
 using OpenNos.Data;
 using OpenNos.GameObject.Battle.Args;
 using OpenNos.GameObject.Buff;
@@ -40,6 +41,7 @@ namespace OpenNos.GameObject.Battle
             CostumeHatBcards = new ConcurrentBag<BCard>();
             CostumeSuitBcards = new ConcurrentBag<BCard>();
             CostumeBcards = new ConcurrentBag<BCard>();
+            CellonOptions = new ThreadSafeGenericList<EquipmentOptionDTO>();
 
             if (Session is Character character)
             {
@@ -119,6 +121,8 @@ namespace OpenNos.GameObject.Battle
         public ConcurrentBag<BCard> CostumeHatBcards { get; set; }
 
         public ConcurrentBag<BCard> CostumeBcards { get; set; }
+
+        public ThreadSafeGenericList<EquipmentOptionDTO> CellonOptions { get; set; }
 
         public ConcurrentBag<Buff.Buff> Buffs { get; set; }
 
@@ -1665,13 +1669,13 @@ namespace OpenNos.GameObject.Battle
             CriticalRate += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritDamages);
 
             //Todo: Cellon options
-            /*
+            
             if (target.CellonOptions != null)
             {
-                CriticalRate -= target.CellonOptions.Where(s => s.Type == CellonOptionType.CritReduce)
+                CriticalRate -= target.CellonOptions.Where(s => s.Type == (byte)CellonType.CriticalDamageDecrease)
                     .Sum(s => s.Value);
             }
-            */
+            
 
             if (ServerManager.Instance.RandomNumber() < CriticalChance && AttackType != AttackType.Magical)
             {

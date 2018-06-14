@@ -1101,6 +1101,14 @@ namespace OpenNos.GameObject
                     Session.SendPacket(Session.Character.GenerateRaid(3, false));
                 }
 
+                BattleEntity.CellonOptions.Clear();
+                WearableInstance ring = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
+                WearableInstance bracelet = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
+                WearableInstance necklace = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
+                BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
+                BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
+                BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
+
                 var amulet =
                     Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Amulet, InventoryType.Wear);
                 if (amulet != null && !Invisible && !InvisibleGm)
