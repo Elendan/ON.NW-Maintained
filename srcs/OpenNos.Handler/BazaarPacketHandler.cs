@@ -108,6 +108,7 @@ namespace OpenNos.Handler
                         {
                             wear.EquipmentOptions.AddRange(DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(bzcree.Item.Id));
                             wear.EquipmentOptions.ForEach(s => s.WearableInstanceId = newBz.Id);
+                            wear.EquipmentOptions.ForEach(s => DaoFactory.EquipmentOptionDao.InsertOrUpdate(s));
                         }
 
 
@@ -174,6 +175,7 @@ namespace OpenNos.Handler
                             {
                                 wear.EquipmentOptions.AddRange(DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id));
                                 wear.EquipmentOptions.ForEach(s => s.WearableInstanceId = newBz.Id);
+                                wear.EquipmentOptions.ForEach(s => DaoFactory.EquipmentOptionDao.InsertOrUpdate(s));
                             }
 
                             Session.Character.Inventory.AddToInventory(newBz);
