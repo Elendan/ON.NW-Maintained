@@ -2284,12 +2284,12 @@ namespace OpenNos.GameObject.Battle
                 if ((target.BattleEntity.CostumeHatBcards == null || !target.BattleEntity.CostumeHatBcards.Any()) && target is Character targetCharacter)
                 {
                     var hat = targetCharacter.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
-                    hat.Item.BCards.ForEach(s => target.BattleEntity.CostumeHatBcards.Add(s));
+                    hat?.Item.BCards.ForEach(s => target.BattleEntity.CostumeHatBcards.Add(s));
                 }
                 if ((target.BattleEntity.CostumeSuitBcards == null || !target.BattleEntity.CostumeSuitBcards.Any()) && target is Character targetCharacter2)
                 {
                     var costume = targetCharacter2.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.CostumeHat, InventoryType.Wear);
-                    costume.Item.BCards.ForEach(s => target.BattleEntity.CostumeSuitBcards.Add(s));
+                    costume?.Item.BCards.ForEach(s => target.BattleEntity.CostumeSuitBcards.Add(s));
                 }
                 foreach (BCard bcard in target.BattleEntity.CostumeSuitBcards.Where(s => s != null))
                 {
