@@ -1866,14 +1866,16 @@ namespace OpenNos.GameObject.Battle
                 onyxEffect = true;
             }
 
-            if (hitmode == 3 && totalDamage > 7000)
+            Buff.Buff critDefence = target.Buffs.FirstOrDefault(s =>
+                s.Card.BCards.Any(c => c.Type == (byte)CardType.VulcanoElementBuff && c.SubType == (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence));
+
+            if (hitmode == 3 && critDefence != null)
             {
-                if (target.Buffs.Any(s => s.Card.CardId == 561))
-                {
-                    SkillBcards.Clear();
-                    targetEntity.DealtDamage = 7000;
-                    return 7000;
-                }
+                int? reduce = critDefence.Card.BCards.FirstOrDefault(c => c.Type == (byte)CardType.VulcanoElementBuff && c.SubType == (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence)
+                    ?.FirstData;
+                SkillBcards.Clear();
+                targetEntity.DealtDamage = reduce ?? totalDamage;
+                return reduce ?? totalDamage;
             }
 
             #endregion
