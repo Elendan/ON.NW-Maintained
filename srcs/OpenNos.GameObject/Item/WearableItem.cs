@@ -391,9 +391,20 @@ namespace OpenNos.GameObject.Item
                                             WearableInstance ring = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
                                             WearableInstance bracelet = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
                                             WearableInstance necklace = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
-                                            session.Character.BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
-                                            session.Character.BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
-                                            session.Character.BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
+                                            if (ring?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
+                                            }
+
+                                            if (bracelet?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
+                                            }
+
+                                            if (necklace?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
+                                            }
                                             break;
                                     }
 
