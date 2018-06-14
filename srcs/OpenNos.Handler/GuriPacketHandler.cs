@@ -327,7 +327,7 @@ namespace OpenNos.Handler
                                 {
                                     if (Session.Character.IsFriendOfCharacter(charId))
                                     {
-                                        if (session.CurrentMapInstance.MapInstanceType == MapInstanceType.BaseMapInstance)
+                                        if (session.CurrentMapInstance?.MapInstanceType == MapInstanceType.BaseMapInstance)
                                         {
                                             short mapy = session.Character.PositionY;
                                             short mapx = session.Character.PositionX;
