@@ -40,6 +40,39 @@ namespace OpenNos.GameObject.Buff
             switch ((BCardType.CardType)Type)
             {
                 case BCardType.CardType.Buff:
+                    /*
+                     * // ANTI-DEBUFFS
+                       ReducedMinorBleeding = 55,
+                       ReducedSeriousBleeding = 56,
+                       ReducedAllBleeding = 57,
+                       ReducedSmallBlackout = 58,
+                       ReducedAllBlackout = 59,
+                       ReducedHandOfDeath = 60,
+                       ReducedFrozenChance = 61,
+                       ReducedBlindChance = 62,
+                       ReducedArrestationChance = 63,
+                       ReducedDefenseReduction = 64,
+                       ReducedShockChance = 65,
+                       ReducedRigidityChance = 66,
+                       SReducedAllNegative = 67,
+                     */
+                    int antiDebuffBonus = 0;
+                    var b = new Buff(SecondData);
+                    foreach (EquipmentOptionDTO eqopt in session.BattleEntity.ShellOptionArmor)
+                    {
+                        switch ((ShellOptionType)eqopt.Type)
+                        {
+                            case ShellOptionType.SReducedAllNegative:
+                                antiDebuffBonus += eqopt.Value;
+                                break;
+                        }
+                    }
+
+                    if (ServerManager.Instance.RandomNumber() < antiDebuffBonus && b?.Card?.BuffType == BuffType.Bad)
+                    {
+                        break;
+                    }
+
                     if (ServerManager.Instance.RandomNumber() < FirstData)
                     {
                         session?.BattleEntity.AddBuff(new Buff(SecondData + (partnerBuffLevel ?? 0),
