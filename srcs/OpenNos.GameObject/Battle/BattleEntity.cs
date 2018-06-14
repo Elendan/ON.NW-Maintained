@@ -2050,7 +2050,7 @@ namespace OpenNos.GameObject.Battle
             bool onyxWings = false;
             int damage = GenerateDamage(target, skill, ref hitmode, ref onyxWings);
 
-            if (Session is Character charact && mapInstance != null)
+            if (Session is Character charact && mapInstance != null && hitmode != 1)
             {
                 if (onyxWings)
                 {
@@ -2258,7 +2258,7 @@ namespace OpenNos.GameObject.Battle
                 monster.DamageList.AddOrUpdate(Entity, damage, (key, oldValue) => oldValue + damage);
             }
 
-            if (!isBoss && skill != null)
+            if (!isBoss && skill != null && hitmode != 1)
             {
                 foreach (BCard bcard in skill.BCards.Where(b => b != null))
                 {
