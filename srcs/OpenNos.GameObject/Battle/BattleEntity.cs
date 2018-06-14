@@ -1866,6 +1866,16 @@ namespace OpenNos.GameObject.Battle
                 onyxEffect = true;
             }
 
+            if (hitmode == 3 && totalDamage > 7000)
+            {
+                if (target.Buffs.Any(s => s.Card.CardId == 561))
+                {
+                    SkillBcards.Clear();
+                    targetEntity.DealtDamage = 7000;
+                    return 7000;
+                }
+            }
+
             #endregion
             SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
