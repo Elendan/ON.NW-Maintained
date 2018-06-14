@@ -896,24 +896,6 @@ namespace OpenNos.GameObject.Battle
             targetDefenseUpgrade += (byte)GetAttackerBenefitingBuffs(CardType.Defence,
                 (byte)AdditionalTypes.Defence.DefenceLevelDecreased)[0];
 
-            int[] attackerpercentdamage = GetAttackerBenefitingBuffs(CardType.RecoveryAndDamagePercent, 11);
-            int[] defenderpercentdefense = GetDefenderBenefitingBuffs(CardType.RecoveryAndDamagePercent, 2);
-
-            //int[] attackerpercentdamage2 = GetDefenderBenefitingBuffs(CardType.RecoveryAndDamagePercent, 11);
-            //int[] defenderpercentdefense2 = GetAttackerBenefitingBuffs(CardType.RecoveryAndDamagePercent, 2);
-
-            if (attackerpercentdamage[3] != 0)
-            {
-                targetEntity.DealtDamage = (ushort)(target.HpMax / 100 * attackerpercentdamage[2]);
-                return (ushort)(target.HpMax / 100 * attackerpercentdamage[2]);
-            }
-
-            if (defenderpercentdefense[3] != 0)
-            {
-                targetEntity.DealtDamage = (ushort)(target.HpMax / 100 * attackerpercentdamage[2]);
-                return (ushort)(target.HpMax / 100 * Math.Abs(defenderpercentdefense[2]));
-            }
-
             /*
              *
              * Percentage Boost categories:
