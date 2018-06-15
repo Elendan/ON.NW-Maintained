@@ -481,7 +481,10 @@ namespace OpenNos.GameObject.Map
                         return;
                     }
 
-                    Path.RemoveRange(0, maxindex);
+                    if (maxindex <= Path.Count)
+                    {
+                        Path.RemoveRange(0, maxindex);
+                    }
                 }
             }
 

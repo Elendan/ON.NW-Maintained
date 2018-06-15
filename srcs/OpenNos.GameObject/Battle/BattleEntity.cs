@@ -31,7 +31,7 @@ namespace OpenNos.GameObject.Battle
             Session = entity.GetSession();
             Buffs = new ConcurrentBag<Buff.Buff>();
             StaticBcards = new ConcurrentBag<BCard>();
-            SkillBcards = new List<BCard>();
+            SkillBcards = new ConcurrentBag<BCard>();
             OnDeathEvents = new ConcurrentBag<EventContainer>();
             OnHitEvents = new ConcurrentBag<EventContainer>();
             ObservableBag = new ConcurrentDictionary<short, IDisposable>();
@@ -142,7 +142,7 @@ namespace OpenNos.GameObject.Battle
 
         public EntityType EntityType { get; set; }
 
-        public List<BCard> SkillBcards { get; set; }
+        public ConcurrentBag<BCard> SkillBcards { get; set; }
 
         public ConcurrentBag<EventContainer> OnDeathEvents { get; set; }
 
@@ -867,7 +867,7 @@ namespace OpenNos.GameObject.Battle
             if (skill != null)
             {
                 //Todo: Clean this afterwards
-                SkillBcards.AddRange(skill.BCards);
+                skill.BCards.ToList().ForEach(s => SkillBcards.Add(s));
             }
 
             #region Basic Buff Initialisation
@@ -1903,7 +1903,7 @@ namespace OpenNos.GameObject.Battle
             int value1 = 0;
             int value2 = 0;
 
-            lock(SkillBcards)
+            lock(StaticBcards)
             {
                 foreach (BCard entry in StaticBcards.Concat(SkillBcards)
                     .Where(s => s != null && s.Type.Equals((byte)type) && s.SubType.Equals(subtype)))
