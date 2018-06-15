@@ -59,6 +59,8 @@ namespace OpenNos.Data
 
         public string Title { get; set; }
 
+        public byte Design { get; set; }
+
         #endregion
     }
 }

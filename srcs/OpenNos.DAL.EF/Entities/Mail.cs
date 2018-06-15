@@ -68,6 +68,8 @@ namespace OpenNos.DAL.EF.Entities
         [MaxLength(255)]
         public string Title { get; set; }
 
+        public byte Design { get; set; }
+
         #endregion
     }
 }

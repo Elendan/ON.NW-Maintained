@@ -3777,8 +3777,7 @@ namespace OpenNos.GameObject
                     {
                         return;
                     }
-
-                    SendGift(CharacterId, itemVNum, amount, newItem.Rare, newItem.Upgrade, false);
+                    SendGift(CharacterId, itemVNum, amount, newItem.Rare, newItem.Upgrade, false, design: (byte)design);
                     Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
                         Language.Instance.GetMessageFromKey("ITEM_ACQUIRED_BY_THE_GIANT_MONSTER"), 0));
                 }
@@ -4502,7 +4501,7 @@ namespace OpenNos.GameObject
             }
         }
 
-        public void SendGift(long id, short vnum, ushort amount, sbyte rare, byte upgrade, bool isNosmall)
+        public void SendGift(long id, short vnum, ushort amount, sbyte rare, byte upgrade, bool isNosmall, byte design = 0)
         {
             Item.Item it = ServerManager.Instance.GetItem(vnum);
 
@@ -4562,6 +4561,7 @@ namespace OpenNos.GameObject
                 SenderHairColor = HairColor,
                 SenderHairStyle = HairStyle,
                 EqPacket = GenerateEqListForPacket(),
+                Design = design,
                 SenderMorphId = Morph == 0 ? (short)-1 : (short)(Morph > short.MaxValue ? 0 : Morph)
             };
 
