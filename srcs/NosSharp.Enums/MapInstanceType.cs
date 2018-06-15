@@ -30,6 +30,7 @@ namespace NosSharp.Enums
         PersonalMapInstance,
         BattleRoyaleMapInstance,
         LobbyMapInstance,
-        CaligorInstance
+        CaligorInstance,
+        EventGameInstance
     }
 }

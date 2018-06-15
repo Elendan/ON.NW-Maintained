@@ -26,6 +26,7 @@ using OpenNos.GameObject.Event;
 using OpenNos.GameObject.Event.ACT4;
 using OpenNos.GameObject.Event.ARENA;
 using OpenNos.GameObject.Event.CALIGOR;
+using OpenNos.GameObject.Event.GAMES;
 using OpenNos.GameObject.Event.ICEBREAKER;
 using OpenNos.GameObject.Event.INSTANTBATTLE;
 using OpenNos.GameObject.Event.LOD;
@@ -84,6 +85,14 @@ namespace OpenNos.GameObject.Helpers
                             break;
                         case EventType.LODDH:
                             Lod.GenerateLod(35);
+                            break;
+
+                        case EventType.METEORITEGAME:
+                            MeteoriteGame.GenerateMeteoriteGame();
+                            break;
+
+                        case EventType.SHEEPGAME:
+                            SheepGame.GenerateSheepGames();
                             break;
 
                         case EventType.ICEBREAKER:
