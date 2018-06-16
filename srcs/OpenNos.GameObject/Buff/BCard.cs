@@ -663,7 +663,7 @@ namespace OpenNos.GameObject.Buff
                                         case Mate receiverMate when caster is MapMonster senderMapMonster:
                                             damage = (ushort)(senderMapMonster.Monster.Level * scale);
                                             receiverMate.Hp = receiverMate.Hp - damage <= 0 ? 1 : receiverMate.Hp - damage;
-                                            receiverMate.MapInstance.Broadcast(receiverMate.GenerateDm(damage));
+                                            receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                     }
