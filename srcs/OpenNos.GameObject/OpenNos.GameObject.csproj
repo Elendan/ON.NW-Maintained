@@ -219,6 +219,7 @@
     <Compile Include="Packets\ServerPackets\CancelPacket.cs" />
     <Compile Include="Packets\ServerPackets\CspPacket.cs" />
     <Compile Include="Packets\ServerPackets\PsopPacket.cs" />
+    <Compile Include="Packets\ServerPackets\ShPacket.cs" />
     <Compile Include="Packets\ServerPackets\SrPacket.cs" />
     <Compile Include="ToSummon.cs" />
     <Compile Include="Packets\ClientPackets\PslPacket.cs" />

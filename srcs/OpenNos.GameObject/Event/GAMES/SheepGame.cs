@@ -141,7 +141,6 @@ namespace OpenNos.GameObject.Event.GAMES
                     });
                     Observable.Timer(TimeSpan.FromMinutes(5)).Subscribe(o =>
                     {
-
                         End(session.Character);
                     });
                 }
@@ -211,10 +210,10 @@ namespace OpenNos.GameObject.Event.GAMES
             private void End(Character character)
             {
                 //character.IsWaitingForGift = true;
-                //character.Point = 0;
-                //character.Point2 = 0;
-                //character.Point3 = 0;
-                //character.CanAttack = false;
+                character.SheepScore1 = 0;
+                character.SheepScore2 = 0;
+                character.SheepScore3 = 0;
+                character.CanAttack = false;
                 character.IsCustomSpeed = false;
                 character.RemoveVehicle();
                 Spawn = false;

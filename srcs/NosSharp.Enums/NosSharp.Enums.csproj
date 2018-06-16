@@ -158,6 +158,7 @@
     <Compile Include="RefinerType.cs" />
     <Compile Include="ServerState.cs" />
     <Compile Include="SessionType.cs" />
+    <Compile Include="SheepScoreType.cs" />
     <Compile Include="ShellOptionType.cs" />
     <Compile Include="StatsType.cs" />
     <Compile Include="TalentArenaOptionType.cs" />

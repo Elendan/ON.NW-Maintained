@@ -564,9 +564,48 @@ namespace OpenNos.GameObject
 
         public IDisposable Life { get; set; }
 
+        public bool CanAttack { get; set; }
+
+        public int SheepScore1 { get; set; }
+
+        public int SheepScore2 { get; set; }
+
+        public int SheepScore3 { get; set; }
+
         #endregion
 
         #region Methods
+
+        public void GenerateSheepScore(UserType type)
+        {
+            if (!CanAttack)
+            {
+                return;
+            }
+
+            switch (type)
+            {
+                case UserType.Player:
+                    SheepScore1 += 10;
+                    SheepScore3 += 1;
+                    break;
+                case UserType.Monster:
+                    SheepScore1 += 5;
+                    SheepScore2 += 1;
+                    break;
+                default:
+                    return;
+            }
+
+            Session.CurrentMapInstance?.Broadcast($"srlst 2 {CharacterId} {Name} {SheepScore1} {SheepScore2} {SheepScore3}");
+            CanAttack = false;
+            Session.SendPacket("sh_c");
+            Observable.Timer(TimeSpan.FromSeconds(7)).Subscribe(s =>
+            {
+                Session.SendPacket("sh_o");
+                CanAttack = true;
+            });
+        }
 
         public string GenerateDm(ushort dmg) => $"dm 1 {CharacterId} {dmg}";
 
