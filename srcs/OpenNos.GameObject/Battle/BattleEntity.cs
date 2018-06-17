@@ -2044,6 +2044,11 @@ namespace OpenNos.GameObject.Battle
             short? mapX = null, short? mapY = null, ComboDTO skillCombo = null, bool showTargetAnimation = false,
             bool isPvp = false)
         {
+            if (target == null || Entity == null)
+            {
+                return;
+            }
+
             if (!target.IsTargetable(Entity.SessionType(), isPvp) ||
                 target.Faction == Entity.Faction && ServerManager.Instance.Act4Maps.Any(m => m == Entity.MapInstance))
             {
