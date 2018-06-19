@@ -384,8 +384,13 @@ namespace OpenNos.PathFinder.PathFinder
             while (currentnode.F != 1 && currentnode.F != 0)
             {
                 Node newnode = GetNeighborsJagged(Grid, currentnode, MapGrid)?.OrderBy(s => s.F).FirstOrDefault();
-                if (newnode != null)
+                lock(list)
                 {
+                    if (newnode == null)
+                    {
+                        continue;
+                    }
+
                     list.Add(newnode);
                     currentnode = newnode;
                 }

@@ -387,7 +387,7 @@ namespace OpenNos.GameObject.Map
                 }
 
                 // check if target is in range & if monster has enough mp to use the skill
-                if (CurrentMp >= (npcMonsterSkill?.Skill.MpCost ?? CurrentMp) &&
+                if (IsAlive && Life != null && Target != null && CurrentMp >= (npcMonsterSkill?.Skill?.MpCost ?? CurrentMp) &&
                     Map.GetDistance(GetPos(), Target.GetPos()) <=
                     (npcMonsterSkill?.Skill.Range + 1 ?? Monster?.BasicRange))
                 {
@@ -481,7 +481,10 @@ namespace OpenNos.GameObject.Map
                         return;
                     }
 
-                    Path.RemoveRange(0, maxindex);
+                    if (maxindex <= Path.Count)
+                    {
+                        Path.RemoveRange(0, maxindex);
+                    }
                 }
             }
 

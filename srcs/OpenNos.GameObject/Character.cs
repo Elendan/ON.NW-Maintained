@@ -96,6 +96,14 @@ namespace OpenNos.GameObject
         public ConcurrentBag<Buff.Buff> Buff => BattleEntity.Buffs;
 
         public void DisableBuffs(List<BuffType> types, int level = 100) => BattleEntity.DisableBuffs(types, level);
+    
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsMain => BattleEntity.ShellOptionsMain;
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionsSecondary => BattleEntity.ShellOptionsSecondary;
+
+        public ConcurrentBag<EquipmentOptionDTO> ShellOptionArmor => BattleEntity.ShellOptionArmor;
+
+        public int MaxHp => (int)HpLoad();
 
         #endregion
 
@@ -145,8 +153,6 @@ namespace OpenNos.GameObject
             get => Hp;
             set => Hp = value;
         }
-
-        public int MaxHp => (int)HpLoad();
 
         public short CurrentMinigame { get; set; }
 
@@ -558,9 +564,48 @@ namespace OpenNos.GameObject
 
         public IDisposable Life { get; set; }
 
+        public bool CanAttack { get; set; }
+
+        public int SheepScore1 { get; set; }
+
+        public int SheepScore2 { get; set; }
+
+        public int SheepScore3 { get; set; }
+
         #endregion
 
         #region Methods
+
+        public void GenerateSheepScore(UserType type)
+        {
+            if (!CanAttack)
+            {
+                return;
+            }
+
+            switch (type)
+            {
+                case UserType.Player:
+                    SheepScore1 += 10;
+                    SheepScore3 += 1;
+                    break;
+                case UserType.Monster:
+                    SheepScore1 += 5;
+                    SheepScore2 += 1;
+                    break;
+                default:
+                    return;
+            }
+
+            Session.CurrentMapInstance?.Broadcast($"srlst 2 {CharacterId} {Name} {SheepScore1} {SheepScore2} {SheepScore3}");
+            CanAttack = false;
+            Session.SendPacket("sh_c");
+            Observable.Timer(TimeSpan.FromSeconds(7)).Subscribe(s =>
+            {
+                Session.SendPacket("sh_o");
+                CanAttack = true;
+            });
+        }
 
         public string GenerateDm(ushort dmg) => $"dm 1 {CharacterId} {dmg}";
 
@@ -1093,6 +1138,25 @@ namespace OpenNos.GameObject
                 if (Session.CurrentMapInstance?.MapInstanceType == MapInstanceType.RaidInstance)
                 {
                     Session.SendPacket(Session.Character.GenerateRaid(3, false));
+                }
+
+                BattleEntity.CellonOptions.Clear();
+                WearableInstance ring = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
+                WearableInstance bracelet = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
+                WearableInstance necklace = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
+                if (ring?.EquipmentOptions != null)
+                {
+                    BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
+                }
+
+                if (bracelet?.EquipmentOptions != null)
+                {
+                    BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
+                }
+
+                if (necklace?.EquipmentOptions != null)
+                {
+                    BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
                 }
 
                 var amulet =
@@ -1647,16 +1711,42 @@ namespace OpenNos.GameObject
                     continue;
                 }
 
-                switch (item.Item.EquipmentSlot)
+                switch (item.Item.ItemType)
                 {
-                    case EquipmentType.Armor:
+                    case ItemType.Armor:
                         armorRare = item.Rare;
                         armorUpgrade = item.Upgrade;
-                        break;
+                        ShellOptionArmor.Clear();
 
-                    case EquipmentType.MainWeapon:
-                        weaponRare = item.Rare;
-                        weaponUpgrade = item.Upgrade;
+                        foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                        {
+                            ShellOptionArmor.Add(dto);
+                        }
+                        break;
+                    case ItemType.Weapon:
+
+                        switch (item.Item.EquipmentSlot)
+                        {
+                            case EquipmentType.SecondaryWeapon:
+                                ShellOptionsSecondary.Clear();
+
+                                foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                                {
+                                    ShellOptionsSecondary.Add(dto);
+                                }
+                                break;
+
+                            case EquipmentType.MainWeapon:
+                                ShellOptionsMain.Clear();
+
+                                foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(item.Id))
+                                {
+                                    ShellOptionsMain.Add(dto);
+                                }
+                                weaponRare = item.Rare;
+                                weaponUpgrade = item.Upgrade;
+                                break;
+                        }
                         break;
                 }
 
@@ -3726,8 +3816,7 @@ namespace OpenNos.GameObject
                     {
                         return;
                     }
-
-                    SendGift(CharacterId, itemVNum, amount, newItem.Rare, newItem.Upgrade, false);
+                    SendGift(CharacterId, itemVNum, amount, newItem.Rare, newItem.Upgrade, false, design: (byte)design);
                     Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(
                         Language.Instance.GetMessageFromKey("ITEM_ACQUIRED_BY_THE_GIANT_MONSTER"), 0));
                 }
@@ -4451,7 +4540,7 @@ namespace OpenNos.GameObject
             }
         }
 
-        public void SendGift(long id, short vnum, ushort amount, sbyte rare, byte upgrade, bool isNosmall)
+        public void SendGift(long id, short vnum, ushort amount, sbyte rare, byte upgrade, bool isNosmall, byte design = 0)
         {
             Item.Item it = ServerManager.Instance.GetItem(vnum);
 
@@ -4511,6 +4600,7 @@ namespace OpenNos.GameObject
                 SenderHairColor = HairColor,
                 SenderHairStyle = HairStyle,
                 EqPacket = GenerateEqListForPacket(),
+                Design = design,
                 SenderMorphId = Morph == 0 ? (short)-1 : (short)(Morph > short.MaxValue ? 0 : Morph)
             };
 

@@ -611,7 +611,7 @@ namespace OpenNos.Handler
         /// <param name="getPacket"></param>
         public void GetItem(GetPacket getPacket)
         {
-            if (Session.Character.LastSkillUse.AddSeconds(1) > DateTime.Now || Session.Character.IsVehicled || !Session.HasCurrentMapInstance)
+            if (Session.Character.LastSkillUse.AddSeconds(1) > DateTime.Now || Session.Character.IsVehicled && Session.CurrentMapInstance?.MapInstanceType != MapInstanceType.EventGameInstance || !Session.HasCurrentMapInstance)
             {
                 return;
             }

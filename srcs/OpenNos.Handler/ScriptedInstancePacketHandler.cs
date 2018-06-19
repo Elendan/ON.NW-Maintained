@@ -32,6 +32,40 @@ namespace OpenNos.Handler
 
         #region Methods
 
+        public void ShPacket(ShPacket packet)
+        {
+            if (packet == null)
+            {
+                return;
+            }
+
+            switch (packet.TargetType)
+            {
+                case UserType.Player:
+                    ClientSession target = ServerManager.Instance.GetSessionBySessionId(packet.TargetId);
+
+                    if (target == null || !target.Character.CanAttack || target == Session)
+                    {
+                        return;
+                    }
+                    Session.Character.GenerateSheepScore(packet.TargetType);
+                    target.Character.Speed = 0;
+                    target.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(string.Format(Language.Instance.GetMessageFromKey("RESURRECT_IN_SECONDS"), 10)));
+                    target.Character.CanAttack = false;
+                    Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(s =>
+                    {
+                        target.Character.CanAttack = true;
+                        target.Character.Speed = 5;
+                        ServerManager.Instance.TeleportOnRandomPlaceInMap(target, target.CurrentMapInstance.MapInstanceId);
+                    });
+                    break;
+                case UserType.Monster:
+                    Session.Character.GenerateSheepScore(packet.TargetType);
+                    Session.CurrentMapInstance?.Broadcast(StaticPacketHelper.Out(UserType.Monster, packet.TargetId));
+                    break;
+            }
+        }
+
         public void ButtonCancel(BscPacket packet)
         {
             switch (packet.Type)

@@ -171,6 +171,8 @@
     <Compile Include="Event\BattleRoyale\BattleRoyaleManager.cs" />
     <Compile Include="Event\CALIGOR\Caligor.cs" />
     <Compile Include="Event\EventWave.cs" />
+    <Compile Include="Event\GAMES\MeteoriteGame.cs" />
+    <Compile Include="Event\GAMES\SheepGame.cs" />
     <Compile Include="Event\ICEBREAKER\IceBreaker.cs" />
     <Compile Include="Extensions\DaoExtensions.cs" />
     <Compile Include="Helpers\CellonGeneratorHelper.cs" />
@@ -181,6 +183,7 @@
     <Compile Include="Helpers\QuestHelper.cs" />
     <Compile Include="Helpers\RewardsHelper.cs" />
     <Compile Include="Helpers\ShellGeneratorHelper.cs" />
+    <Compile Include="Helpers\StaticPacketHelper.cs" />
     <Compile Include="Helpers\VipHelper.cs" />
     <Compile Include="Logs\Classes\CharacterLog.cs" />
     <Compile Include="Logs\Classes\ChatLoggable.cs" />
@@ -216,6 +219,7 @@
     <Compile Include="Packets\ServerPackets\CancelPacket.cs" />
     <Compile Include="Packets\ServerPackets\CspPacket.cs" />
     <Compile Include="Packets\ServerPackets\PsopPacket.cs" />
+    <Compile Include="Packets\ServerPackets\ShPacket.cs" />
     <Compile Include="Packets\ServerPackets\SrPacket.cs" />
     <Compile Include="ToSummon.cs" />
     <Compile Include="Packets\ClientPackets\PslPacket.cs" />

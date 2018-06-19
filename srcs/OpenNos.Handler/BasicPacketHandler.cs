@@ -1552,6 +1552,7 @@ namespace OpenNos.Handler
             }
 
             Session.Character.GeneratePairy();
+            Session.Character.GenerateStatChar();
         }
 
         /// <summary>

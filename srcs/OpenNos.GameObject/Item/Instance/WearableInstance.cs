@@ -286,6 +286,11 @@ namespace OpenNos.GameObject.Item.Instance
                 return;
             }
 
+            if (Item.ItemType == ItemType.Jewelery)
+            {
+                return;
+            }
+
             if (!Item.IsHeroic || Rare <= 0)
             {
                 return;

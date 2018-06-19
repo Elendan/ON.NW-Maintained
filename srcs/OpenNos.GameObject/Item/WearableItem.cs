@@ -20,6 +20,7 @@ using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
@@ -301,7 +302,10 @@ namespace OpenNos.GameObject.Item
                         session.Character.BattleEntity.StaticBcards = eqBcards;
                     }
 
-                    inv.Item.BCards.ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                    if (inv.Item.ItemType != ItemType.Fashion)
+                    {
+                        inv.Item.BCards.ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                    }
 
                     if (inv is WearableInstance wearableInstance)
                     {
@@ -316,16 +320,45 @@ namespace OpenNos.GameObject.Item
                                 case ItemType.Armor:
                                 case ItemType.Weapon:
                                 case ItemType.Jewelery:
+                                case ItemType.Fashion:
                                     switch (wearableInstance.Slot)
                                     {
+                                        case (byte)EquipmentType.CostumeHat:
+                                            session.Character.BattleEntity.CostumeHatBcards.Clear();
+
+                                            foreach (BCard bc in wearableInstance.Item.BCards)
+                                            {
+                                                session.Character.BattleEntity.CostumeHatBcards.Add(bc);
+                                            }
+                                            break;
+                                        case (byte)EquipmentType.CostumeSuit:
+                                            session.Character.BattleEntity.CostumeSuitBcards.Clear();
+
+                                            foreach (BCard bc in wearableInstance.Item.BCards)
+                                            {
+                                                session.Character.BattleEntity.CostumeSuitBcards.Add(bc);
+                                            }
+                                            break;
                                         case (byte)EquipmentType.Armor:
                                             session.Character.Inventory.Armor = wearableInstance;
+                                            session.Character.ShellOptionArmor.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionArmor.Add(dto);
+                                            }
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
                                                     wearableInstance.ItemVNum)
                                                 .ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
                                             break;
                                         case (byte)EquipmentType.MainWeapon:
+                                            session.Character.ShellOptionsMain.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionsMain.Add(dto);
+                                            }
                                             session.Character.Inventory.PrimaryWeapon = wearableInstance;
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
@@ -334,6 +367,12 @@ namespace OpenNos.GameObject.Item
                                             specialistInstance?.RestorePoints(session, specialistInstance);
                                             break;
                                         case (byte)EquipmentType.SecondaryWeapon:
+                                            session.Character.ShellOptionsSecondary.Clear();
+
+                                            foreach (EquipmentOptionDTO dto in DaoFactory.EquipmentOptionDao.GetOptionsByWearableInstanceId(inv.Id))
+                                            {
+                                                session.Character.ShellOptionsSecondary.Add(dto);
+                                            }
                                             session.Character.Inventory.SecondaryWeapon = wearableInstance;
                                             EquipmentOptionHelper.Instance
                                                 .ShellToBCards(wearableInstance.EquipmentOptions,
@@ -348,6 +387,24 @@ namespace OpenNos.GameObject.Item
                                                 .CellonToBCards(wearableInstance.EquipmentOptions,
                                                     wearableInstance.ItemVNum)
                                                 .ForEach(s => session.Character.BattleEntity.StaticBcards.Add(s));
+                                            session.Character.BattleEntity.CellonOptions.Clear();
+                                            WearableInstance ring = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
+                                            WearableInstance bracelet = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
+                                            WearableInstance necklace = session.Character.Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
+                                            if (ring?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
+                                            }
+
+                                            if (bracelet?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(bracelet?.EquipmentOptions);
+                                            }
+
+                                            if (necklace?.EquipmentOptions != null)
+                                            {
+                                                session.Character.BattleEntity.CellonOptions.AddRange(necklace?.EquipmentOptions);
+                                            }
                                             break;
                                     }
 
