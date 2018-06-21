@@ -17,6 +17,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reflection;
@@ -28,6 +29,8 @@ using OpenNos.Core.Extensions;
 using OpenNos.Core.Networking.Communication.Scs.Threading;
 using OpenNos.Data;
 using OpenNos.DAL;
+using OpenNos.DAL.EF.DB;
+using OpenNos.DAL.EF.Helpers;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Event;
 using OpenNos.GameObject.Event.ACT6;
@@ -40,6 +43,7 @@ using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Npc;
 using OpenNos.Master.Library.Client;
 using OpenNos.Master.Library.Data;
+using System.Data.Common;
 
 namespace OpenNos.GameObject.Networking
 {
@@ -2127,11 +2131,36 @@ namespace OpenNos.GameObject.Networking
 
         public void SaveAll()
         {
-            foreach (ClientSession session in Sessions.Where(s =>
-                s?.HasCurrentMapInstance == true && s.HasSelectedCharacter && s.Character != null))
+            if (!Sessions.Any())
             {
-                session.Character.Save();
+                return;
             }
+
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
+            using (DbTransaction trans = DataAccessHelper.BeginTransaction())
+            {
+                try
+                {
+                    foreach (ClientSession session in Sessions.Where(s =>
+                        s?.HasCurrentMapInstance == true && s.HasSelectedCharacter && s.Character != null))
+                    {
+                        session.Character.Save();
+                    }
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    Logger.Log.Error(ex.ToString());
+                }
+            }
+            stopWatch.Stop();
+
+            TimeSpan ts = stopWatch.Elapsed;
+            string elapsedTime = $"{ts.Minutes:00}:{ts.Seconds:00}.{ts.Milliseconds / 10:00}";
+            Logger.Log.Info("[SaveAll] SaveAll need " + elapsedTime + " to Save " + Sessions.Count() + " Players");
         }
 
         public void SetProperty(long charId, string property, object value)
@@ -2334,7 +2363,7 @@ namespace OpenNos.GameObject.Networking
 
             Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(x => { RemoveItemProcess(); });
 
-            //Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
+            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(x => { SaveAll(); });
 
             foreach (Schedule schedule in Schedules)
             {
