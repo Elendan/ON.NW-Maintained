@@ -129,6 +129,11 @@ namespace OpenNos.GameObject.Event.ACT4
 
             foreach (MapMonster monster in Act4Guardians)
             {
+                if (monster == null)
+                {
+                    continue;
+                }
+
                 monster.Initialize();
                 lobby.AddMonster(monster);
                 lobby.Broadcast(monster.GenerateIn());
