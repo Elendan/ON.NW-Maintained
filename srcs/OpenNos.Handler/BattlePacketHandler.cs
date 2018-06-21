@@ -152,23 +152,6 @@ namespace OpenNos.Handler
                             int random = ServerManager.Instance.RandomNumber();
                             CharacterSkill ski =
                                 (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
-                            /*if (ski != null)
-                            {
-                                ski.Skill.BCards.ToList().ForEach(s =>
-                                {
-                                    switch (s.Type)
-                                    {
-                                        case (byte)BCardType.CardType.MeteoriteTeleport:
-                                            switch (s.SubType)
-                                            {
-                                                case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
-                                                    // Need to get the vnum
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                });
-                            }*/
                             if (fairyWings[0] > random)
                             {
                                 Observable.Timer(TimeSpan.FromSeconds(1)).Subscribe(o =>
@@ -197,23 +180,6 @@ namespace OpenNos.Handler
                             }
                             CharacterSkill ski =
                                 (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
-                            /*if (ski != null)
-                            {
-                                ski.Skill.BCards.ToList().ForEach(s =>
-                                {
-                                    switch (s.Type)
-                                    {
-                                        case (byte)BCardType.CardType.MeteoriteTeleport:
-                                            switch (s.SubType)
-                                            {
-                                                case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
-                                                    // Need to get the vnum
-                                                    break;
-                                            }
-                                            break;
-                                    }
-                                });
-                            }*/
                             int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
                             int random = ServerManager.Instance.RandomNumber();
                             if (fairyWings[0] > random)

@@ -23,6 +23,7 @@ using OpenNos.Data;
 using OpenNos.Data.Interfaces;
 using OpenNos.DAL;
 using OpenNos.GameObject.Event;
+using OpenNos.GameObject.Networking;
 using OpenNos.PathFinder.PathFinder;
 
 namespace OpenNos.GameObject.Map
@@ -152,6 +153,19 @@ namespace OpenNos.GameObject.Map
                 }
             }));
             return Cells.OrderBy(s => _random.Next(int.MaxValue)).FirstOrDefault();
+        }
+
+        public MapCell GetRandomPositionInRadius(byte radius, short xOrigin, short yOrigin)
+        {
+            ConcurrentBag<MapCell> mapCells = new ConcurrentBag<MapCell>();
+            Parallel.For(yOrigin - radius, yOrigin + radius, y => Parallel.For(xOrigin - radius, xOrigin + radius, x =>
+            {
+                if (!IsBlockedZone(x, y))
+                {
+                    mapCells.Add(new MapCell { X = (short)x, Y = (short)y });
+                }
+            }));
+            return mapCells.OrderBy(s => _random.Next(int.MaxValue)).FirstOrDefault();
         }
 
         public bool IsBlockedZone(int x, int y)

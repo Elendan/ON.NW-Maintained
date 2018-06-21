@@ -2447,15 +2447,18 @@ namespace OpenNos.GameObject
                     if (!ServerManager.Instance.AutoLoot)
                     {
 
-                        // delayed Drop
-                        Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(o =>
+                        // delayed Drop if not a meteor
+                        if (monsterToAttack.MonsterVNum != 2352)
                         {
-                            if (Session.HasCurrentMapInstance)
+                            Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(o =>
                             {
-                                Session.CurrentMapInstance.DropItemByMonster(dropOwner, drop2, monsterToAttack.MapX,
-                                    monsterToAttack.MapY);
-                            }
-                        });
+                                if (Session.HasCurrentMapInstance)
+                                {
+                                    Session.CurrentMapInstance.DropItemByMonster(dropOwner, drop2, monsterToAttack.MapX,
+                                        monsterToAttack.MapY);
+                                }
+                            });
+                        }
                     }
                     else
                     {
@@ -3418,7 +3421,46 @@ namespace OpenNos.GameObject
                 return new List<Portal>();
             }
             return MapInstancePortalHandler.GenerateMinilandEntryPortals(MapInstance.Map.MapId, Miniland.MapInstanceId);
-        } 
+        }
+
+        public void TeleportInRadius(int Valeur)
+        {
+            switch (Direction)
+            {
+                case 0:
+                    // -y
+                    ServerManager.Instance.TeleportForward(Session, MapInstanceId, PositionX, (short)(PositionY - Valeur));
+                    break;
+                case 1:
+                    // +x
+                    ServerManager.Instance.TeleportForward(Session, MapInstanceId, (short)(PositionX + Valeur), PositionY);
+                    break;
+                case 2:
+                    // +y
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, Session.Character.PositionX, (short)(Session.Character.PositionY + Valeur));
+                    break;
+                case 3:
+                    // -x
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, (short)(Session.Character.PositionX - Valeur), Session.Character.PositionY);
+                    break;
+                case 4:
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, (short)(Session.Character.PositionX - Valeur), (short)(Session.Character.PositionY - Valeur));
+                    // -x -y
+                    break;
+                case 5:
+                    // +x +y
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, (short)(Session.Character.PositionX - Valeur), (short)(Session.Character.PositionY - Valeur));
+                    break;
+                case 6:
+                    // +x -y
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, (short)(Session.Character.PositionX + Valeur), (short)(Session.Character.PositionY + Valeur));
+                    break;
+                case 7:
+                    // -x +y
+                    ServerManager.Instance.TeleportForward(Session, Session.Character.MapInstanceId, (short)(Session.Character.PositionX - Valeur), (short)(Session.Character.PositionY + Valeur));
+                    break;
+            }
+        }
 
         public List<string> GetFamilyHistory()
         {

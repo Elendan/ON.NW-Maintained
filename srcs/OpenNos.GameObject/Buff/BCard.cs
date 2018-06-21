@@ -17,6 +17,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Threading;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Data;
@@ -872,6 +873,23 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialEffects:
+                    if (session is Character fun)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.SpecialEffects.ShadowAppears:
+                                switch (fun.Session.Account.Authority)
+                                {
+                                    case AuthorityType.GameMaster:
+                                        fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {999} {SecondData}");
+                                        break;
+                                    default:
+                                        fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {FirstData} {SecondData}");
+                                        break;
+                                }
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.Capture:
@@ -972,6 +990,15 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialEffects2:
+                    if (session is Character tp)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.SpecialEffects2.TeleportInRadius:
+                                tp.TeleportInRadius(FirstData);
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.CalculatingLevel:
@@ -1179,6 +1206,25 @@ namespace OpenNos.GameObject.Buff
                             }
 
                             break;
+                        case (byte)AdditionalTypes.SpecialActions.PushBack:
+                        {
+                            //Todo: review this clean
+                            switch (session)
+                            {
+                                case MapMonster monster when caster is Character pusher:
+                                    pusher.MapInstance?.Broadcast($"guri 3 3 {monster.MapMonsterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
+                                    monster.MapX = pusher.PositionX += (short)FirstData;
+                                    monster.MapY = pusher.PositionY;
+                                    break;
+                                case Character target when caster is Character pusher:
+                                    pusher.MapInstance?.Broadcast($"guri 3 1 {target.CharacterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
+                                    target.PositionX = pusher.PositionX += (short)FirstData;
+                                    target.PositionY = pusher.PositionY;
+                                    break;
+                            }
+
+                            break;
+                        }
                     }
 
                     break;
@@ -1308,6 +1354,47 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.Drain:
+                    if (session is Character drain)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.Drain.TransferEnemyHP:
+                                int heal = FirstData;
+                                bool change = false;
+                                if (IsLevelScaled)
+                                {
+                                    if (IsLevelDivided)
+                                    {
+                                        heal /= drain.Level;
+                                    }
+                                    else
+                                    {
+                                        heal *= drain.Level;
+                                    }
+                                }
+                                if (drain.Hp + heal < drain.HpLoad())
+                                {
+                                    drain.Hp += heal;
+                                    drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc(heal));
+                                    change = true;
+                                }
+                                else
+                                {
+                                    if (drain.Hp != (int)drain.HpLoad())
+                                    {
+                                        drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc((int)(drain.HpLoad() - drain.Hp)));
+                                        change = true;
+                                    }
+                                    drain.Hp = (int)drain.HpLoad();
+                                }
+                                if (change)
+                                {
+                                    drain.Session?.SendPacket(drain.GenerateStat());
+                                }
+
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.BossMonstersSkill:
@@ -1512,6 +1599,19 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.FearSkill:
+                    if (session is Character Fear)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.FearSkill.MoveAgainstWill:
+                                Fear.Session.SendPacket($"rv_m {Fear.CharacterId} 1 1");
+                                Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(s =>
+                                {
+                                    Fear.Session.CurrentMapInstance?.Broadcast($"rv_m {Fear.CharacterId} 1 0");
+                                });
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.SniperAttack:
@@ -1545,6 +1645,30 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.MeteoriteTeleport:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
+                            if (IsLevelScaled)
+                            {
+                                switch (session)
+                                {
+                                    case Character meteorCharacter:
+                                        int amount = meteorCharacter.Level / 5 + 10;
+                                        int delay = 500;
+                                        for (int i = 0; i < amount; i++)
+                                        {
+                                            meteorCharacter.MapInstance?.SpawnMeteorsOnRadius(20, meteorCharacter.Session);
+                                            if (delay > 0)
+                                            {
+                                                Thread.Sleep(delay);
+                                            }
+                                            delay -= delay > 100 ? 20 : 0;
+                                        }
+                                        break;
+                                }
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.StealBuff:

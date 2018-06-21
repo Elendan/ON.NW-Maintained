@@ -203,6 +203,47 @@ namespace OpenNos.GameObject.Map
             get { return _battleEntities.Select(e => e.Value).Concat(Npcs).Concat(Monsters); }
         }
 
+        public void SpawnMeteorsOnRadius(byte radius, ClientSession session)
+        {
+            MapCell cell = Map.GetRandomPositionInRadius(radius, session.Character.PositionX, session.Character.PositionY);
+            int meteorId = GetNextId();
+
+            if (cell == null)
+            {
+                return;
+            }
+
+            var meteor = new MapMonster
+            {
+                MonsterVNum = 2352,
+                MapX = cell.X,
+                MapY = cell.Y,
+                MapMonsterId = meteorId,
+                IsHostile = false,
+                IsMoving = false,
+                ShouldRespawn = false
+            };
+            meteor.Initialize(this);
+            AddMonster(meteor);
+            Broadcast(meteor.GenerateIn());
+
+            Observable.Timer(TimeSpan.FromSeconds(2)).Subscribe(s =>
+            {
+                Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, meteorId, 3, meteorId, 1337, 30, 0, (short)ServerManager.Instance.RandomNumber(4491, 4492), cell.X, cell.Y, true, 0, 0, -2, 0));
+                foreach (MapMonster monster in GetListMonsterInRange(meteor.MapX, meteor.MapY, (byte)(radius / 3)))
+                {
+                    int dmg = monster.CurrentHp -= ServerManager.Instance.RandomNumber(500, 3000);
+                    if (monster.CurrentHp - dmg <= 0)
+                    {
+                        Broadcast(monster.GenerateOut());
+                        monster.GenerateDeath(session.Character.BattleEntity.Entity);
+                    }
+                }
+                RemoveMonster(meteor);
+                Broadcast(meteor.GenerateOut());
+            });
+        }
+
         public void AddMonster(MapMonster monster)
         {
             _monsters[monster.MapMonsterId] = monster;
