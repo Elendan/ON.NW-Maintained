@@ -316,8 +316,6 @@ namespace OpenNos.GameObject
 
         public ConcurrentBag<IDisposable> BuffObservables { get; internal set; }
 
-        public IDisposable SaveObs { get; set; }
-
         public DateTime LastMove { get; set; }
 
         public int LastNRunId { get; set; }
@@ -1141,9 +1139,9 @@ namespace OpenNos.GameObject
                 }
 
                 BattleEntity.CellonOptions.Clear();
-                WearableInstance ring = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
-                WearableInstance bracelet = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
-                WearableInstance necklace = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
+                var ring = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Ring, InventoryType.Wear);
+                var bracelet = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Bracelet, InventoryType.Wear);
+                var necklace = Inventory.LoadBySlotAndType<WearableInstance>((byte)EquipmentType.Necklace, InventoryType.Wear);
                 if (ring?.EquipmentOptions != null)
                 {
                     BattleEntity.CellonOptions.AddRange(ring?.EquipmentOptions);
