@@ -377,16 +377,12 @@ namespace OpenNos.GameObject.Battle
                     ArmorMagicalDefense = armor.MagicDefence + armor.Item.MagicDefence;
                 }
 
-                //Todo: Get cellon options !
-                //CellonOptions = Session.Character.CellonOptions.GetAllItems();
-
                 MeleeDefense = character.Defence - ArmorMeleeDefense;
                 MeleeDefenseDodge = character.DefenceRate;
                 RangeDefense = character.DistanceDefence - ArmorRangeDefense;
                 RangeDefenseDodge = character.DistanceDefenceRate;
                 MagicalDefense = character.MagicalDefence - ArmorMagicalDefense;
                 Element = character.Element;
-                ElementRate = character.ElementRate + character.ElementRateSp;
             }
             else if (Session is Mate mate)
             {
@@ -542,7 +538,6 @@ namespace OpenNos.GameObject.Battle
                     case 2159:
                     case 2160:
                         return ServerManager.Instance.RandomNumber(100, 200);
-                        break;
                 }
             }
             return -1;
@@ -1675,7 +1670,7 @@ namespace OpenNos.GameObject.Battle
 
             #region Fairy Damage
 
-            int fairyDamage = (int)((baseDamage + 100) * ElementRate / 100D);
+            int fairyDamage = (int)((baseDamage + 100) * (ElementRate + ElementRateSp) / 100D);
 
             #endregion
 
