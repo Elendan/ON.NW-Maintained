@@ -548,7 +548,7 @@ namespace OpenNos.GameObject.Buff
 
                             if (mate != null)
                             {
-                                restoreMateMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 <= 0 ? 2 : ThirdData + 1)).Subscribe(x => 
+                                restoreMateMp = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 <= 0 ? 2 : ThirdData + 1)).Subscribe(x =>
                                 {
                                     int heal = FirstData;
                                     if (IsLevelScaled)
@@ -878,15 +878,7 @@ namespace OpenNos.GameObject.Buff
                         switch (SubType)
                         {
                             case (byte)AdditionalTypes.SpecialEffects.ShadowAppears:
-                                switch (fun.Session.Account.Authority)
-                                {
-                                    case AuthorityType.GameMaster:
-                                        fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {999} {SecondData}");
-                                        break;
-                                    default:
-                                        fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {FirstData} {SecondData}");
-                                        break;
-                                }
+                                fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {FirstData} {SecondData}");
                                 break;
                         }
                     }
@@ -1039,18 +1031,18 @@ namespace OpenNos.GameObject.Buff
                                         int heal = (int)(receiverCharacter.HpLoad() * (bonus * 0.01));
 
                                         obs = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1 < 0 ? 2 : ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (receiverCharacter.Hp > 0)
                                             {
-                                                if (receiverCharacter.Hp > 0)
-                                                {
-                                                    receiverCharacter.Hp = (int)(receiverCharacter.Hp + heal > receiverCharacter.HpLoad() ? receiverCharacter.HpLoad() : receiverCharacter.Hp + heal);
-                                                    receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateRc(heal));
-                                                    receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
-                                                }
-                                                else
-                                                {
-                                                   obs?.Dispose();
-                                                }
-                                            });
+                                                receiverCharacter.Hp = (int)(receiverCharacter.Hp + heal > receiverCharacter.HpLoad() ? receiverCharacter.HpLoad() : receiverCharacter.Hp + heal);
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateRc(heal));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
+                                        });
 
                                         Observable.Timer(TimeSpan.FromSeconds(hcard.Duration * 0.1)).Subscribe(s =>
                                         {
@@ -1207,24 +1199,24 @@ namespace OpenNos.GameObject.Buff
 
                             break;
                         case (byte)AdditionalTypes.SpecialActions.PushBack:
-                        {
-                            //Todo: review this clean
-                            switch (session)
                             {
-                                case MapMonster monster when caster is Character pusher:
-                                    pusher.MapInstance?.Broadcast($"guri 3 3 {monster.MapMonsterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
-                                    monster.MapX = pusher.PositionX += (short)FirstData;
-                                    monster.MapY = pusher.PositionY;
-                                    break;
-                                case Character target when caster is Character pusher:
-                                    pusher.MapInstance?.Broadcast($"guri 3 1 {target.CharacterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
-                                    target.PositionX = pusher.PositionX += (short)FirstData;
-                                    target.PositionY = pusher.PositionY;
-                                    break;
-                            }
+                                //Todo: review this clean
+                                switch (session)
+                                {
+                                    case MapMonster monster when caster is Character pusher:
+                                        pusher.MapInstance?.Broadcast($"guri 3 3 {monster.MapMonsterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
+                                        monster.MapX = pusher.PositionX += (short)FirstData;
+                                        monster.MapY = pusher.PositionY;
+                                        break;
+                                    case Character target when caster is Character pusher:
+                                        pusher.MapInstance?.Broadcast($"guri 3 1 {target.CharacterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
+                                        target.PositionX = pusher.PositionX += (short)FirstData;
+                                        target.PositionY = pusher.PositionY;
+                                        break;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                     }
 
                     break;
@@ -1253,89 +1245,89 @@ namespace OpenNos.GameObject.Buff
                             switch (session)
                             {
                                 case MapMonster inRangeMapMonster:
-                                {
-                                    int range = FirstData;
-                                    int timer = ThirdData + 1;
-                                    Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                    IEnumerable entitiesInRange = inRangeMapMonster.MapInstance.GetListMonsterInRange(inRangeMapMonster.MapX, inRangeMapMonster.MapY, (byte)range);
-                                    if (entitiesInRange == null || buffCard == null)
                                     {
-                                        return;
-                                    }
-
-                                    teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
-                                    {
-                                        foreach (MapMonster monster in entitiesInRange)
+                                        int range = FirstData;
+                                        int timer = ThirdData + 1;
+                                        Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
+                                        IEnumerable entitiesInRange = inRangeMapMonster.MapInstance.GetListMonsterInRange(inRangeMapMonster.MapX, inRangeMapMonster.MapY, (byte)range);
+                                        if (entitiesInRange == null || buffCard == null)
                                         {
-                                            if (monster.Buffs.All(x => x.Card.CardId != buffCard.CardId))
-                                            {
-                                                monster.AddBuff(new Buff(SecondData, entity: caster));
-                                            }
+                                            return;
                                         }
-                                    });
 
-                                    Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
-                                    {
-                                        teamObs.Dispose();
-                                    });
-                                    break;
-                                }
+                                        teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                        {
+                                            foreach (MapMonster monster in entitiesInRange)
+                                            {
+                                                if (monster.Buffs.All(x => x.Card.CardId != buffCard.CardId))
+                                                {
+                                                    monster.AddBuff(new Buff(SecondData, entity: caster));
+                                                }
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            teamObs.Dispose();
+                                        });
+                                        break;
+                                    }
                                 case Character inRangeCharacter:
-                                {
-                                    int range = FirstData;
-                                    int timer = ThirdData + 1;
-                                    Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                    IEnumerable entitiesInRange = inRangeCharacter.MapInstance.GetCharactersInRange(inRangeCharacter.MapX, inRangeCharacter.MapY, (byte)range);
-                                    if (entitiesInRange == null || buffCard == null)
                                     {
-                                        return;
-                                    }
-
-                                    teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
-                                    {
-                                        foreach (Character characterInRange in entitiesInRange)
+                                        int range = FirstData;
+                                        int timer = ThirdData + 1;
+                                        Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
+                                        IEnumerable entitiesInRange = inRangeCharacter.MapInstance.GetCharactersInRange(inRangeCharacter.MapX, inRangeCharacter.MapY, (byte)range);
+                                        if (entitiesInRange == null || buffCard == null)
                                         {
-                                            if (characterInRange.Buff.All(x => x.Card.CardId != buffCard.CardId))
-                                            {
-                                                characterInRange.AddBuff(new Buff(SecondData, entity: caster));
-                                            }
+                                            return;
                                         }
-                                    });
 
-                                    Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
-                                    {
-                                        teamObs.Dispose();
-                                    });
-                                    break;
-                                }
+                                        teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                        {
+                                            foreach (Character characterInRange in entitiesInRange)
+                                            {
+                                                if (characterInRange.Buff.All(x => x.Card.CardId != buffCard.CardId))
+                                                {
+                                                    characterInRange.AddBuff(new Buff(SecondData, entity: caster));
+                                                }
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            teamObs.Dispose();
+                                        });
+                                        break;
+                                    }
                                 case Mate inRangeMate:
-                                {
-                                    int range = FirstData;
-                                    int timer = ThirdData + 1;
-                                    Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                    IEnumerable entitiesInRange = inRangeMate.MapInstance.GetMatesInRange(inRangeMate.MapX, inRangeMate.MapY, (byte)range);
-                                    if (entitiesInRange == null || buffCard == null)
                                     {
-                                        return;
-                                    }
-
-                                    teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
-                                    {
-                                        foreach (Mate mateInRange in entitiesInRange)
+                                        int range = FirstData;
+                                        int timer = ThirdData + 1;
+                                        Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
+                                        IEnumerable entitiesInRange = inRangeMate.MapInstance.GetMatesInRange(inRangeMate.MapX, inRangeMate.MapY, (byte)range);
+                                        if (entitiesInRange == null || buffCard == null)
                                         {
-                                            if (mateInRange.Buffs.All(x => x.Card.CardId != buffCard.CardId))
-                                            {
-                                                mateInRange.AddBuff(new Buff(SecondData, entity: caster));
-                                            }
+                                            return;
                                         }
-                                    });
 
-                                    Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
-                                    {
-                                        teamObs.Dispose();
-                                    });
-                                    break;
-                                }
+                                        teamObs = Observable.Interval(TimeSpan.FromSeconds(timer)).Subscribe(s =>
+                                        {
+                                            foreach (Mate mateInRange in entitiesInRange)
+                                            {
+                                                if (mateInRange.Buffs.All(x => x.Card.CardId != buffCard.CardId))
+                                                {
+                                                    mateInRange.AddBuff(new Buff(SecondData, entity: caster));
+                                                }
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(buffCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            teamObs.Dispose();
+                                        });
+                                        break;
+                                    }
                             }
                             break;
                     }

@@ -177,6 +177,7 @@ namespace OpenNos.GameObject.Battle
         #endregion
 
         #region Attack
+        public int ChargeValue { get; set; }
 
         public short AttackUpgrade { get; set; }
 
@@ -773,7 +774,6 @@ namespace OpenNos.GameObject.Battle
             {
                 return 0;
             }
-
             int[] GetAttackerBenefitingBuffs(CardType type, byte subtype)
             {
                 int value1 = 0;
