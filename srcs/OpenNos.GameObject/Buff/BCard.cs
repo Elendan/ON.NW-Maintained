@@ -223,7 +223,7 @@ namespace OpenNos.GameObject.Buff
                                 case MapMonster toDrain when caster is Character drainer:
                                     heal = drainer.Level * SecondData;
                                     drainer.Hp = (int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() : drainer.Hp + heal);
-                                    drainer.MapInstance.Broadcast(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
+                                    drainer.MapInstance?.Broadcast(drainer.GenerateRc((int)(heal + drainer.Hp > drainer.HpLoad() ? drainer.HpLoad() - drainer.Hp : heal)));
                                     toDrain.CurrentHp -= heal;
                                     drainer.Session.SendPacket(drainer.GenerateStat());
                                     if (toDrain.CurrentHp <= 0)
@@ -235,7 +235,7 @@ namespace OpenNos.GameObject.Buff
                                 case Character characterDrained when caster is Character drainerCharacter:
                                     heal = drainerCharacter.Level * SecondData;
                                     drainerCharacter.Hp = (int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() : drainerCharacter.Hp + heal);
-                                    drainerCharacter.MapInstance.Broadcast(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
+                                    drainerCharacter.MapInstance?.Broadcast(drainerCharacter.GenerateRc((int)(heal + drainerCharacter.Hp > drainerCharacter.HpLoad() ? drainerCharacter.HpLoad() - drainerCharacter.Hp : heal)));
                                     characterDrained.Hp -= heal;
                                     characterDrained.Session.SendPacket(characterDrained.GenerateStat());
                                     drainerCharacter.Session.SendPacket(drainerCharacter.GenerateStat());
@@ -248,7 +248,7 @@ namespace OpenNos.GameObject.Buff
                                 case Character characterDrained when caster is MapMonster drainerMapMonster:
                                     heal = drainerMapMonster.Monster.Level * SecondData;
                                     drainerMapMonster.CurrentHp = (heal + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp : drainerMapMonster.CurrentHp + heal);
-                                    drainerMapMonster.MapInstance.Broadcast(drainerMapMonster.GenerateRc((heal + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp - drainerMapMonster.CurrentHp : heal)));
+                                    drainerMapMonster.MapInstance?.Broadcast(drainerMapMonster.GenerateRc((heal + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp - drainerMapMonster.CurrentHp : heal)));
                                     characterDrained.Hp -= heal;
                                     characterDrained.Session.SendPacket(characterDrained.GenerateStat());
                                     if (characterDrained.Hp <= 0)
@@ -290,9 +290,9 @@ namespace OpenNos.GameObject.Buff
                                     /*
                                     mpDrain = drainerMapMonster.Monster.Level * SecondData;
                                     drainerMapMonster.CurrentMp = (mpDrain + drainerMapMonster.CurrentMp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp : drainerMapMonster.CurrentHp + mpDrain);
-                                    drainerMapMonster.MapInstance.Broadcast(drainerMapMonster.GenerateRc((mpDrain + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp - drainerMapMonster.CurrentHp : mpDrain)));
+                                    drainerMapMonster.MapInstance?.Broadcast(drainerMapMonster.GenerateRc((mpDrain + drainerMapMonster.CurrentHp > drainerMapMonster.MaxHp ? drainerMapMonster.MaxHp - drainerMapMonster.CurrentHp : mpDrain)));
                                     characterDrained.Hp -= mpDrain;
-                                    characterDrained.MapInstance.Broadcast(characterDrained.GenerateStat());
+                                    characterDrained.MapInstance?.Broadcast(characterDrained.GenerateStat());
                                     if (characterDrained.Hp <= 0)
                                     {
                                         characterDrained.Hp = 1;
@@ -609,7 +609,7 @@ namespace OpenNos.GameObject.Buff
                                             {
                                                 damage = (ushort)(senderCharacter.Level * scale);
                                                 receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
                                                 receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
                                             }
                                             else
@@ -622,7 +622,7 @@ namespace OpenNos.GameObject.Buff
                                             {
                                                 damage = (ushort)(senderCharacter.Level * scale);
                                                 receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
-                                                receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                                receiverMonster.MapInstance?.Broadcast(receiverMonster.GenerateDm(damage));
                                             }
                                             else
                                             {
@@ -634,7 +634,7 @@ namespace OpenNos.GameObject.Buff
                                             {
                                                 damage = (ushort)(senderMapMonster.Monster.Level * scale);
                                                 receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
                                                 receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
                                             }
                                             else
@@ -647,7 +647,7 @@ namespace OpenNos.GameObject.Buff
                                             {
                                                 damage = (ushort)(senderMate.Level * scale);
                                                 receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
                                                 receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
                                             }
                                             else
@@ -658,7 +658,7 @@ namespace OpenNos.GameObject.Buff
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = (ushort)(senderCharacter.Level * scale);
                                             receiverMate.Hp = receiverMate.Hp - damage <= 0 ? 1 : receiverMate.Hp - damage;
-                                            receiverMate.MapInstance.Broadcast(receiverMate.GenerateDm(damage));
+                                            receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                         case Mate receiverMate when caster is MapMonster senderMapMonster:
@@ -686,7 +686,7 @@ namespace OpenNos.GameObject.Buff
                                             {
                                                 damage = senderCharacter.Level;
                                                 receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
                                                 receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
                                             }
                                             else
@@ -697,14 +697,14 @@ namespace OpenNos.GameObject.Buff
                                         case MapMonster receiverMonster when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
                                             receiverMonster.CurrentHp = receiverMonster.CurrentHp - damage <= 0 ? 1 : receiverMonster.CurrentHp - damage;
-                                            receiverMonster.MapInstance.Broadcast(receiverMonster.GenerateDm(damage));
+                                            receiverMonster.MapInstance?.Broadcast(receiverMonster.GenerateDm(damage));
                                             break;
                                         case Character receiverCharacter when caster is MapMonster senderMapMonster:
                                             if (receiverCharacter.Hp > 0)
                                             {
                                                 damage = senderMapMonster.Monster.Level;
                                                 receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
-                                                receiverCharacter.MapInstance.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
                                                 receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
                                             }
                                             else
@@ -715,13 +715,13 @@ namespace OpenNos.GameObject.Buff
                                         case Mate receiverMate when caster is Character senderCharacter:
                                             damage = senderCharacter.Level;
                                             receiverMate.Hp = receiverMate.Hp - damage <= 0 ? 1 : receiverMate.Hp - damage;
-                                            receiverMate.MapInstance.Broadcast(receiverMate.GenerateDm(damage));
+                                            receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                         case Mate receiverMate when caster is MapMonster senderMapMonster:
                                             damage = senderMapMonster.Monster.Level;
                                             receiverMate.Hp = receiverMate.Hp - damage <= 0 ? 1 : receiverMate.Hp - damage;
-                                            receiverMate.MapInstance.Broadcast(receiverMate.GenerateDm(damage));
+                                            receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
                                     }
@@ -888,8 +888,8 @@ namespace OpenNos.GameObject.Buff
                     if (session is MapMonster monsterToCapture && caster is Character hunter)
                     {
                         if (monsterToCapture.Monster.RaceType == 1 &&
-                            (hunter.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance ||
-                                hunter.MapInstance.MapInstanceType == MapInstanceType.TimeSpaceInstance))
+                            (hunter.MapInstance?.MapInstanceType == MapInstanceType.BaseMapInstance ||
+                                hunter.MapInstance?.MapInstanceType == MapInstanceType.TimeSpaceInstance))
                         {
                             if (monsterToCapture.Monster.Level < hunter.Level)
                             {
@@ -921,17 +921,17 @@ namespace OpenNos.GameObject.Buff
                                             if (currentmate != null)
                                             {
                                                 currentmate.RemoveTeamMember(); // remove current pet
-                                                hunter.MapInstance.Broadcast(currentmate.GenerateOut());
+                                                hunter.MapInstance?.Broadcast(currentmate.GenerateOut());
                                             }
 
-                                            monsterToCapture.MapInstance.DespawnMonster(monsterToCapture);
+                                            monsterToCapture.MapInstance?.DespawnMonster(monsterToCapture);
                                             NpcMonster mateNpc =
                                                 ServerManager.Instance.GetNpc(monsterToCapture.MonsterVNum);
                                             mate = new Mate(hunter, mateNpc, (byte)level, MateType.Pet);
                                             hunter.Mates?.Add(mate);
                                             mate.RefreshStats();
                                             hunter.Session.SendPacket($"ctl 2 {mate.PetId} 3");
-                                            hunter.MapInstance.Broadcast(mate.GenerateIn());
+                                            hunter.MapInstance?.Broadcast(mate.GenerateIn());
                                             hunter.Session.SendPacket(hunter.GenerateSay(
                                                 string.Format(Language.Instance.GetMessageFromKey("YOU_GET_PET"),
                                                     mate.Name), 0));
@@ -1146,7 +1146,7 @@ namespace OpenNos.GameObject.Buff
 
                                     Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(s =>
                                     {
-                                        senderCharacter.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderCharacter.PositionX} {senderCharacter.PositionY} 3 {SecondData} 2 -1");
+                                        senderCharacter.MapInstance?.Broadcast($"guri 3 {(short)uType} {entityId} {senderCharacter.PositionX} {senderCharacter.PositionY} 3 {SecondData} 2 -1");
                                     });
                                     break;
                                 case MapMonster senderMapMonster:
@@ -1169,7 +1169,7 @@ namespace OpenNos.GameObject.Buff
                                     }
                                     Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(s =>
                                     {
-                                        senderMapMonster.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderMapMonster.MapX} {senderMapMonster.MapY} 3 {SecondData} 2 -1");
+                                        senderMapMonster.MapInstance?.Broadcast($"guri 3 {(short)uType} {entityId} {senderMapMonster.MapX} {senderMapMonster.MapY} 3 {SecondData} 2 -1");
                                     });
                                     break;
                                 case Mate senderMate:
@@ -1192,7 +1192,7 @@ namespace OpenNos.GameObject.Buff
                                     }
                                     Observable.Timer(TimeSpan.FromMilliseconds(500)).Subscribe(s =>
                                     {
-                                        senderMate.MapInstance.Broadcast($"guri 3 {(short)uType} {entityId} {senderMate.MapX} {senderMate.MapY} 3 {SecondData} 2 -1");
+                                        senderMate.MapInstance?.Broadcast($"guri 3 {(short)uType} {entityId} {senderMate.MapX} {senderMate.MapY} 3 {SecondData} 2 -1");
                                     });
                                     break;
                             }
@@ -1249,7 +1249,7 @@ namespace OpenNos.GameObject.Buff
                                         int range = FirstData;
                                         int timer = ThirdData + 1;
                                         Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                        IEnumerable entitiesInRange = inRangeMapMonster.MapInstance.GetListMonsterInRange(inRangeMapMonster.MapX, inRangeMapMonster.MapY, (byte)range);
+                                        IEnumerable entitiesInRange = inRangeMapMonster.MapInstance?.GetListMonsterInRange(inRangeMapMonster.MapX, inRangeMapMonster.MapY, (byte)range);
                                         if (entitiesInRange == null || buffCard == null)
                                         {
                                             return;
@@ -1277,7 +1277,7 @@ namespace OpenNos.GameObject.Buff
                                         int range = FirstData;
                                         int timer = ThirdData + 1;
                                         Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                        IEnumerable entitiesInRange = inRangeCharacter.MapInstance.GetCharactersInRange(inRangeCharacter.MapX, inRangeCharacter.MapY, (byte)range);
+                                        IEnumerable entitiesInRange = inRangeCharacter.MapInstance?.GetCharactersInRange(inRangeCharacter.MapX, inRangeCharacter.MapY, (byte)range);
                                         if (entitiesInRange == null || buffCard == null)
                                         {
                                             return;
@@ -1305,7 +1305,7 @@ namespace OpenNos.GameObject.Buff
                                         int range = FirstData;
                                         int timer = ThirdData + 1;
                                         Card buffCard = ServerManager.Instance.GetCardByCardId((short)SecondData);
-                                        IEnumerable entitiesInRange = inRangeMate.MapInstance.GetMatesInRange(inRangeMate.MapX, inRangeMate.MapY, (byte)range);
+                                        IEnumerable entitiesInRange = inRangeMate.MapInstance?.GetMatesInRange(inRangeMate.MapX, inRangeMate.MapY, (byte)range);
                                         if (entitiesInRange == null || buffCard == null)
                                         {
                                             return;
