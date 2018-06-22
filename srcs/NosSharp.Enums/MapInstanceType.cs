@@ -31,6 +31,7 @@ namespace NosSharp.Enums
         BattleRoyaleMapInstance,
         LobbyMapInstance,
         CaligorInstance,
-        EventGameInstance
+        EventGameInstance,
+		SheepGameInstance
     }
 }

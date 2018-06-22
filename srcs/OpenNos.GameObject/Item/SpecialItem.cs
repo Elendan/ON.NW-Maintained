@@ -48,10 +48,30 @@ namespace OpenNos.GameObject.Item
         {
             inv.Item.BCards.ForEach(c => c.ApplyBCards(session.Character));
             Mate partner = null;
-            switch (Effect)
-            {
-                // Reinitialize single
-                case 11111:
+			switch (Effect)
+			{
+				// Seal Mini-Game
+				case 1717:
+					switch (EffectValue)
+					{
+						case 1:// King Ratufu Mini Game
+							// Not Created for moment .
+							break;
+						case 2: // Sheep Mini Game
+							session.SendPacket($"say 1 {session.Character.CharacterId} 10 L'inscription commence dans 5 secondes.");
+							EventHelper.Instance.GenerateEvent(EventType.SHEEPGAME, false);
+							session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+							break;
+						case 3: // Meteor Mini Game
+							session.SendPacket($"say 1 {session.Character.CharacterId} 10 L'inscription commence dans 5 secondes.");
+							EventHelper.Instance.GenerateEvent(EventType.METEORITEGAME, false);
+							session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+							break;
+					}
+					break;
+
+				// Reinitialize single
+				case 11111:
                     partner = session.Character.Mates.FirstOrDefault(s => s.IsTeamMember && s.MateType == MateType.Partner);
                     if (packetsplit == null)
                     {
@@ -244,8 +264,8 @@ namespace OpenNos.GameObject.Item
                     break;
                 case 0:
                     switch (VNum)
-                    {
-                        case 5370:
+                    {						
+						case 5370:
                             if (session.Character.Buff.Any(s => s.Card.CardId == 393))
                             {
                                 session.SendPacket(session.Character.GenerateSay(
@@ -254,10 +274,10 @@ namespace OpenNos.GameObject.Item
                                     10));
                                 return;
                             }
-
                             session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
                             session.Character.AddStaticBuff(new StaticBuffDTO { CardId = 393 });
                             break;
+
                         case 1428:
                             session.SendPacket("guri 18 1");
                             break;

@@ -17,21 +17,23 @@ namespace OpenNos.GameObject.Event.GAMES
 {
     class SheepGame
     {
-        #region Methods
+		#region Methods
 
-        public static void GenerateSheepGames()
+		public const int MiniPlayerForStart = 5;
+
+		public static void GenerateSheepGames()
         {
             Thread.Sleep(5 * 1000);
             ServerManager.Instance.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("SHEEP_STARTED"), 1));
-            ServerManager.Instance.Broadcast("qnaml 100 #guri^506 The Sheep Game just started! Join now !");
-            ServerManager.Instance.EventInWaiting = true;
+            ServerManager.Instance.Broadcast("qnaml 100 #guri^514 The Sheep Game just started! Join now !");
+            ServerManager.Instance.EventInWaitingSheep = true;
             Thread.Sleep(30 * 1000);
-            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == false).ToList().ForEach(s => s.SendPacket("esf 1"));
-            ServerManager.Instance.EventInWaiting = false;
+            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForSheepEvent == false).ToList().ForEach(s => s.SendPacket("esf 1"));
+            ServerManager.Instance.EventInWaitingSheep = false;
 
-            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
+            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForSheepEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
             List<Tuple<MapInstance, byte>> maps = new List<Tuple<MapInstance, byte>>();
-            MapInstance map = ServerManager.Instance.GenerateMapInstance(2009, MapInstanceType.EventGameInstance, new InstanceBag());
+            MapInstance map = ServerManager.Instance.GenerateMapInstance(2009, MapInstanceType.SheepGameInstance, new InstanceBag());
             maps.Add(new Tuple<MapInstance, byte>(map, 1));
             if (map != null)
             {
@@ -40,12 +42,12 @@ namespace OpenNos.GameObject.Event.GAMES
                     ServerManager.Instance.TeleportOnRandomPlaceInMap(sess, map.MapInstanceId);
                     sess.SendPacket("bsinfo 2 4 0 0");
                 }
-                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForEvent = false);
+                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForSheepEvent = false);
                 ServerManager.Instance.StartedEvents.Remove(EventType.SHEEPGAME);
 
             }
 
-            if (map.Sessions.Count() < 1)
+            if (map.Sessions.Count() < MiniPlayerForStart)
             {
                 map.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("INSTANTBATTLE_NOT_ENOUGH_PLAYERS"), 0));
                 EventHelper.Instance.ScheduleEvent(TimeSpan.FromSeconds(5), new EventContainer(map, EventActionType.DISPOSEMAP, null));
@@ -95,7 +97,7 @@ namespace OpenNos.GameObject.Event.GAMES
                         }
                     }
                     Spawn = true;
-                    //session.Character.CanAttack = true;
+                    session.Character.CanAttack = true;
                     session.Character.Speed = 5;
                     session.Character.IsVehicled = true;
                     session.Character.IsCustomSpeed = true;
@@ -209,7 +211,7 @@ namespace OpenNos.GameObject.Event.GAMES
 
             private void End(Character character)
             {
-                //character.IsWaitingForGift = true;
+                character.IsWaitingForGift = true;
                 character.SheepScore1 = 0;
                 character.SheepScore2 = 0;
                 character.SheepScore3 = 0;

@@ -149,9 +149,17 @@ namespace OpenNos.GameObject.Networking
 
         public int QuestDropRate { get; set; }
 
-        public bool EventInWaiting { get; set; }
+		#region Waiting Event
 
-        public int FairyXpRate { get; set; }
+		public bool EventInWaiting { get; set; }
+
+		public bool EventInWaitingSheep { get; set; }
+
+		public bool EventInWaitingMeteore { get; set; }
+
+		#endregion
+
+		public int FairyXpRate { get; set; }
 
         public MapInstance FamilyArenaInstance { get; private set; }
 
