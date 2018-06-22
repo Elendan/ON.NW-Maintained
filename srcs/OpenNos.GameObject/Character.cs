@@ -577,7 +577,8 @@ namespace OpenNos.GameObject
         public int SheepScore2 { get; set; }
 
         public int SheepScore3 { get; set; }
-		public bool IsWaitingForGift { get; internal set; }
+
+		public bool IsWaitingForGift { get;  set; }
 
 		#endregion
 
