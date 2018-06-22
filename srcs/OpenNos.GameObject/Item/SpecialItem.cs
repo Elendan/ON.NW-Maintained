@@ -55,7 +55,7 @@ namespace OpenNos.GameObject.Item
 					switch (EffectValue)
 					{
 						case 1:// King Ratufu Mini Game
-							   // Not Created for moment .
+							// Not Created for moment .
 							break;
 						case 2: // Sheep Mini Game
 							session.SendPacket($"say 1 {session.Character.CharacterId} 10 L'inscription commence dans 5 secondes.");
