@@ -230,7 +230,6 @@ namespace OpenNos.Handler
                         {
                             return;
                         }
-
                         ClientSession target = ServerManager.Instance.GetSessionByCharacterId(charid.Value);
                         IceBreaker.FrozenPlayers.Remove(target);
                         IceBreaker.AlreadyFrozenPlayers.Add(target);
@@ -242,17 +241,25 @@ namespace OpenNos.Handler
                             Group[] groups = { IceBreaker.GetGroupByClientSession(Session), IceBreaker.GetGroupByClientSession(target) };
                             IceBreaker.MergeGroups(groups);
                         }
+						break;
+					case 514: // Meteore event
+						if (ServerManager.Instance.EventInWaitingSheep == true && Session.Character.IsWaitingForSheepEvent == false)
+						{
+							Session.SendPacket("bsinfo 0 1 28 0");
+							Session.SendPacket("esf 1");
+							Session.Character.IsWaitingForSheepEvent = true;
+						}
+						break;
+					case 506: // Sheep event
+						if (ServerManager.Instance.EventInWaitingMeteore == true && Session.Character.IsWaitingForMeteoreEvent == false)
+						{
+							Session.SendPacket("bsinfo 0 1 28 0");
+							Session.SendPacket("esf 1");
+							Session.Character.IsWaitingForMeteoreEvent = true;
+						}
+						break;
 
-                        break;
-                    case 506:
-                        if (ServerManager.Instance.EventInWaiting)
-                        {
-                            Session.Character.IsWaitingForEvent = true;
-                        }
-
-                        break;
-
-                    case 710: // Maps Teleporters 
+					case 710: // Maps Teleporters 
                         if (!Session.CurrentMapInstance.Npcs.Any(n => n.MapNpcId.Equals(guriPacket.Data)))
                         {
                             return;

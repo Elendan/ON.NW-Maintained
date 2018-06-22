@@ -290,9 +290,17 @@ namespace OpenNos.GameObject
 
         public bool IsVehicled { get; set; }
 
-        public bool IsWaitingForEvent { get; set; }
+		#region Waiting event
 
-        public DateTime LastDefence { get; set; }
+		public bool IsWaitingForEvent { get; set; }
+
+		public bool IsWaitingForSheepEvent { get; set; }
+
+		public bool IsWaitingForMeteoreEvent { get; set; }
+
+		#endregion
+
+		public DateTime LastDefence { get; set; }
 
         public DateTime LastDelay { get; set; }
 
@@ -569,18 +577,21 @@ namespace OpenNos.GameObject
         public int SheepScore2 { get; set; }
 
         public int SheepScore3 { get; set; }
+		public bool IsWaitingForGift { get; internal set; }
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
 
-        public void GenerateSheepScore(UserType type)
+		public void GenerateSheepScore(UserType type)
         {
             if (!CanAttack)
             {
                 return;
             }
 
+			// For SheepScore , If u have Killed Most Player and u are not Killed you have more Point in official need to re-write this later c:
+			// Not Important for moment.
             switch (type)
             {
                 case UserType.Player:
