@@ -1815,8 +1815,8 @@ namespace OpenNos.GameObject.Battle
                 (int)((int)((normalDamage + elementalDamage + morale + staticBoostCategory1)
                               * boostCategory1) * shellBoostCategory1);
 
-            if ((EntityType == EntityType.Player || EntityType == EntityType.Mate)
-                && (target.EntityType == EntityType.Player || target.EntityType == EntityType.Mate))
+
+            if (Session is Character && targetEntity is Character)
             {
                 totalDamage /= 2;
             }
