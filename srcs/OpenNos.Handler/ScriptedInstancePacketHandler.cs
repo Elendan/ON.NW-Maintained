@@ -204,7 +204,25 @@ namespace OpenNos.Handler
                     Session.Character.Group?.LeaveGroup(Session);
                     break;
 				case MapInstanceType.SheepGameInstance:
-
+					int miniscore = 50; // your score
+					if (Session.Character.SheepScore1 > miniscore && Session.Character.IsWaitingForGift == true) // Anti Afk to get Reward
+					{
+						ushort[] random1 = { 1, 2, 3 };
+						ushort[] random = { 2, 4, 6 };
+						short[] acorn = { 5947, 5948, 5949, 5950 };
+						Session.Character.GiftAdd(5951, random1[ServerManager.Instance.RandomNumber(0, random1.Length)]);
+						int rnd = ServerManager.Instance.RandomNumber(0, 5);
+						switch (rnd)
+						{
+							case 2:
+								Session.Character.GiftAdd(acorn[ServerManager.Instance.RandomNumber(0, acorn.Length)], random[ServerManager.Instance.RandomNumber(0, random.Length)]);
+								break;
+							default:
+								break;
+						}
+						ServerManager.Instance.ChangeMap(Session.Character.CharacterId, Session.Character.MapId, Session.Character.MapX, Session.Character.MapY);
+						Session.Character.IsWaitingForGift = false;
+					}
 					break;
 
 			}

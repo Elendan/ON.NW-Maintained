@@ -242,19 +242,19 @@ namespace OpenNos.Handler
                             IceBreaker.MergeGroups(groups);
                         }
 						break;
-					case 514: // Meteore event
+					case 514: // Sheep event
 						if (ServerManager.Instance.EventInWaitingSheep == true && Session.Character.IsWaitingForSheepEvent == false)
 						{
-							Session.SendPacket("bsinfo 0 1 28 0");
-							Session.SendPacket("esf 1");
+							Session.SendPacket("bsinfo 0 1 30 0");
+							Session.SendPacket("esf 2");
 							Session.Character.IsWaitingForSheepEvent = true;
 						}
 						break;
-					case 506: // Sheep event
+					case 506: // Meteore event
 						if (ServerManager.Instance.EventInWaitingMeteore == true && Session.Character.IsWaitingForMeteoreEvent == false)
 						{
-							Session.SendPacket("bsinfo 0 1 28 0");
-							Session.SendPacket("esf 1");
+							Session.SendPacket("bsinfo 0 4 30 0");
+							Session.SendPacket("esf 2");
 							Session.Character.IsWaitingForMeteoreEvent = true;
 						}
 						break;
