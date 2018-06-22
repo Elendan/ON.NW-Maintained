@@ -4534,6 +4534,18 @@ namespace NosSharp.Parser
                             case ItemType.Special:
                                 switch (item.VNum)
                                 {
+									case 5853:
+										item.Effect = 1717;
+										item.EffectValue = 1;
+										break;
+									case 5854:
+										item.Effect = 1717;
+										item.EffectValue = 2;
+										break;
+									case 5855:
+										item.Effect = 1717;
+										item.EffectValue = 3;
+										break;
                                     case 5932:
                                         item.Effect = 11112;
                                         break;

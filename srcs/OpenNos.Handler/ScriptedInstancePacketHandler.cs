@@ -54,9 +54,13 @@ namespace OpenNos.Handler
                     target.Character.CanAttack = false;
                     Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(s =>
                     {
-                        target.Character.CanAttack = true;
-                        target.Character.Speed = 5;
-                        ServerManager.Instance.TeleportOnRandomPlaceInMap(target, target.CurrentMapInstance.MapInstanceId);
+						if (target == null || target == Session) // Possible Crash , bcs u have a Timer <- , Need to check if is useless or not 
+						{
+							target.Character.SheepScore1 -= 10; // Need to verify on Official Nostale If you Lost Only 10 Pts
+							target.Character.CanAttack = true;
+							target.Character.Speed = 5;
+							ServerManager.Instance.TeleportOnRandomPlaceInMap(target, target.CurrentMapInstance.MapInstanceId);
+						}
                     });
                     break;
                 case UserType.Monster:
@@ -199,7 +203,11 @@ namespace OpenNos.Handler
                     Session.SendPacket(Session.Character.GenerateRaid(2, true));
                     Session.Character.Group?.LeaveGroup(Session);
                     break;
-            }
+				case MapInstanceType.SheepGameInstance:
+
+					break;
+
+			}
         }
 
         /// <summary>
