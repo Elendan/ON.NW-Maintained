@@ -1647,8 +1647,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.MeteoriteTeleport:
-                    return;
-                    switch (SubType)
+                    /*switch (SubType)
                     {
                         case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
                             if (IsLevelScaled)
@@ -1671,7 +1670,7 @@ namespace OpenNos.GameObject.Buff
                                 }
                             }
                             break;
-                    }
+                    }*/
                     break;
 
                 case BCardType.CardType.StealBuff:
