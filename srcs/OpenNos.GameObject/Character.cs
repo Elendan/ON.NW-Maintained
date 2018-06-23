@@ -2321,8 +2321,8 @@ namespace OpenNos.GameObject
                                         .ForEach(s => s.SendPacket(s.Character.GenerateSay(
                                             string.Format(Language.Instance.GetMessageFromKey("ITEM_BOUND_TO"),
                                                 ServerManager.Instance.GetItem(drop.ItemVNum).Name,
-                                                group.Characters.Single(c => c.Character.CharacterId == dropOwner)
-                                                    .Character.Name, drop.Amount), 10)));
+                                                group.Characters.FirstOrDefault(c => c.Character.CharacterId == dropOwner)
+                                                    ?.Character.Name, drop.Amount), 10)));
                                 }
                             }
                             else
