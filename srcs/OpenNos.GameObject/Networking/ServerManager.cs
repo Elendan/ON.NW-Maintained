@@ -2363,7 +2363,7 @@ namespace OpenNos.GameObject.Networking
 
             Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(x => { RemoveItemProcess(); });
 
-            Observable.Interval(TimeSpan.FromMinutes(1)).Subscribe(x => { SaveAll(); });
+            Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
 
             foreach (Schedule schedule in Schedules)
             {
