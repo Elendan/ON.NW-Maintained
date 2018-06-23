@@ -5643,19 +5643,22 @@ namespace OpenNos.GameObject
             {
                 if (memb.GroupId != null)
                 {
-                    ServerManager.Instance.ArenaMembers.Where(s => s.GroupId == memb.GroupId).ToList().ForEach(s =>
+                    lock(ServerManager.Instance.ArenaMembers)
                     {
-                        if (ServerManager.Instance.ArenaMembers.Count(g => g.GroupId == memb.GroupId) == 2)
+                        ServerManager.Instance.ArenaMembers.Where(s => s.GroupId == memb.GroupId).ToList().ForEach(s =>
                         {
-                            s.GroupId = null;
-                        }
+                            if (ServerManager.Instance.ArenaMembers.Count(g => g.GroupId == memb.GroupId) == 2)
+                            {
+                                s.GroupId = null;
+                            }
 
-                        s.Time = 300;
-                        s.Session.SendPacket(s.Session.Character.GenerateBsInfo(1, 2, s.Time, 8));
-                        s.Session.SendPacket(
-                            s.Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("ARENA_TEAM_LEAVE"),
-                                11));
-                    });
+                            s.Time = 300;
+                            s.Session.SendPacket(s.Session.Character.GenerateBsInfo(1, 2, s.Time, 8));
+                            s.Session.SendPacket(
+                                s.Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("ARENA_TEAM_LEAVE"),
+                                    11));
+                        });
+                    }
                 }
 
                 ServerManager.Instance.ArenaMembers.Remove(memb);

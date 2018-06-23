@@ -873,12 +873,22 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialEffects:
+                    Card speedCard = ServerManager.Instance.GetCardByCardId(CardId);
+                    if (speedCard == null)
+                    {
+                        break;
+                    }
+
                     if (session is Character fun)
                     {
                         switch (SubType)
                         {
                             case (byte)AdditionalTypes.SpecialEffects.ShadowAppears:
                                 fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} {FirstData} {SecondData}");
+                                Observable.Timer(TimeSpan.FromSeconds(speedCard.Duration * 0.1)).Subscribe(s =>
+                                {
+                                    fun.Session.CurrentMapInstance?.Broadcast($"guri 0 1 {fun.CharacterId} 0 {SecondData}");
+                                });
                                 break;
                         }
                     }
@@ -1637,6 +1647,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.MeteoriteTeleport:
+                    return;
                     switch (SubType)
                     {
                         case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
