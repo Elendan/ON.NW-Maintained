@@ -770,7 +770,7 @@ namespace OpenNos.GameObject.Map
             Clock.Dispose();
             Life.Dispose();
             _monsters.Select(s => s.Value).ToList().ForEach(monster => monster.Life?.Dispose());
-            _npcs.Select(s => s.Value).ToList().ForEach(npc => npc.Life.Dispose());
+            _npcs?.Select(s => s.Value).ToList().ForEach(npc => npc?.Life?.Dispose());
 
             foreach (ClientSession session in ServerManager.Instance.Sessions.Where(s =>
                 s.Character != null && s.Character.MapInstanceId == MapInstanceId))
