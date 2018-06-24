@@ -16,9 +16,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
+using OpenNos.Data;
+using OpenNos.DAL.EF.Entities;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
@@ -141,6 +144,22 @@ namespace OpenNos.GameObject
             }
         }
 
+        public void CheckRelations()
+        {
+            foreach (ClientSession session in Characters)
+            {
+                bool isRelative = false;
+                int thisId = 0, targetId = 0;
+                foreach (CharacterRelationDTO relation in session.Character.CharacterRelations)
+                {
+                    if (relation.RelationType == CharacterRelationType.Spouse)
+                    {
+                        isRelative = relation.CharacterId == session.Character.CharacterId;
+                    }
+                }
+            }
+        }
+
         public void JoinGroup(ClientSession session)
         {
             if (session.Character.LastUnregister.AddSeconds(1) > DateTime.Now)
@@ -151,6 +170,10 @@ namespace OpenNos.GameObject
             session.Character.Group = this;
             session.Character.LastGroupJoin = DateTime.Now;
             Characters.Add(session);
+            if (session.Character.IsMarriedToCharacter(session.Character.CharacterId))
+            {
+                session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+            }
         }
 
         public void LeaveGroup(ClientSession session)
@@ -168,6 +191,7 @@ namespace OpenNos.GameObject
             Characters.RemoveWhere(s => s?.Character.CharacterId != session.Character.CharacterId,
                 out ConcurrentBag<ClientSession> sessions);
             Characters = sessions;
+            session.Character.RemoveBuff(319);
         }
 
         public bool IsLeader(ClientSession session)
