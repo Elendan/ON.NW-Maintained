@@ -63,6 +63,40 @@ namespace OpenNos.Handler
             {
                 switch (guriPacket.Type)
                 {
+                    //Wedding
+                    case 603:
+                        long? characterId = guriPacket.User;
+                        ClientSession otherSession = null;
+
+                        if (characterId != null)
+                        {
+                            otherSession = ServerManager.Instance.GetSessionByCharacterId((long)characterId);
+                        }
+
+                        if (otherSession != null)
+                        {
+                            if (otherSession.Character.IsWaitingForWedding)
+                            {
+                                switch (guriPacket.Argument)
+                                {
+
+                                    case 1:
+                                        otherSession.Character.IsWaitingForWedding = false;
+                                        Session.Character.DeleteRelation((long)characterId);
+                                        Session.Character.AddRelation((long)characterId, CharacterRelationType.Spouse);
+                                        ServerManager.Instance.Broadcast(
+                                            UserInterfaceHelper.Instance.GenerateMsg(string.Format($"{Session.Character.Name} et {otherSession.Character.Name} sont maintenant mari�s."), 0));
+                                        break;
+
+                                    case 0:
+                                        otherSession.Character.IsWaitingForWedding = false;
+                                        ServerManager.Instance.Broadcast(
+                                            UserInterfaceHelper.Instance.GenerateMsg(string.Format($"{Session.Character.Name} a refusé la demande en mariage de {otherSession.Character.Name}."), 0));
+                                        break;
+                                }
+                            }
+                        }
+                        break;
                     // SHELL IDENTIFYING
                     case 204:
                         if (guriPacket.User == null)
@@ -310,7 +344,7 @@ namespace OpenNos.Handler
                                 }
                             }
 
-                            if (vnumToUse != -1 || Session.Character.Authority > AuthorityType.User)
+                            if (vnumToUse != -1 || Session.Character.Authority > AuthorityType.User || Session.Character.CharacterRelations.Any(s => s.RelationType == CharacterRelationType.Spouse))
                             {
                                 if (guriPacket.User == null)
                                 {

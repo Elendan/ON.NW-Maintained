@@ -107,6 +107,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public bool IsWaitingForWedding { get; set; }
+
         public IDisposable DotDebuff { get; set; }
 
         // <BuffId, BuffReflexion>
@@ -119,8 +121,6 @@ namespace OpenNos.GameObject
         public bool TriggerAmbush { get; set; }
 
         public byte SkillComboCount { get; set; }
-
-        public CharacterLog CharacterLog { get; }
 
         public DateTime LastSkillCombo { get; set; }
 
@@ -1440,7 +1440,7 @@ namespace OpenNos.GameObject
             List<CharacterRelationDTO> lst = ServerManager.Instance.CharacterRelations
                 .Where(s => s.CharacterId == CharacterId || s.RelatedCharacterId == CharacterId).ToList();
             string result = "finit";
-            foreach (CharacterRelationDTO relation in lst.Where(c => c.RelationType == CharacterRelationType.Friend))
+            foreach (CharacterRelationDTO relation in lst.Where(c => c.RelationType == CharacterRelationType.Friend || c.RelationType == CharacterRelationType.Spouse))
             {
                 long id2 = relation.RelatedCharacterId == CharacterId
                     ? relation.CharacterId
@@ -1906,7 +1906,7 @@ namespace OpenNos.GameObject
 
         public string GenerateFinfo(long? relatedCharacterLoggedId, bool isConnected)
         {
-            return CharacterRelations.Where(c => c.RelationType == CharacterRelationType.Friend)
+            return CharacterRelations.Where(c => c.RelationType == CharacterRelationType.Friend || c.RelationType == CharacterRelationType.Spouse)
                 .Where(relation => relatedCharacterLoggedId.HasValue &&
                     (relatedCharacterLoggedId.Value == relation.RelatedCharacterId ||
                         relatedCharacterLoggedId.Value == relation.CharacterId))
@@ -1918,7 +1918,7 @@ namespace OpenNos.GameObject
         {
             string result = "finit";
             foreach (CharacterRelationDTO relation in CharacterRelations.Where(c =>
-                c.RelationType == CharacterRelationType.Friend))
+                c.RelationType == CharacterRelationType.Friend || c.RelationType == CharacterRelationType.Spouse))
             {
                 long id = relation.RelatedCharacterId == CharacterId
                     ? relation.CharacterId
@@ -2988,6 +2988,15 @@ namespace OpenNos.GameObject
                 + (QuickGetUp ? Math.Pow(2, (int)CharacterOption.QuickGetUp - 1) : 0)
                 + (!IsPetAutoRelive ? 64 : 0)
                 + (!IsPartnerAutoRelive ? 128 : 0);
+
+            if (ServerManager.Instance.Groups.Any(s => s.IsMemberOfGroup(Session) && s.GroupType == GroupType.Group))
+            {
+                if (Session.Character.IsMarriedToCharacter(Session.Character.CharacterId))
+                {
+                    Session.SendPacket($"eff 1 {Session.Character.CharacterId} 881");
+                }
+            }
+
             return $"stat {Hp} {HpLoad()} {Mp} {MpLoad()} 0 {option}";
         }
 
@@ -3962,6 +3971,11 @@ namespace OpenNos.GameObject
             return CharacterRelations.Any(c =>
                 c.RelationType == CharacterRelationType.Friend &&
                 (c.RelatedCharacterId.Equals(characterId) || c.CharacterId.Equals(characterId)));
+        }
+
+        public bool IsMarriedToCharacter(long characterId)
+        {
+            return CharacterRelations.Any(c => c.RelationType == CharacterRelationType.Spouse && (c.RelatedCharacterId.Equals(characterId) || c.CharacterId.Equals(characterId)));
         }
 
         /// <summary>

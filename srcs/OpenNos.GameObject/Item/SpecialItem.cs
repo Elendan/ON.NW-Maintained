@@ -719,16 +719,12 @@ namespace OpenNos.GameObject.Item
                     break;
                 // Divorce letter
                 case 6969: // this is imaginary number I = √(-1)
-                    CharacterRelationDTO rel =
-                        session.Character.CharacterRelations.FirstOrDefault(s =>
-                            s.RelationType == CharacterRelationType.Spouse);
+                    CharacterRelationDTO rel = session.Character.CharacterRelations.FirstOrDefault(s => s.RelationType == CharacterRelationType.Spouse);
                     if (rel != null)
                     {
-                        session.Character.DeleteRelation(rel.CharacterId == session.Character.CharacterId
-                            ? rel.RelatedCharacterId
-                            : rel.CharacterId);
-                        session.SendPacket(
-                            UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("DIVORCED")));
+                        session.Character.DeleteRelation(rel.CharacterId == session.Character.CharacterId ? rel.RelatedCharacterId : rel.CharacterId);
+                        session.Character.AddRelation(rel.CharacterId, CharacterRelationType.Friend);
+                        session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("DIVORCED")));
                         session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
                     }
 
@@ -740,20 +736,29 @@ namespace OpenNos.GameObject.Item
                     {
                         if (long.TryParse(packetsplit[3], out long characterId))
                         {
-                            if (session.Character.CharacterRelations.Any(s =>
-                                s.RelationType == CharacterRelationType.Spouse))
+                            CharacterRelationDTO rel0 = session.Character.CharacterRelations.FirstOrDefault(s => s.RelationType == CharacterRelationType.Friend);
+                            if (session.Character.CharacterRelations.Any(s => s.RelationType == CharacterRelationType.Spouse))
                             {
                                 session.SendPacket($"info {Language.Instance.GetMessageFromKey("ALREADY_MARRIED")}");
                                 return;
                             }
 
                             ClientSession otherSession = ServerManager.Instance.GetSessionByCharacterId(characterId);
-                            if (otherSession != null)
+                            if (session.Character.IsFriendOfCharacter(characterId))
                             {
-                                otherSession.SendPacket(UserInterfaceHelper.Instance.GenerateDialog(
-                                    $"#fins^-34^{session.Character.CharacterId} #fins^-69^{session.Character.CharacterId} {string.Format(Language.Instance.GetMessageFromKey("MARRY_REQUEST"), session.Character.Name)}"));
-                                session.Character.FriendRequestCharacters.Add(characterId);
-                                //session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+                                //session.SendPacket($"qna #u_i^1^{session.Character.CharacterId}^{(byte)inv.Type}^{inv.Slot}^2 Veux-tu demande {otherSession.Character.Name} en mariage en utilisant une flèche de Cupidon ? (Attention: la flèche de Cupidon sera utilisée quel que soit le résultat.)");
+                                if (otherSession != null && otherSession != session)
+                                {
+                                    session.Character.IsWaitingForWedding = true;
+                                    session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+                                    session.SendPacket($"info Tu as demandé {otherSession.Character.Name} en mariage.");
+                                    otherSession.SendPacket($"dlg #guri^603^1^{session.Character.CharacterId} #guri^603^0^{session.Character.CharacterId} {session.Character.Name} t'a demandé en mariage. Acceptes-tu sa demande ?");
+
+                                }
+                            }
+                            else
+                            {
+                                session.SendPacket($"info {Language.Instance.GetMessageFromKey("NOT_FRIEND")}");
                             }
                         }
                     }
