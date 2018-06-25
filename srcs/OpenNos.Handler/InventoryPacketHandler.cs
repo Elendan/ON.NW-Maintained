@@ -455,8 +455,8 @@ namespace OpenNos.Handler
                                     int backpack = targetSession.Character.HaveBackpack() ? 1 : 0;
                                     long maxGold = ServerManager.Instance.MaxGold;
 
-                                    var bankGold = targetSession.Account.BankMoney;
-                                    var maxBankGold = ServerManager.Instance.MaxBankGold;
+                                    long bankGold = targetSession.Account.BankMoney;
+                                    long maxBankGold = ServerManager.Instance.MaxBankGold;
 
                                     if (targetExchange == null || Session.Character.ExchangeInfo == null)
                                     {
