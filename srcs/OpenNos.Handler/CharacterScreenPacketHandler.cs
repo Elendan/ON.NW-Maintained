@@ -52,95 +52,100 @@ namespace OpenNos.Handler
 
 		#region Methods
 
-		/// <summary>
-		/// GBox packet
-		/// </summary>
-		/// <param name="GBox"></param>
-		public void GBoxPacket(GboxPacket gBox)
-		{
-			if (Session.Character.InExchangeOrTrade == true)
-			{
-				Session.SendPacket("info you have tried to duplicate gold :'( Rip");
-				return;
-			}
-			if (gBox.Type == 1)
-			{
-				if (gBox.Type2 == 0)
-				{
-					Session.SendPacket($"qna #gbox^1^{gBox.Amount}^1 vouler-vous déverser {gBox.Amount}000 or?");
-				}
-				else if (gBox.Type2 == 1)
-				{
+        /// <summary>
+        ///     gbox Graphical Bank Packet
+        /// </summary>
+        /// <param name="gboxPacket"></param>
+        public void BankAction(GboxPacket gboxPacket)
+        {
+            if (Session.Character.InExchangeOrTrade)
+            {
+                return;
+            }
 
-					Session.SendPacket($"s_memo 6 Tu as déverser {gBox.Amount}000 or en banque.");
-					if ((Session.Account.BankMoney + (gBox.Amount * 1000)) > ServerManager.Instance.MaxBankGold)
-					{
-						Session.SendPacket("info Vous ne pouvez pas avoir plus de 100.000.000.000 d'or en banque!");
+            switch (gboxPacket.Type)
+            {
+                case BankActionType.Deposit:
+                    if (gboxPacket.Option == 0)
+                    {
+                        Session.SendPacket($"qna #gbox^1^{gboxPacket.Amount}^1 Want to deposit {gboxPacket.Amount}000 gold?");
+                        return;
+                    }
 
-						Session.SendPacket("s_memo 5 Vous ne pouvez pas avoir plus de 100.000.000.000 d'or en banque!");
-					}
-					else if (Session.Character.Gold >= (gBox.Amount * 1000))
-					{
-						Session.Account.BankMoney += (gBox.Amount * 1000);
-						Session.Character.Gold -= (gBox.Amount * 1000);
-						Session.SendPacket(Session.Character.GenerateGold());
-						Session.SendPacket($"gb 1 {Session.Account.BankMoney / 1000} {Session.Character.Gold} 0 0");
-						Session.SendPacket($"say 1 {Session.Character.CharacterId} 12 [Balance]: {Session.Account.BankMoney} Or; [possession]: {Session.Character.Gold} Or");
+                    if (gboxPacket.Option == 1)
+                    {
+                        if (gboxPacket.Amount <= 0)
+                        {
+                            //Packet hacking duplication
+                            return;
+                        }
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("BANK_DEPOSIT"), (byte)SmemoType.Information));
+                        if (Session.Account.BankMoney + gboxPacket.Amount * 1000 > ServerManager.Instance.MaxBankGold)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("MAX_GOLD_BANK_REACHED")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("MAX_GOLD_BANK_REACHED"), (byte)SmemoType.Error));
+                            return;
+                        }
 
-						Session.SendPacket($"s_memo 4 [Balance]: {Session.Account.BankMoney} or; [possession]: {Session.Character.Gold} Or");
-					}
-					else
-					{
+                        if (Session.Character.Gold < gboxPacket.Amount * 1000)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_GOLD")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_GOLD"), (byte)SmemoType.Error));
+                            return;
+                        }
 
-						Session.SendPacket("info Vous n'avez pas assez d'or");
+                        Session.Account.BankMoney += gboxPacket.Amount * 1000;
+                        Session.Character.Gold -= gboxPacket.Amount * 1000;
+                        Session.SendPacket(Session.Character.GenerateGold());
+                        Session.SendPacket(Session.Character.GenerateGb((byte)GoldBankPacketType.Deposit));
+                        Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("BANK_BALANCE"), Session.Account.BankMoney, Session.Character.Gold), 1));
+                        Session.SendPacket(Session.Character.GenerateSmemo(string.Format(Language.Instance.GetMessageFromKey("BANK_BALANCE"), Session.Account.BankMoney, Session.Character.Gold), (byte)SmemoType.Balance));
+                    }
+                    break;
+                case BankActionType.Withdraw:
+                    if (gboxPacket.Option == 0)
+                    {
+                        Session.SendPacket($"qna #gbox^2^{gboxPacket.Amount}^1 Would you like to withdraw {gboxPacket.Amount}000 gold? (Fee: 0 gold)");
+                        return;
+                    }
 
-						Session.SendPacket("s_memo 5 Vous n'avez pas assez d'or");
-					}
-				}
-			}
-			else if (gBox.Type == 2)
-			{
-				if (gBox.Type2 == 0)
-				{
+                    if (gboxPacket.Option == 1)
+                    {
+                        if (gboxPacket.Amount <= 0)
+                        {
+                            //Packet hacking duplication
+                            return;
+                        }
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("WITHDRAW_BANK"), (byte)SmemoType.Information));
+                        if (Session.Character.Gold + gboxPacket.Amount * 1000 > ServerManager.Instance.MaxGold)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("TOO_MUCH_GOLD")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("TOO_MUCH_GOLD"), (byte)SmemoType.Error));
+                            return;
+                        }
 
-					Session.SendPacket($"qna #gbox^2^{gBox.Amount}^1 Vouler-vous retirer {gBox.Amount}000 or? (Taxe: 0 or)");
-				}
-				else if (gBox.Type2 == 1)
-				{
+                        if (Session.Account.BankMoney < gboxPacket.Amount * 1000)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo("NOT_ENOUGH_FUNDS"));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_FUNDS"), (byte)SmemoType.Error));
+                            return;
+                        }
 
-					Session.SendPacket($"s_memo 6 Tu as recu {gBox.Amount}000 Or de ta banque. (Taxe: 0 or)");
-					if ((Session.Character.Gold + (gBox.Amount * 1000)) > ServerManager.Instance.MaxGold)
-					{
-						Session.SendPacket("info Vous ne pouvez pas transporter plus de 1.000.000.000 d'or avec vous!");
+                        Session.Account.BankMoney -= gboxPacket.Amount * 1000;
+                        Session.Character.Gold += gboxPacket.Amount * 1000;
+                        Session.SendPacket(Session.Character.GenerateGold());
+                        Session.SendPacket(Session.Character.GenerateGb((byte)GoldBankPacketType.Withdraw));
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("BANK_BALANCE"), (byte)SmemoType.Balance));
+                    }
+                    break;
+            }
+        }
 
-						Session.SendPacket("s_memo 5 Vous ne pouvez pas transporter plus de 1.000.000.000 d'or avec vous!");
-					}
-					else if (Session.Account.BankMoney >= (gBox.Amount * 1000))
-					{
-						Session.Account.BankMoney -= (gBox.Amount * 1000);
-						Session.Character.Gold += (gBox.Amount * 1000);
-						Session.SendPacket(Session.Character.GenerateGold());
-						Session.SendPacket($"gb 2 {Session.Account.BankMoney / 1000} {Session.Character.Gold} 0 0");
-						Session.SendPacket($"say 1 {Session.Character.CharacterId} 12 [Balance]: {Session.Account.BankMoney} Or en banque; [possession]: {Session.Character.Gold} Or");
-
-						Session.SendPacket($"s_memo 4 [Balance]: {Session.Account.BankMoney} Or en banque; [possession]: {Session.Character.Gold} or");
-					}
-					else
-					{
-
-						Session.SendPacket("info Vous n'avez pas assez de fonds.");
-
-						Session.SendPacket("s_memo 5 Vous n'avez pas assez de fonds.");
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		///     Char_NEW character creation character
-		/// </summary>
-		/// <param name="characterCreatePacket"></param>
-		public void CreateCharacter(CharacterCreatePacket characterCreatePacket)
+        /// <summary>
+        ///     Char_NEW character creation character
+        /// </summary>
+        /// <param name="characterCreatePacket"></param>
+        public void CreateCharacter(CharacterCreatePacket characterCreatePacket)
         {
             bool isWrestler = false;
             if (Session.HasCurrentMapInstance)
