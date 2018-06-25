@@ -149,9 +149,9 @@ namespace OpenNos.GameObject.Networking
 
         public int QuestDropRate { get; set; }
 
-        public bool EventInWaiting { get; set; }
+		public bool EventInWaiting { get; set; }
 
-        public int FairyXpRate { get; set; }
+		public int FairyXpRate { get; set; }
 
         public MapInstance FamilyArenaInstance { get; private set; }
 

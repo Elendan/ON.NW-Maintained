@@ -54,9 +54,13 @@ namespace OpenNos.Handler
                     target.Character.CanAttack = false;
                     Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(s =>
                     {
-                        target.Character.CanAttack = true;
-                        target.Character.Speed = 5;
-                        ServerManager.Instance.TeleportOnRandomPlaceInMap(target, target.CurrentMapInstance.MapInstanceId);
+						if (target != null || target != Session) // Possible Crash , bcs u have a Timer <- , Need to check if is useless or not 
+						{
+							target.Character.SheepScore1 -= 10; // Need to verify on Official Nostale If you Lost Only 10 Pts
+							target.Character.CanAttack = true;
+							target.Character.Speed = 5;
+							ServerManager.Instance.TeleportOnRandomPlaceInMap(target, target.CurrentMapInstance.MapInstanceId);
+						}
                     });
                     break;
                 case UserType.Monster:
@@ -199,7 +203,29 @@ namespace OpenNos.Handler
                     Session.SendPacket(Session.Character.GenerateRaid(2, true));
                     Session.Character.Group?.LeaveGroup(Session);
                     break;
-            }
+				case MapInstanceType.SheepGameInstance:
+					int miniscore = 50; // your score
+					if (Session.Character.SheepScore1 > miniscore && Session.Character.IsWaitingForGift == true) // Anti Afk to get Reward
+					{
+						ushort[] random1 = { 1, 2, 3 };
+						ushort[] random = { 2, 4, 6 };
+						short[] acorn = { 5947, 5948, 5949, 5950 };
+						Session.Character.GiftAdd(5951, random1[ServerManager.Instance.RandomNumber(0, random1.Length)]);
+						int rnd = ServerManager.Instance.RandomNumber(0, 5);
+						switch (rnd)
+						{
+							case 2:
+								Session.Character.GiftAdd(acorn[ServerManager.Instance.RandomNumber(0, acorn.Length)], random[ServerManager.Instance.RandomNumber(0, random.Length)]);
+								break;
+							default:
+								break;
+						}
+						ServerManager.Instance.ChangeMap(Session.Character.CharacterId, Session.Character.MapId, Session.Character.MapX, Session.Character.MapY);
+						Session.Character.IsWaitingForGift = false;
+					}
+					break;
+
+			}
         }
 
         /// <summary>

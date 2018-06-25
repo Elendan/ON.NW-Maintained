@@ -290,9 +290,9 @@ namespace OpenNos.GameObject
 
         public bool IsVehicled { get; set; }
 
-        public bool IsWaitingForEvent { get; set; }
+		public bool IsWaitingForEvent { get; set; }
 
-        public DateTime LastDefence { get; set; }
+		public DateTime LastDefence { get; set; }
 
         public DateTime LastDelay { get; set; }
 
@@ -570,17 +570,31 @@ namespace OpenNos.GameObject
 
         public int SheepScore3 { get; set; }
 
-        #endregion
+		public bool IsWaitingForGift { get;  set; }
 
-        #region Methods
+		#endregion
 
-        public void GenerateSheepScore(UserType type)
+		#region Methods
+
+        public string GenerateGb(long bankMoney, long cGold, int tax) => $"gb 3 {bankMoney / 1000} {cGold} 0 {tax}";
+
+        public string GenerateSmemo(string message) => $"s_memo 6 {message}";
+
+		public void OpenBank()
+		{
+			Session.SendPacket(GenerateGb(Session.Account.BankMoney, Gold, 0));
+			Session.SendPacket(GenerateSmemo(Language.Instance.GetMessageFromKey("OPEN_BANK")));
+		}
+
+		public void GenerateSheepScore(UserType type)
         {
             if (!CanAttack)
             {
                 return;
             }
 
+			// For SheepScore , If u have Killed Most Player and u are not Killed you have more Point in official need to re-write this later c:
+			// Not Important for moment.
             switch (type)
             {
                 case UserType.Player:

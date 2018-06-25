@@ -869,6 +869,86 @@ namespace OpenNos.GameObject.Item.Instance
             session.SendPacket("shop_end 1");
         }
 
+	    public void UpgradeSpFun(ClientSession CharacterSession, UpgradeProtection protect, int value)
+		{
+			if (CharacterSession == null)
+			{
+				return;
+			}
+			if (Upgrade >= 15)
+			{
+				return;
+			}
+
+			short ScrollChiken = 5107;
+			short ScrollPyjama = 5207;
+			short ScrollPirate = 5519;
+			if (!CharacterSession.HasCurrentMapInstance)
+			{
+				return;
+			}
+
+			if (value == 1)
+			{
+				if (protect == UpgradeProtection.Protected)
+				{
+					if (CharacterSession.Character.Inventory.CountItem(ScrollChiken) < 1)
+					{
+						CharacterSession.SendPacket(CharacterSession.Character.GenerateSay(Language.Instance.GetMessageFromKey(string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_ITEMS"), ServerManager.Instance.GetItem(ScrollChiken).Name, 1)), 10));
+						return;
+					}
+					CharacterSession.Character.Inventory.RemoveItemAmount(ScrollChiken);
+					CharacterSession.SendPacket(CharacterSession.Character.Inventory.CountItem(ScrollChiken) < 1 ? "shop_end 2" : "shop_end 1");
+				}
+			}
+			if (value == 3)
+			{
+				if (protect == UpgradeProtection.Protected)
+				{
+					if (CharacterSession.Character.Inventory.CountItem(ScrollPirate) < 1)
+					{
+						CharacterSession.SendPacket(CharacterSession.Character.GenerateSay(Language.Instance.GetMessageFromKey(string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_ITEMS"), ServerManager.Instance.GetItem(ScrollPirate).Name, 1)), 10));
+						return;
+					}
+					CharacterSession.Character.Inventory.RemoveItemAmount(ScrollPirate);
+					CharacterSession.SendPacket(CharacterSession.Character.Inventory.CountItem(ScrollPirate) < 1 ? "shop_end 2" : "shop_end 1");
+				}
+			}
+			if (value == 2)
+			{
+				if (protect == UpgradeProtection.Protected)
+				{
+					if (CharacterSession.Character.Inventory.CountItem(ScrollPyjama) < 1)
+					{
+						CharacterSession.SendPacket(CharacterSession.Character.GenerateSay(Language.Instance.GetMessageFromKey(string.Format(Language.Instance.GetMessageFromKey("NOT_ENOUGH_ITEMS"), ServerManager.Instance.GetItem(ScrollPyjama).Name, 1)), 10));
+						return;
+					}
+					CharacterSession.Character.Inventory.RemoveItemAmount(ScrollPyjama);
+					CharacterSession.SendPacket(CharacterSession.Character.Inventory.CountItem(ScrollPyjama) < 1 ? "shop_end 2" : "shop_end 1");
+				}
+			}
+			ItemInstance wearable = CharacterSession.Character.Inventory.GetItemInstanceById(Id);
+			ItemInstance inventory = CharacterSession.Character.Inventory.GetItemInstanceById(Id);
+			int rnd = ServerManager.Instance.RandomNumber();
+			if (protect == UpgradeProtection.Protected)
+			{
+				CharacterSession.CurrentMapInstance.Broadcast(CharacterSession.Character.GenerateEff(3004), CharacterSession.Character.MapX, CharacterSession.Character.MapY);
+			}
+			CharacterSession.CurrentMapInstance.Broadcast(CharacterSession.Character.GenerateEff(3005), CharacterSession.Character.MapX, CharacterSession.Character.MapY);
+			CharacterSession.SendPacket(CharacterSession.Character.GenerateSay(Language.Instance.GetMessageFromKey("UPGRADESP_SUCCESS"), 12));
+			CharacterSession.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("UPGRADESP_SUCCESS"), 0));
+			wearable.Upgrade++;
+			if (wearable.Upgrade > 8)
+			{
+				CharacterSession.Character.Family?.InsertFamilyLog(FamilyLogType.ItemUpgraded, CharacterSession.Character.Name, itemVNum: wearable.ItemVNum, upgrade: wearable.Upgrade);
+			}
+			CharacterSession.SendPacket(wearable.GenerateInventoryAdd());
+
+			CharacterSession.SendPacket(CharacterSession.Character.GenerateGold());
+			CharacterSession.SendPacket(CharacterSession.Character.GenerateEq());
+			CharacterSession.SendPacket("shop_end 1");
+		}
+
         public void UpgradeItem(ClientSession session, UpgradeMode mode, UpgradeProtection protection,
             bool isCommand = false, FixedUpMode hasAmulet = FixedUpMode.None)
         {

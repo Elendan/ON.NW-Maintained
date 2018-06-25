@@ -1330,9 +1330,73 @@ namespace OpenNos.Handler
             byte uptype = upgradePacket.UpgradeType, slot = upgradePacket.Slot;
             Session.Character.LastDelay = DateTime.Now;
             WearableInstance inventory;
-            switch (uptype)
+			ItemInstance specialist2 = Session.Character.Inventory.LoadBySlotAndType(slot, inventoryType);
+			switch (uptype)
             {
-                case 0:
+				case 35:
+					// sp poule 
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 907)
+					{
+						if (specialist2 != null)
+						{
+							if (specialist2.Rare != -2)
+							{
+								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+								{
+									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 1);
+								}
+							}
+							else
+							{
+								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+							}
+						}
+					}				
+					break;
+				case 38:
+					// sp pyj
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 900)
+					{
+						if (specialist2 != null)
+						{
+							if (specialist2.Rare != -2)
+							{
+								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+								{
+									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 2);
+								}
+							}
+							else
+							{
+								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+							}
+						}
+					}				
+					break;
+				case 42:
+					// sp pirate
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 4099)
+					{
+						if (specialist2 != null)
+						{
+							if (specialist2.Rare != -2)
+							{
+								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+								{
+									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 3);
+								}
+							}
+							else
+							{
+								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+							}
+						}
+					}					
+					break;
+				case 0:
                     inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
                     int donaVnum = 1027;
                     //TODO: Find real gold formula

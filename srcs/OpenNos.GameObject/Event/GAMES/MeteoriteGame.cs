@@ -18,9 +18,11 @@ namespace OpenNos.GameObject.Event.GAMES
 {
     public static class MeteoriteGame
     {
-        #region Methods
+		#region Methods
 
-        public static void GenerateMeteoriteGame()
+		public const int MiniPlayerForStart = 5; // idk if is 5 Player Mini need to check on Official
+
+		public static void GenerateMeteoriteGame()
         {
             ServerManager.Instance.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(string.Format(Language.Instance.GetMessageFromKey("METEORITE_MINUTES"), 5), 0));
             ServerManager.Instance.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(string.Format(Language.Instance.GetMessageFromKey("METEORITE_MINUTES"), 5), 1));
@@ -41,22 +43,34 @@ namespace OpenNos.GameObject.Event.GAMES
             ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == false).ToList().ForEach(s => s.SendPacket("esf"));
             ServerManager.Instance.EventInWaiting = false;
             IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
-
-            MapInstance map = ServerManager.Instance.GenerateMapInstance(2004, MapInstanceType.EventGameInstance, new InstanceBag());
-            if (map != null)
+			List<Tuple<MapInstance, byte>> maps = new List<Tuple<MapInstance, byte>>();
+			MapInstance map = ServerManager.Instance.GenerateMapInstance(2004, MapInstanceType.EventGameInstance, new InstanceBag());
+			maps.Add(new Tuple<MapInstance, byte>(map, 1));
+			if (map != null)
             {
                 foreach (ClientSession sess in sessions)
                 {
-                    ServerManager.Instance.TeleportOnRandomPlaceInMap(sess, map.MapInstanceId);
+					sess.SendPacket("bsinfo 2 4 0 0");
+					ServerManager.Instance.TeleportOnRandomPlaceInMap(sess, map.MapInstanceId);
                 }
 
                 ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForEvent = false);
                 ServerManager.Instance.StartedEvents.Remove(EventType.METEORITEGAME);
 
-                MeteoriteGameThread task = new MeteoriteGameThread();
-                Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(X => task.Run(map));
             }
-        }
+			foreach (Tuple<MapInstance, byte> mapinstance in maps)
+			{
+
+				if (mapinstance.Item1.Sessions.Count() < MiniPlayerForStart)
+				{
+					mapinstance.Item1.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("INSTANTBATTLE_NOT_ENOUGH_PLAYERS"), 0));
+					EventHelper.Instance.ScheduleEvent(TimeSpan.FromSeconds(5), new EventContainer(mapinstance.Item1, EventActionType.DISPOSEMAP, null));
+					continue;
+				}
+				MeteoriteGameThread task = new MeteoriteGameThread();
+				Observable.Timer(TimeSpan.FromSeconds(10)).Subscribe(X => task.Run(map));
+			}
+		}
 
         #endregion
 
