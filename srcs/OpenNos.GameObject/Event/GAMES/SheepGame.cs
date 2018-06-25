@@ -26,12 +26,12 @@ namespace OpenNos.GameObject.Event.GAMES
             Thread.Sleep(5 * 1000);
             ServerManager.Instance.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("SHEEP_STARTED"), 1));
             ServerManager.Instance.Broadcast("qnaml 100 #guri^514 The Sheep Game just started! Join now !");
-            ServerManager.Instance.EventInWaitingSheep = true;
+            ServerManager.Instance.EventInWaiting = true;
             Thread.Sleep(30 * 1000);
-            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForSheepEvent == false).ToList().ForEach(s => s.SendPacket("esf 1"));
-            ServerManager.Instance.EventInWaitingSheep = false;
+            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == false).ToList().ForEach(s => s.SendPacket("esf 1"));
+            ServerManager.Instance.EventInWaiting = false;
 
-            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForSheepEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
+            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
             List<Tuple<MapInstance, byte>> maps = new List<Tuple<MapInstance, byte>>();
             MapInstance map = ServerManager.Instance.GenerateMapInstance(2009, MapInstanceType.SheepGameInstance, new InstanceBag());
             maps.Add(new Tuple<MapInstance, byte>(map, 1));
@@ -42,7 +42,7 @@ namespace OpenNos.GameObject.Event.GAMES
                     ServerManager.Instance.TeleportOnRandomPlaceInMap(sess, map.MapInstanceId);
                     sess.SendPacket("bsinfo 2 4 0 0");
                 }
-                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForSheepEvent = false);
+                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForEvent = false);
                 ServerManager.Instance.StartedEvents.Remove(EventType.SHEEPGAME);
 
             }

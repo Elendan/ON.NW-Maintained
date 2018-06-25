@@ -290,15 +290,7 @@ namespace OpenNos.GameObject
 
         public bool IsVehicled { get; set; }
 
-		#region Waiting event
-
 		public bool IsWaitingForEvent { get; set; }
-
-		public bool IsWaitingForSheepEvent { get; set; }
-
-		public bool IsWaitingForMeteoreEvent { get; set; }
-
-		#endregion
 
 		public DateTime LastDefence { get; set; }
 
