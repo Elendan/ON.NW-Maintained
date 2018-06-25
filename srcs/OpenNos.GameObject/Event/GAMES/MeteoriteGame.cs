@@ -38,11 +38,11 @@ namespace OpenNos.GameObject.Event.GAMES
             Thread.Sleep(10 * 1000);
             ServerManager.Instance.Broadcast(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("METEORITE_STARTED"), 1));
             ServerManager.Instance.Broadcast("qnaml 100 #guri^506 The Meteorite Game is starting! Join now!");
-            ServerManager.Instance.EventInWaitingMeteore = true;
+            ServerManager.Instance.EventInWaiting = true;
             Thread.Sleep(30 * 1000);
-            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForMeteoreEvent == false).ToList().ForEach(s => s.SendPacket("esf"));
-            ServerManager.Instance.EventInWaitingMeteore = false;
-            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForMeteoreEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
+            ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == false).ToList().ForEach(s => s.SendPacket("esf"));
+            ServerManager.Instance.EventInWaiting = false;
+            IEnumerable<ClientSession> sessions = ServerManager.Instance.Sessions.Where(s => s.Character?.IsWaitingForEvent == true && s.Character.MapInstance.MapInstanceType == MapInstanceType.BaseMapInstance);
 			List<Tuple<MapInstance, byte>> maps = new List<Tuple<MapInstance, byte>>();
 			MapInstance map = ServerManager.Instance.GenerateMapInstance(2004, MapInstanceType.EventGameInstance, new InstanceBag());
 			maps.Add(new Tuple<MapInstance, byte>(map, 1));
@@ -54,7 +54,7 @@ namespace OpenNos.GameObject.Event.GAMES
 					ServerManager.Instance.TeleportOnRandomPlaceInMap(sess, map.MapInstanceId);
                 }
 
-                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForMeteoreEvent = false);
+                ServerManager.Instance.Sessions.Where(s => s.Character != null).ToList().ForEach(s => s.Character.IsWaitingForEvent = false);
                 ServerManager.Instance.StartedEvents.Remove(EventType.METEORITEGAME);
 
             }

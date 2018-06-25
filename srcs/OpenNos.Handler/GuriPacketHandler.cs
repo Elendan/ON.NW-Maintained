@@ -243,19 +243,19 @@ namespace OpenNos.Handler
                         }
 						break;
 					case 514: // Sheep event
-						if (ServerManager.Instance.EventInWaitingSheep == true && Session.Character.IsWaitingForSheepEvent == false)
+						if (ServerManager.Instance.EventInWaiting == true && Session.Character.IsWaitingForEvent == false)
 						{
 							Session.SendPacket("bsinfo 0 1 30 0");
 							Session.SendPacket("esf 2");
-							Session.Character.IsWaitingForSheepEvent = true;
+							Session.Character.IsWaitingForEvent = true;
 						}
 						break;
 					case 506: // Meteore event
-						if (ServerManager.Instance.EventInWaitingMeteore == true && Session.Character.IsWaitingForMeteoreEvent == false)
+						if (ServerManager.Instance.EventInWaiting == true && Session.Character.IsWaitingForEvent == false)
 						{
 							Session.SendPacket("bsinfo 0 4 30 0");
 							Session.SendPacket("esf 2");
-							Session.Character.IsWaitingForMeteoreEvent = true;
+							Session.Character.IsWaitingForEvent = true;
 						}
 						break;
 
