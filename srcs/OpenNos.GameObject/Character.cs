@@ -1995,7 +1995,7 @@ namespace OpenNos.GameObject
             return string.Empty;
         }
 
-        public string GenerateGold() => $"gold {Gold} 0";
+        public string GenerateGold() => $"gold {Gold} {Session.Account.BankMoney / 100}";
 
         public string GenerateIcon(int v1, int v2, short itemVNum) => $"icon {v1} {CharacterId} {v2} {itemVNum}";
 

@@ -182,9 +182,11 @@ namespace OpenNos.GameObject.Networking
 
         public List<int> MateIds { get; internal set; } = new List<int>();
 
-        public long MaxGold { get; set; }
+		public long MaxGold { get; set; }
 
-        public byte MaxHeroLevel { get; set; }
+		public long MaxBankGold { get; set; }
+
+		public byte MaxHeroLevel { get; set; }
 
         public byte MaxJobLevel { get; set; }
 
@@ -1497,8 +1499,9 @@ namespace OpenNos.GameObject.Networking
             DropRate = int.Parse(ConfigurationManager.AppSettings["RateDrop"]);
             QuestDropRate = int.Parse(ConfigurationManager.AppSettings["RateQuestDrop"]);
             FamilyExpRate = int.Parse(ConfigurationManager.AppSettings["FamilyExpRate"]);
-            MaxGold = long.Parse(ConfigurationManager.AppSettings["MaxGold"]);
-            GoldDropRate = int.Parse(ConfigurationManager.AppSettings["GoldRateDrop"]);
+			MaxGold = long.Parse(ConfigurationManager.AppSettings["MaxGold"]);
+			MaxBankGold = long.Parse(ConfigurationManager.AppSettings["MaxBankGold"]);
+			GoldDropRate = int.Parse(ConfigurationManager.AppSettings["GoldRateDrop"]);
             GoldRate = int.Parse(ConfigurationManager.AppSettings["RateGold"]);
             MaxLevel = byte.Parse(ConfigurationManager.AppSettings["MaxLevel"]);
             MaxMateLevel = byte.Parse(ConfigurationManager.AppSettings["MaxMateLevel"]);

@@ -204,6 +204,7 @@
     <Compile Include="InstanceBag.cs" />
     <Compile Include="Map\MapInstancePortalHandler.cs" />
     <Compile Include="Packets\ClientPackets\CsprPacket.cs" />
+    <Compile Include="Packets\ClientPackets\GboxPacket.cs" />
     <Compile Include="Packets\ClientPackets\RInfoPacket.cs" />
     <Compile Include="Packets\ClientPackets\ScpCtsPacket.cs" />
     <Compile Include="Packets\ClientPackets\UpsPacket.cs" />
