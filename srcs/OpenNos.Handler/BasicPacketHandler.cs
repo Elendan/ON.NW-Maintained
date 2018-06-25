@@ -57,15 +57,15 @@ namespace OpenNos.Handler
         protected static readonly ILog Log = LogManager.GetLogger(typeof(BasicPacketHandler));
         private ClientSession Session { get; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
 
-		/// <summary>
-		///     csp packet
-		/// </summary>
-		/// <param name="cspPacket"></param>
-		public void MessageBubble(CspPacket cspPacket)
+        /// <summary>
+        ///     csp packet
+        /// </summary>
+        /// <param name="cspPacket"></param>
+        public void MessageBubble(CspPacket cspPacket)
         {
             Session.Character.MapInstance?.Broadcast($"csp {cspPacket.CharacterId} {cspPacket.Message}");
         }

@@ -444,9 +444,9 @@ namespace OpenNos.Handler
                                 return;
                             }
 
-                            lock(targetSession.Character.Inventory)
+                            lock (targetSession.Character.Inventory)
                             {
-                                lock(Session.Character.Inventory)
+                                lock (Session.Character.Inventory)
                                 {
                                     ExchangeInfo targetExchange = targetSession.Character.ExchangeInfo;
                                     Inventory inventory = targetSession.Character.Inventory;
@@ -455,10 +455,10 @@ namespace OpenNos.Handler
                                     int backpack = targetSession.Character.HaveBackpack() ? 1 : 0;
                                     long maxGold = ServerManager.Instance.MaxGold;
 
-									var bankGold = targetSession.Account.BankMoney;
-									var maxBankGold = ServerManager.Instance.MaxBankGold;
+                                    var bankGold = targetSession.Account.BankMoney;
+                                    var maxBankGold = ServerManager.Instance.MaxBankGold;
 
-									if (targetExchange == null || Session.Character.ExchangeInfo == null)
+                                    if (targetExchange == null || Session.Character.ExchangeInfo == null)
                                     {
                                         return;
                                     }
@@ -487,16 +487,16 @@ namespace OpenNos.Handler
                                             {
                                                 goldmax = true;
                                             }
-											if (Session.Character.ExchangeInfo.BankGold + bankGold > maxBankGold)
-											{
-												goldmax = true;
-											}
-											if (Session.Character.ExchangeInfo.BankGold > Session.Account.BankMoney)
-											{
-												return;
-											}
+                                            if (Session.Character.ExchangeInfo.BankGold + bankGold > maxBankGold)
+                                            {
+                                                goldmax = true;
+                                            }
+                                            if (Session.Character.ExchangeInfo.BankGold > Session.Account.BankMoney)
+                                            {
+                                                return;
+                                            }
 
-											if (Session.Character.ExchangeInfo.Gold > Session.Character.Gold)
+                                            if (Session.Character.ExchangeInfo.Gold > Session.Character.Gold)
                                             {
                                                 return;
                                             }
@@ -505,12 +505,12 @@ namespace OpenNos.Handler
                                             {
                                                 goldmax = true;
                                             }
-											if (targetExchange.BankGold + Session.Character.ExchangeInfo.BankGold > maxBankGold)
-											{
-												goldmax = true;
-											}	
+                                            if (targetExchange.BankGold + Session.Character.ExchangeInfo.BankGold > maxBankGold)
+                                            {
+                                                goldmax = true;
+                                            }
 
-											if (!@continue || goldmax)
+                                            if (!@continue || goldmax)
                                             {
                                                 string message = !@continue
                                                     ? UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("NOT_ENOUGH_PLACE"), 0)
@@ -722,7 +722,7 @@ namespace OpenNos.Handler
                     }
                     else
                     {
-                        lock(Session.Character.Inventory)
+                        lock (Session.Character.Inventory)
                         {
                             ushort amount = mapItem.Amount;
 
@@ -791,7 +791,7 @@ namespace OpenNos.Handler
         /// <param name="mvePacket"></param>
         public void MoveEquipment(MvePacket mvePacket)
         {
-            lock(Session.Character.Inventory)
+            lock (Session.Character.Inventory)
             {
                 if (mvePacket.Slot.Equals(mvePacket.DestinationSlot) && mvePacket.InventoryType.Equals(mvePacket.DestinationInventoryType))
                 {
@@ -831,7 +831,7 @@ namespace OpenNos.Handler
         /// <param name="mviPacket"></param>
         public void MoveItem(MviPacket mviPacket)
         {
-            lock(Session.Character.Inventory)
+            lock (Session.Character.Inventory)
             {
                 if (mviPacket.Amount == 0)
                 {
@@ -882,7 +882,7 @@ namespace OpenNos.Handler
         /// <param name="putPacket"></param>
         public void PutItem(PutPacket putPacket)
         {
-            lock(Session.Character.Inventory)
+            lock (Session.Character.Inventory)
             {
                 ItemInstance invitem = Session.Character.Inventory.LoadBySlotAndType(putPacket.Slot, putPacket.InventoryType);
                 if (invitem != null && invitem.Item.IsDroppable && invitem.Item.IsTradable && !Session.Character.InExchangeOrTrade && putPacket.InventoryType != InventoryType.Bazaar)
@@ -1345,73 +1345,73 @@ namespace OpenNos.Handler
             byte uptype = upgradePacket.UpgradeType, slot = upgradePacket.Slot;
             Session.Character.LastDelay = DateTime.Now;
             WearableInstance inventory;
-			ItemInstance specialist2 = Session.Character.Inventory.LoadBySlotAndType(slot, inventoryType);
-			switch (uptype)
+            ItemInstance specialist2 = Session.Character.Inventory.LoadBySlotAndType(slot, inventoryType);
+            switch (uptype)
             {
-				case 35:
-					// sp poule 
-					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
-					if (inventory?.ItemVNum == 907)
-					{
-						if (specialist2 != null)
-						{
-							if (specialist2.Rare != -2)
-							{
-								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
-								{
-									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 1);
-								}
-							}
-							else
-							{
-								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
-							}
-						}
-					}				
-					break;
-				case 38:
-					// sp pyj
-					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
-					if (inventory?.ItemVNum == 900)
-					{
-						if (specialist2 != null)
-						{
-							if (specialist2.Rare != -2)
-							{
-								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
-								{
-									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 2);
-								}
-							}
-							else
-							{
-								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
-							}
-						}
-					}				
-					break;
-				case 42:
-					// sp pirate
-					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
-					if (inventory?.ItemVNum == 4099)
-					{
-						if (specialist2 != null)
-						{
-							if (specialist2.Rare != -2)
-							{
-								if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
-								{
-									inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 3);
-								}
-							}
-							else
-							{
-								Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
-							}
-						}
-					}					
-					break;
-				case 0:
+                case 35:
+                    // sp poule 
+                    inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+                    if (inventory?.ItemVNum == 907)
+                    {
+                        if (specialist2 != null)
+                        {
+                            if (specialist2.Rare != -2)
+                            {
+                                if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+                                {
+                                    inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 1);
+                                }
+                            }
+                            else
+                            {
+                                Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+                            }
+                        }
+                    }
+                    break;
+                case 38:
+                    // sp pyj
+                    inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+                    if (inventory?.ItemVNum == 900)
+                    {
+                        if (specialist2 != null)
+                        {
+                            if (specialist2.Rare != -2)
+                            {
+                                if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+                                {
+                                    inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 2);
+                                }
+                            }
+                            else
+                            {
+                                Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+                            }
+                        }
+                    }
+                    break;
+                case 42:
+                    // sp pirate
+                    inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+                    if (inventory?.ItemVNum == 4099)
+                    {
+                        if (specialist2 != null)
+                        {
+                            if (specialist2.Rare != -2)
+                            {
+                                if (specialist2.Item.EquipmentSlot == EquipmentType.Sp)
+                                {
+                                    inventory.UpgradeSpFun(Session, UpgradeProtection.Protected, 3);
+                                }
+                            }
+                            else
+                            {
+                                Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("CANT_UPGRADE_DESTROYED_SP"), 0));
+                            }
+                        }
+                    }
+                    break;
+                case 0:
                     inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
                     int donaVnum = 1027;
                     //TODO: Find real gold formula
