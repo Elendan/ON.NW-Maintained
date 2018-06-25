@@ -264,8 +264,17 @@ namespace OpenNos.GameObject.Item
                     break;
                 case 0:
                     switch (VNum)
-                    {						
-						case 5370:
+                    {
+                        case 5107:
+                            session.SendPacket("wopen 35 0 0");
+                            break;
+                        case 5207:
+                            session.SendPacket("wopen 38 0 0");
+                            break;
+                        case 5519:
+                            session.SendPacket("wopen 42 0 0");
+                            break;
+                        case 5370:
                             if (session.Character.Buff.Any(s => s.Card.CardId == 393))
                             {
                                 session.SendPacket(session.Character.GenerateSay(
