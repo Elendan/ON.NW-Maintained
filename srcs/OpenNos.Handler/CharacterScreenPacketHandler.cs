@@ -48,9 +48,98 @@ namespace OpenNos.Handler
         protected static readonly ILog Log = LogManager.GetLogger(typeof(CharacterScreenPacketHandler));
         private ClientSession Session { get; }
 
-        #endregion
+		#endregion
 
-        #region Methods
+		#region Methods
+
+        /// <summary>
+        ///     gbox Graphical Bank Packet
+        /// </summary>
+        /// <param name="gboxPacket"></param>
+        public void BankAction(GboxPacket gboxPacket)
+        {
+            if (Session.Character.InExchangeOrTrade)
+            {
+                return;
+            }
+
+            switch (gboxPacket.Type)
+            {
+                case BankActionType.Deposit:
+                    if (gboxPacket.Option == 0)
+                    {
+                        Session.SendPacket($"qna #gbox^1^{gboxPacket.Amount}^1 Want to deposit {gboxPacket.Amount}000 gold?");
+                        return;
+                    }
+
+                    if (gboxPacket.Option == 1)
+                    {
+                        if (gboxPacket.Amount <= 0)
+                        {
+                            //Packet hacking duplication
+                            return;
+                        }
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("BANK_DEPOSIT"), (byte)SmemoType.Information));
+                        if (Session.Account.BankMoney + gboxPacket.Amount * 1000 > ServerManager.Instance.MaxBankGold)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("MAX_GOLD_BANK_REACHED")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("MAX_GOLD_BANK_REACHED"), (byte)SmemoType.Error));
+                            return;
+                        }
+
+                        if (Session.Character.Gold < gboxPacket.Amount * 1000)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_GOLD")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_GOLD"), (byte)SmemoType.Error));
+                            return;
+                        }
+
+                        Session.Account.BankMoney += gboxPacket.Amount * 1000;
+                        Session.Character.Gold -= gboxPacket.Amount * 1000;
+                        Session.SendPacket(Session.Character.GenerateGold());
+                        Session.SendPacket(Session.Character.GenerateGb((byte)GoldBankPacketType.Deposit));
+                        Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("BANK_BALANCE"), Session.Account.BankMoney, Session.Character.Gold), 1));
+                        Session.SendPacket(Session.Character.GenerateSmemo(string.Format(Language.Instance.GetMessageFromKey("BANK_BALANCE"), Session.Account.BankMoney, Session.Character.Gold), (byte)SmemoType.Balance));
+                    }
+                    break;
+                case BankActionType.Withdraw:
+                    if (gboxPacket.Option == 0)
+                    {
+                        Session.SendPacket($"qna #gbox^2^{gboxPacket.Amount}^1 Would you like to withdraw {gboxPacket.Amount}000 gold? (Fee: 0 gold)");
+                        return;
+                    }
+
+                    if (gboxPacket.Option == 1)
+                    {
+                        if (gboxPacket.Amount <= 0)
+                        {
+                            //Packet hacking duplication
+                            return;
+                        }
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("WITHDRAW_BANK"), (byte)SmemoType.Information));
+                        if (Session.Character.Gold + gboxPacket.Amount * 1000 > ServerManager.Instance.MaxGold)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("TOO_MUCH_GOLD")));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("TOO_MUCH_GOLD"), (byte)SmemoType.Error));
+                            return;
+                        }
+
+                        if (Session.Account.BankMoney < gboxPacket.Amount * 1000)
+                        {
+                            Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo("NOT_ENOUGH_FUNDS"));
+                            Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("NOT_ENOUGH_FUNDS"), (byte)SmemoType.Error));
+                            return;
+                        }
+
+                        Session.Account.BankMoney -= gboxPacket.Amount * 1000;
+                        Session.Character.Gold += gboxPacket.Amount * 1000;
+                        Session.SendPacket(Session.Character.GenerateGold());
+                        Session.SendPacket(Session.Character.GenerateGb((byte)GoldBankPacketType.Withdraw));
+                        Session.SendPacket(Session.Character.GenerateSmemo(Language.Instance.GetMessageFromKey("BANK_BALANCE"), (byte)SmemoType.Balance));
+                    }
+                    break;
+            }
+        }
 
         /// <summary>
         ///     Char_NEW character creation character

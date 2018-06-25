@@ -576,14 +576,14 @@ namespace OpenNos.GameObject
 
 		#region Methods
 
-        public string GenerateGb(long bankMoney, long cGold, int tax) => $"gb 3 {bankMoney / 1000} {cGold} 0 {tax}";
+        public string GenerateSmemo(string message, byte type) => $"s_memo {type} {message}";
 
-        public string GenerateSmemo(string message) => $"s_memo 6 {message}";
+        public string GenerateGb(byte type) => $"gb {type} {Session.Account.BankMoney / 1000} {Gold} 0 0";
 
 		public void OpenBank()
 		{
-			Session.SendPacket(GenerateGb(Session.Account.BankMoney, Gold, 0));
-			Session.SendPacket(GenerateSmemo(Language.Instance.GetMessageFromKey("OPEN_BANK")));
+			Session.SendPacket(GenerateGb((byte)GoldBankPacketType.OpenBank));
+			Session.SendPacket(GenerateSmemo(Language.Instance.GetMessageFromKey("OPEN_BANK"), (byte)SmemoType.Information));
 		}
 
 		public void GenerateSheepScore(UserType type)
@@ -1995,7 +1995,7 @@ namespace OpenNos.GameObject
             return string.Empty;
         }
 
-        public string GenerateGold() => $"gold {Gold} 0";
+        public string GenerateGold() => $"gold {Gold} {Session.Account.BankMoney / 100}";
 
         public string GenerateIcon(int v1, int v2, short itemVNum) => $"icon {v1} {CharacterId} {v2} {itemVNum}";
 

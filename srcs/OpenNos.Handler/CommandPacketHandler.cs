@@ -163,6 +163,7 @@ namespace OpenNos.Handler
         /// <param name="packet"></param>
         public void ManageBankAccount(BankCommandPacket packet)
         {
+            return;
             if (string.IsNullOrEmpty(packet?.Subcommand))
             {
                 Session.SendPacket(Session.Character.GenerateSay("========= KFCBANK - HELP =========", 11));
