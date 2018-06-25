@@ -253,7 +253,7 @@ namespace OpenNos.Handler
             short[] slot = new short[10];
             string packetList = string.Empty;
 
-            if (gold < 0 || gold > Session.Character.Gold || Session.Character.ExchangeInfo == null || Session.Character.ExchangeInfo.ExchangeList.Any())
+            if (bankGold < 0 || bankGold > Session.Account.BankMoney / 1000 || gold < 0 || gold > Session.Character.Gold || Session.Character.ExchangeInfo == null || Session.Character.ExchangeInfo.ExchangeList.Any())
             {
                 return;
             }
@@ -314,7 +314,7 @@ namespace OpenNos.Handler
 
             Session.Character.ExchangeInfo.Gold = gold;
             Session.Character.ExchangeInfo.BankGold = bankGold;
-            Session.CurrentMapInstance?.Broadcast(Session, $"exc_list 1 {Session.Character.CharacterId} {gold} {(bankGold == 0 ? -1 : bankGold)} {(packetList == string.Empty ? "-1" : packetList)}",
+            Session.CurrentMapInstance?.Broadcast(Session, $"exc_list 1 {Session.Character.CharacterId} {gold} {bankGold} {(packetList == string.Empty ? "-1" : packetList)}",
                 ReceiverType.OnlySomeone, string.Empty, Session.Character.ExchangeInfo.TargetCharacterId);
             Session.Character.ExchangeInfo.Validate = true;
         }
@@ -455,7 +455,10 @@ namespace OpenNos.Handler
                                     int backpack = targetSession.Character.HaveBackpack() ? 1 : 0;
                                     long maxGold = ServerManager.Instance.MaxGold;
 
-                                    if (targetExchange == null || Session.Character.ExchangeInfo == null)
+									var bankGold = targetSession.Account.BankMoney;
+									var maxBankGold = ServerManager.Instance.MaxBankGold;
+
+									if (targetExchange == null || Session.Character.ExchangeInfo == null)
                                     {
                                         return;
                                     }
@@ -484,8 +487,16 @@ namespace OpenNos.Handler
                                             {
                                                 goldmax = true;
                                             }
+											if (Session.Character.ExchangeInfo.BankGold + bankGold > maxBankGold)
+											{
+												goldmax = true;
+											}
+											if (Session.Character.ExchangeInfo.BankGold > Session.Account.BankMoney)
+											{
+												return;
+											}
 
-                                            if (Session.Character.ExchangeInfo.Gold > Session.Character.Gold)
+											if (Session.Character.ExchangeInfo.Gold > Session.Character.Gold)
                                             {
                                                 return;
                                             }
@@ -494,8 +505,12 @@ namespace OpenNos.Handler
                                             {
                                                 goldmax = true;
                                             }
+											if (targetExchange.BankGold + Session.Character.ExchangeInfo.BankGold > maxBankGold)
+											{
+												goldmax = true;
+											}	
 
-                                            if (!@continue || goldmax)
+											if (!@continue || goldmax)
                                             {
                                                 string message = !@continue
                                                     ? UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("NOT_ENOUGH_PLACE"), 0)
@@ -1986,6 +2001,7 @@ namespace OpenNos.Handler
             sourceSession.Character.Gold -= sourceSession.Character.ExchangeInfo.Gold;
             sourceSession.Account.BankMoney -= sourceSession.Character.ExchangeInfo.BankGold * 1000;
             sourceSession.SendPacket(sourceSession.Character.GenerateGold());
+
             targetSession.Character.Gold += sourceSession.Character.ExchangeInfo.Gold;
             targetSession.Account.BankMoney += sourceSession.Character.ExchangeInfo.BankGold * 1000;
             targetSession.SendPacket(targetSession.Character.GenerateGold());
