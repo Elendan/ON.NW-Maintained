@@ -47,7 +47,38 @@ namespace OpenNos.GameObject.Npc
             var rand = new Random();
             switch (packet.Runner)
             {
-                case 1:
+				case 321:
+					{
+						session.Character.OpenBank();
+					}
+					break;
+				case 322:
+					{
+						if (packet.Type == 0 && packet.Value == 2)
+						{
+							var Item = session.Character.Inventory.CountItem(5836);
+							if (Item == 0)
+							{
+								var iteminfo = ServerManager.Instance.GetItem(5836);
+								var inv = session.Character.Inventory.AddNewToInventory(5836).FirstOrDefault();
+								if (inv != null)
+								{
+
+									session.SendPacket("info Item Cuarry Bank Savings Book received");
+								}
+								else
+								{
+									session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("NOT_ENOUGH_PLACE"), 0));
+								}
+							}
+							else
+							{
+								session.SendPacket($"say 1 {session.Character.CharacterId} It's already been received.");
+							}
+						}
+					}
+					break;
+				case 1:
                     if (session.Character.Class != (byte)ClassType.Adventurer)
                     {
                         session.SendPacket(
