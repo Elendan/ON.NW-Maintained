@@ -44,7 +44,23 @@ namespace OpenNos.GameObject.Item
             {
                 // airwaves - eventitems
                 case 0:
-                    if (ItemType == ItemType.Event)
+					if (ItemType == ItemType.Magical)
+					{
+						switch (VNum)
+						{
+							// Bank Card
+							case 2539:
+							case 10066:
+								if (session.Character.MapInstance.MapInstanceType != MapInstanceType.BaseMapInstance)
+								{
+									return;
+								}
+								session.Character.OpenBank();
+								session.Character.Inventory.RemoveItemAmountFromInventory(1,inv.Id);
+								return;
+						}
+					}
+					if (ItemType == ItemType.Event)
                     {
                         session.CurrentMapInstance?.Broadcast(session.Character.GenerateEff(EffectValue));
                         if (MappingHelper.Instance.GuriItemEffects.ContainsKey(EffectValue))

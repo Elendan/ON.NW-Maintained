@@ -576,6 +576,12 @@ namespace OpenNos.GameObject
 
 		#region Methods
 
+		public void OpenBank()
+		{
+			Session.SendPacket($"gb 3 {Session.Account.BankMoney / 1000} {Session.Character.Gold} 0 0");
+			Session.SendPacket($"s_memo 6 Bienvenue à la banque De {ServerManager.Instance.ServerGroup}. Tu peux déposer ou retirer de 1 000 à 100 milliards de pièces d'or.");
+		}
+
 		public void GenerateSheepScore(UserType type)
         {
             if (!CanAttack)
