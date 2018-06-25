@@ -576,10 +576,14 @@ namespace OpenNos.GameObject
 
 		#region Methods
 
+        public string GenerateGb(long bankMoney, long cGold, int tax) => $"gb 3 {bankMoney / 1000} {cGold} 0 {tax}";
+
+        public string GenerateSmemo(string message) => $"s_memo 6 {message}";
+
 		public void OpenBank()
 		{
-			Session.SendPacket($"gb 3 {Session.Account.BankMoney / 1000} {Session.Character.Gold} 0 0");
-			Session.SendPacket($"s_memo 6 Bienvenue à la banque De {ServerManager.Instance.ServerGroup}. Tu peux déposer ou retirer de 1 000 à 100 milliards de pièces d'or.");
+			Session.SendPacket(GenerateGb(Session.Account.BankMoney, Gold, 0));
+			Session.SendPacket(GenerateSmemo(Language.Instance.GetMessageFromKey("OPEN_BANK")));
 		}
 
 		public void GenerateSheepScore(UserType type)
