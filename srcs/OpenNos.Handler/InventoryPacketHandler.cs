@@ -1335,8 +1335,8 @@ namespace OpenNos.Handler
             {
 				case 35:
 					// sp poule 
-					inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
-					if (inventory.ItemVNum == 907)
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 907)
 					{
 						if (specialist2 != null)
 						{
@@ -1356,8 +1356,8 @@ namespace OpenNos.Handler
 					break;
 				case 38:
 					// sp pyj
-					inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
-					if (inventory.ItemVNum == 900)
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 900)
 					{
 						if (specialist2 != null)
 						{
@@ -1377,8 +1377,8 @@ namespace OpenNos.Handler
 					break;
 				case 42:
 					// sp pirate
-					inventory = Session.Character.Inventory.LoadBySlotAndType<WearableInstance>(slot, inventoryType);
-					if (inventory.ItemVNum == 4099)
+					inventory = Session.Character.Inventory.LoadBySlotAndType<SpecialistInstance>(slot, inventoryType);
+					if (inventory?.ItemVNum == 4099)
 					{
 						if (specialist2 != null)
 						{
