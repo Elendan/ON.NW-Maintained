@@ -162,13 +162,10 @@ namespace OpenNos.GameObject
                             continue;
                         }
 
-                        {
-                            session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
-                            session.Character.GenerateEff(881);
-                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
-                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.GenerateEff(881);
-                        }
-
+                        session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        session.Character.GenerateEff(881);
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.GenerateEff(881);
                     }
 
                     else if (relation.RelatedCharacterId == session.Character.CharacterId)
@@ -178,12 +175,10 @@ namespace OpenNos.GameObject
                             continue;
                         }
 
-                        {
-                            session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
-                            session.Character.GenerateEff(881);
-                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
-                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.GenerateEff(881);
-                        }
+                        session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        session.Character.GenerateEff(881);
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.GenerateEff(881);
                     }
                 }
             }
