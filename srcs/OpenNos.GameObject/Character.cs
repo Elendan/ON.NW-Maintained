@@ -3005,17 +3005,6 @@ namespace OpenNos.GameObject
                 + (!IsPetAutoRelive ? 64 : 0)
                 + (!IsPartnerAutoRelive ? 128 : 0);
 
-            if (ServerManager.Instance.Groups.Any(s => s.IsMemberOfGroup(Session) && s.GroupType == GroupType.Group))
-            {
-                if (Session.Character.IsMarriedToCharacter(Session.Character.CharacterId))
-                {
-                    WeddingEffect = Observable.Interval(TimeSpan.FromSeconds(3)).Subscribe(s =>
-                    {
-                        Session.Character.MapInstance?.Broadcast(GenerateEff(881));
-                    });
-                }
-            }
-
             return $"stat {Hp} {HpLoad()} {Mp} {MpLoad()} 0 {option}";
         }
 

@@ -164,7 +164,9 @@ namespace OpenNos.GameObject
 
                         {
                             session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            session.Character.GenerateEff(881);
                             Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.GenerateEff(881);
                         }
 
                     }
@@ -178,7 +180,9 @@ namespace OpenNos.GameObject
 
                         {
                             session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            session.Character.GenerateEff(881);
                             Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.GenerateEff(881);
                         }
                     }
                 }
