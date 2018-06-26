@@ -63,6 +63,40 @@ namespace OpenNos.Handler
             {
                 switch (guriPacket.Type)
                 {
+                    //Wedding
+                    case 603:
+                        long? characterId = guriPacket.User;
+                        ClientSession otherSession = null;
+
+                        if (characterId != null)
+                        {
+                            otherSession = ServerManager.Instance.GetSessionByCharacterId((long)characterId);
+                        }
+
+                        if (otherSession != null)
+                        {
+                            if (otherSession.Character.IsWaitingForWedding)
+                            {
+                                switch (guriPacket.Argument)
+                                {
+
+                                    case 1:
+                                        otherSession.Character.IsWaitingForWedding = false;
+                                        Session.Character.DeleteRelation((long)characterId);
+                                        Session.Character.AddRelation((long)characterId, CharacterRelationType.Spouse);
+                                        ServerManager.Instance.Broadcast(
+                                            UserInterfaceHelper.Instance.GenerateMsg(string.Format($"{Session.Character.Name} et {otherSession.Character.Name} sont maintenant mari�s."), 0));
+                                        break;
+
+                                    case 0:
+                                        otherSession.Character.IsWaitingForWedding = false;
+                                        ServerManager.Instance.Broadcast(
+                                            UserInterfaceHelper.Instance.GenerateMsg(string.Format($"{Session.Character.Name} a refusé la demande en mariage de {otherSession.Character.Name}."), 0));
+                                        break;
+                                }
+                            }
+                        }
+                        break;
                     // SHELL IDENTIFYING
                     case 204:
                         if (guriPacket.User == null)
@@ -305,7 +339,7 @@ namespace OpenNos.Handler
                         break;
 
                     default:
-                        if (guriPacket.Type == 199 && guriPacket.Argument == 2)
+                        if (guriPacket.Type == 199 && (guriPacket.Argument == 2))
                         {
                             short[] listWingOfFriendship = { 2160, 2312, 10048 };
                             short vnumToUse = -1;
@@ -317,22 +351,30 @@ namespace OpenNos.Handler
                                 }
                             }
 
-                            if (vnumToUse != -1 || Session.Character.Authority > AuthorityType.User)
+                            if (!guriPacket.User.HasValue)
+                            {
+                                return;
+                            }
+
+                            if (!long.TryParse(guriPacket.User.Value.ToString(), out long charId))
+                            {
+                                return;
+                            }
+
+                            ClientSession session = ServerManager.Instance.GetSessionByCharacterId(charId);
+
+                            bool isMariedToTarget =
+                                Session.Character.IsMarriedToCharacter(charId);
+                            if (vnumToUse != -1 || Session.Character.Authority > AuthorityType.User || isMariedToTarget)
                             {
                                 if (guriPacket.User == null)
                                 {
                                     return;
                                 }
 
-                                if (!long.TryParse(guriPacket.User.Value.ToString(), out long charId))
-                                {
-                                    return;
-                                }
-
-                                ClientSession session = ServerManager.Instance.GetSessionByCharacterId(charId);
                                 if (session != null)
                                 {
-                                    if (Session.Character.IsFriendOfCharacter(charId))
+                                    if (Session.Character.IsFriendOfCharacter(charId) || Session.Character.IsMarriedToCharacter(charId))
                                     {
                                         if (session.CurrentMapInstance?.MapInstanceType == MapInstanceType.BaseMapInstance)
                                         {
@@ -341,7 +383,10 @@ namespace OpenNos.Handler
                                             short mapId = session.Character.MapInstance.Map.MapId;
 
                                             ServerManager.Instance.ChangeMap(Session.Character.CharacterId, mapId, mapx, mapy);
-                                            Session.Character.Inventory.RemoveItemAmount(vnumToUse);
+                                            if (!isMariedToTarget)
+                                            {
+                                                Session.Character.Inventory.RemoveItemAmount(vnumToUse);
+                                            }
                                         }
                                         else
                                         {
@@ -353,7 +398,10 @@ namespace OpenNos.Handler
                                                 Guid mapId = session.CurrentMapInstance.MapInstanceId;
 
                                                 ServerManager.Instance.ChangeMapInstance(Session.Character.CharacterId, mapId, mapx, mapy);
-                                                Session.Character.Inventory.RemoveItemAmount(vnumToUse);
+                                                if (!isMariedToTarget)
+                                                {
+                                                    Session.Character.Inventory.RemoveItemAmount(vnumToUse);
+                                                }
                                             }
                                             else
                                             {
@@ -662,7 +710,7 @@ namespace OpenNos.Handler
                                     {
                                         if (guriPacket.User != null && long.TryParse(guriPacket.User.Value.ToString(), out long charId))
                                         {
-                                            if (!Session.Character.IsFriendOfCharacter(charId))
+                                            if (!Session.Character.IsFriendOfCharacter(charId) && !Session.Character.IsMarriedToCharacter(charId))
                                             {
                                                 Session.SendPacket(Language.Instance.GetMessageFromKey("CHARACTER_NOT_IN_FRIENDLIST"));
                                                 return;

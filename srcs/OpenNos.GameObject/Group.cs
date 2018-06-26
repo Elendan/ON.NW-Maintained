@@ -16,9 +16,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Extensions;
+using OpenNos.Data;
+using OpenNos.DAL.EF.Entities;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
@@ -141,16 +144,59 @@ namespace OpenNos.GameObject
             }
         }
 
+        public void CheckRelations()
+        {
+            foreach (ClientSession session in Characters.Where(s => s != null))
+            {
+                foreach (CharacterRelationDTO relation in session.Character.CharacterRelations)
+                {
+                    if (relation.RelationType != CharacterRelationType.Spouse)
+                    {
+                        continue;
+                    }
+
+                    if (relation.CharacterId == session.Character.CharacterId)
+                    {
+                        if (Characters.All(s => s.Character.CharacterId != relation.RelatedCharacterId))
+                        {
+                            continue;
+                        }
+
+                        session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        session.Character.GenerateEff(881);
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.GenerateEff(881);
+                    }
+
+                    else if (relation.RelatedCharacterId == session.Character.CharacterId)
+                    {
+                        if (Characters.All(s => s.Character.CharacterId != relation.CharacterId))
+                        {
+                            continue;
+                        }
+
+                        session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        session.Character.GenerateEff(881);
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.GenerateEff(881);
+                    }
+                }
+            }
+        }
+
         public void JoinGroup(ClientSession session)
         {
             if (session.Character.LastUnregister.AddSeconds(1) > DateTime.Now)
             {
                 return;
             }
-
             session.Character.Group = this;
             session.Character.LastGroupJoin = DateTime.Now;
             Characters.Add(session);
+            if (GroupType == GroupType.Group)
+            {
+                CheckRelations();
+            }
         }
 
         public void LeaveGroup(ClientSession session)
@@ -168,6 +214,8 @@ namespace OpenNos.GameObject
             Characters.RemoveWhere(s => s?.Character.CharacterId != session.Character.CharacterId,
                 out ConcurrentBag<ClientSession> sessions);
             Characters = sessions;
+            session.Character.RemoveBuff(319);
+            session.Character.WeddingEffect?.Dispose();
         }
 
         public bool IsLeader(ClientSession session)
