@@ -107,6 +107,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public IDisposable WeddingEffect { get; set; }
+
         public bool IsWaitingForWedding { get; set; }
 
         public IDisposable DotDebuff { get; set; }
@@ -3007,7 +3009,10 @@ namespace OpenNos.GameObject
             {
                 if (Session.Character.IsMarriedToCharacter(Session.Character.CharacterId))
                 {
-                    Session.SendPacket($"eff 1 {Session.Character.CharacterId} 881");
+                    WeddingEffect = Observable.Interval(TimeSpan.FromSeconds(3)).Subscribe(s =>
+                    {
+                        Session.Character.MapInstance?.Broadcast(GenerateEff(881));
+                    });
                 }
             }
 

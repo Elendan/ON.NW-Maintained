@@ -539,6 +539,8 @@ namespace OpenNos.GameObject.Battle
                     case 2159:
                     case 2160:
                         return ServerManager.Instance.RandomNumber(100, 200);
+                    case 319:
+                        return 600;
                 }
             }
             return -1;

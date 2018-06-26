@@ -146,15 +146,40 @@ namespace OpenNos.GameObject
 
         public void CheckRelations()
         {
-            foreach (ClientSession session in Characters)
+            foreach (ClientSession session in Characters.Where(s => s != null))
             {
-                bool isRelative = false;
-                int thisId = 0, targetId = 0;
                 foreach (CharacterRelationDTO relation in session.Character.CharacterRelations)
                 {
-                    if (relation.RelationType == CharacterRelationType.Spouse)
+                    if (relation.RelationType != CharacterRelationType.Spouse)
                     {
-                        isRelative = relation.CharacterId == session.Character.CharacterId;
+                        continue;
+                    }
+
+                    if (relation.CharacterId == session.Character.CharacterId)
+                    {
+                        if (Characters.All(s => s.Character.CharacterId != relation.RelatedCharacterId))
+                        {
+                            continue;
+                        }
+
+                        {
+                            session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.RelatedCharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        }
+
+                    }
+
+                    else if (relation.RelatedCharacterId == session.Character.CharacterId)
+                    {
+                        if (Characters.All(s => s.Character.CharacterId != relation.CharacterId))
+                        {
+                            continue;
+                        }
+
+                        {
+                            session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                            Characters.FirstOrDefault(s => s.Character.CharacterId == relation.CharacterId)?.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                        }
                     }
                 }
             }
@@ -166,13 +191,12 @@ namespace OpenNos.GameObject
             {
                 return;
             }
-
             session.Character.Group = this;
             session.Character.LastGroupJoin = DateTime.Now;
             Characters.Add(session);
-            if (session.Character.IsMarriedToCharacter(session.Character.CharacterId))
+            if (GroupType == GroupType.Group)
             {
-                session.Character.AddBuff(new Buff.Buff(319, isPermaBuff: true));
+                CheckRelations();
             }
         }
 
@@ -192,6 +216,7 @@ namespace OpenNos.GameObject
                 out ConcurrentBag<ClientSession> sessions);
             Characters = sessions;
             session.Character.RemoveBuff(319);
+            session.Character.WeddingEffect?.Dispose();
         }
 
         public bool IsLeader(ClientSession session)
