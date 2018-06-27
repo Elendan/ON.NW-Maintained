@@ -1647,7 +1647,7 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.MeteoriteTeleport:
-                    /*switch (SubType)
+                    switch (SubType)
                     {
                         case (byte)AdditionalTypes.MeteoriteTeleport.CauseMeteoriteFall:
                             if (IsLevelScaled)
@@ -1655,11 +1655,16 @@ namespace OpenNos.GameObject.Buff
                                 switch (session)
                                 {
                                     case Character meteorCharacter:
+                                        if (!SkillVNum.HasValue)
+                                        {
+                                            break;
+                                        }
+                                        Skill sk = ServerManager.Instance.GetSkill(SkillVNum.Value);
                                         int amount = meteorCharacter.Level / 5 + 10;
                                         int delay = 500;
                                         for (int i = 0; i < amount; i++)
                                         {
-                                            meteorCharacter.MapInstance?.SpawnMeteorsOnRadius(20, meteorCharacter.Session);
+                                            meteorCharacter.MapInstance?.SpawnMeteorsOnRadius(20, meteorCharacter.Session, sk);
                                             if (delay > 0)
                                             {
                                                 Thread.Sleep(delay);
@@ -1670,7 +1675,7 @@ namespace OpenNos.GameObject.Buff
                                 }
                             }
                             break;
-                    }*/
+                    }
                     break;
 
                 case BCardType.CardType.StealBuff:

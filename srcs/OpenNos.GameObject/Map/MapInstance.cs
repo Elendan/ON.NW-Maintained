@@ -203,7 +203,7 @@ namespace OpenNos.GameObject.Map
             get { return _battleEntities.Select(e => e.Value).Concat(Npcs).Concat(Monsters); }
         }
 
-        public void SpawnMeteorsOnRadius(byte radius, ClientSession session)
+        public void SpawnMeteorsOnRadius(byte radius, ClientSession session, Skill skill)
         {
             MapCell cell = Map.GetRandomPositionInRadius(radius, session.Character.PositionX, session.Character.PositionY);
             int meteorId = GetNextId();
@@ -232,7 +232,10 @@ namespace OpenNos.GameObject.Map
                 Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, meteorId, 3, meteorId, 1337, 30, 0, (short)ServerManager.Instance.RandomNumber(4491, 4492), cell.X, cell.Y, true, 0, 0, -2, 0));
                 foreach (MapMonster monster in GetListMonsterInRange(meteor.MapX, meteor.MapY, (byte)(radius / 3)))
                 {
-                    int dmg = monster.CurrentHp -= ServerManager.Instance.RandomNumber(500, 3000);
+                    int hitmode = 0;
+                    bool onyx = false;
+
+                    int dmg = ServerManager.Instance.RandomNumber(500, 3000);
                     if (monster.CurrentHp - dmg <= 0)
                     {
                         Broadcast(monster.GenerateOut());
