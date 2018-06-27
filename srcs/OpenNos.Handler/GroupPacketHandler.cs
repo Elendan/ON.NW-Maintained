@@ -353,7 +353,10 @@ namespace OpenNos.Handler
                             return;
                         }
 
-                        targetSession.Character.GroupSentRequestCharacterIds.Remove(Session.Character.CharacterId);
+                        if (targetSession.Character.GroupSentRequestCharacterIds.Contains(Session.Character.CharacterId))
+                        {
+                            targetSession.Character.GroupSentRequestCharacterIds.Remove(Session.Character.CharacterId);
+                        }
 
                         if (ServerManager.Instance.IsCharacterMemberOfGroup(Session.Character.CharacterId) && ServerManager.Instance.IsCharacterMemberOfGroup(pjoinPacket.CharacterId))
                         {
