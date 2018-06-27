@@ -1433,25 +1433,12 @@ namespace OpenNos.GameObject
             Session.SendPacket(UserInterfaceHelper.Instance.GenerateInventoryRemove(result.Item2, result.Item1));
         }
 
-        public void DeleteRelation(long characterId)
+        public void DeleteRelationById(long id)
         {
-            CharacterRelationDTO chara = CharacterRelations.FirstOrDefault(s =>
-                s.RelatedCharacterId == characterId || s.CharacterId == characterId);
-            if (chara == null)
-            {
-                return;
-            }
-
-            long id = chara.CharacterRelationId;
-            CharacterDTO charac = DaoFactory.CharacterDao.LoadById(characterId);
             DaoFactory.CharacterRelationDao.Delete(id);
             ServerManager.Instance.RelationRefresh(id);
 
             Session.SendPacket(GenerateFinit());
-            if (charac == null)
-            {
-                return;
-            }
 
             List<CharacterRelationDTO> lst = ServerManager.Instance.CharacterRelations
                 .Where(s => s.CharacterId == CharacterId || s.RelatedCharacterId == CharacterId).ToList();
@@ -1466,15 +1453,27 @@ namespace OpenNos.GameObject
                 result +=
                     $" {id2}|{(short)relation.RelationType}|{(isOnline ? 1 : 0)}|{DaoFactory.CharacterDao.LoadById(id2).Name}";
             }
+            Save();
+        }
 
-            CommunicationServiceClient.Instance.SendMessageToCharacter(new SCSCharacterMessage
+        public void DeleteRelation(CharacterRelationDTO relation)
+        {
+            if (relation == null)
             {
-                DestinationCharacterId = charac.CharacterId,
-                SourceCharacterId = CharacterId,
-                SourceWorldId = ServerManager.Instance.WorldId,
-                Message = result,
-                Type = MessageType.PrivateChat
-            });
+                return;
+            }
+            DeleteRelationById(relation.CharacterRelationId);
+        }
+
+        public void DeleteRelation(long characterId)
+        {
+            CharacterRelationDTO chara = CharacterRelations.FirstOrDefault(s =>
+                s.RelatedCharacterId == characterId || s.CharacterId == characterId);
+            if (chara == null)
+            {
+                return;
+            }
+            DeleteRelationById(chara.CharacterRelationId);
         }
 
         public void DeleteTimeout()

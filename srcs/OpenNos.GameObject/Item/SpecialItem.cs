@@ -749,12 +749,15 @@ namespace OpenNos.GameObject.Item
                 // Divorce letter
                 case 6969: // this is imaginary number I = √(-1)
                     CharacterRelationDTO rel = session.Character.CharacterRelations.FirstOrDefault(s => s.RelationType == CharacterRelationType.Spouse);
+                    
                     if (rel != null)
                     {
-                        session.Character.DeleteRelation(rel.CharacterId == session.Character.CharacterId ? rel.RelatedCharacterId : rel.CharacterId);
-                        session.Character.AddRelation(rel.CharacterId, CharacterRelationType.Friend);
+                        long id = rel.CharacterId == session.Character.CharacterId ? rel.RelatedCharacterId : rel.CharacterId;
+                        session.Character.DeleteRelation(rel);
+                        session.Character.AddRelation(id, CharacterRelationType.Friend);
                         session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("DIVORCED")));
                         session.Character.Inventory.RemoveItemAmountFromInventory(1, inv.Id);
+                        session.Character.Save();
                     }
 
                     break;
