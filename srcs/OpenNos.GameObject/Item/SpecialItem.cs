@@ -1183,7 +1183,7 @@ namespace OpenNos.GameObject.Item
                     break;
             }
 
-            session.Character.IncrementQuests(QuestType.Use, inv.ItemVNum);
+            session.Character?.IncrementQuests(QuestType.Use, inv.ItemVNum);
         }
 
         #endregion
