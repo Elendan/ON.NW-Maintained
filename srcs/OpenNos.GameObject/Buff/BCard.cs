@@ -91,6 +91,21 @@ namespace OpenNos.GameObject.Buff
                     character.LastSpeedChange = DateTime.Now;
                     character.LoadSpeed();
                     character.Session.SendPacket(character.GenerateCond());
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.Move.MoveSpeedDecreased:
+                            Card speedDebuff = ServerManager.Instance.GetCardByCardId(CardId);
+                            if (speedDebuff == null)
+                            {
+                                return;
+                            }
+                            character.Speed /= (byte)(100 / FirstData);
+                            Observable.Timer(TimeSpan.FromSeconds(speedDebuff.Duration * 0.1)).Subscribe(s =>
+                            {
+                                character.LoadSpeed();
+                            });
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Summons:

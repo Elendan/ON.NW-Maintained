@@ -1002,11 +1002,6 @@ namespace OpenNos.GameObject.Helpers
                 chance = (-0.25 * Math.Pow(multiplier, 3)) - (0.57 * Math.Pow(multiplier, 2)) + (25.3 * multiplier)
                          - 1.41;
 
-                if (attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
-                {
-                    chance = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0] / 10;
-                }
-
                 if (chance <= 1)
                 {
                     chance = 1;
@@ -1038,21 +1033,32 @@ namespace OpenNos.GameObject.Helpers
 
             if (attacker.AttackType != AttackType.Magical)
             {
-                if (ServerManager.Instance.RandomNumber() - bonus < chance)
+                if (!attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
                 {
-                    hitmode = 1;
-                    attacker.SkillBcards.Clear();
-                    targetEntity.DealtDamage = 0;
-                    return 0;
+                    if (ServerManager.Instance.RandomNumber() - bonus < chance)
+                    {
+                        hitmode = 1;
+                        attacker.SkillBcards.Clear();
+                        targetEntity.DealtDamage = 0;
+                        return 0;
+                    }
+                }
+                else
+                {
+                    chance = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0];
+
+                    if (ServerManager.Instance.RandomNumber() > chance)
+                    {
+                        hitmode = 1;
+                        attacker.SkillBcards.Clear();
+                        targetEntity.DealtDamage = 0;
+                        return 0;
+                    }
                 }
             }
             else
             {
                 int magicalEvasiveness = (int)((1 - (1 - bonus / 100) * (1 - magicBonus / 100)) * 100);
-                if (attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
-                {
-                    magicalEvasiveness = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0] / 10;
-                }
                 if (ServerManager.Instance.RandomNumber() < magicalEvasiveness)
                 {
                     hitmode = 1;
@@ -1467,6 +1473,17 @@ namespace OpenNos.GameObject.Helpers
             }
 
             #endregion
+
+            totalDamage += attacker.ChargeValue;
+            attacker.ChargeValue = 0;
+
+            if (target.HasBuff(BCardType.CardType.NoDefeatAndNoDamage, (byte)AdditionalTypes.NoDefeatAndNoDamage.TransferAttackPower))
+            {
+                target.ChargeValue = totalDamage;
+                attacker.SkillBcards.Clear();
+                targetEntity.DealtDamage = 0;
+                return 0;
+            }
             attacker.SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
             return totalDamage;
