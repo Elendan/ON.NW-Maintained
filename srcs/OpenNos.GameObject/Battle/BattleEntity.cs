@@ -11,7 +11,6 @@ using OpenNos.Data;
 using OpenNos.GameObject.Battle.Args;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Event;
-using OpenNos.GameObject.Event.CALIGOR;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
 using OpenNos.GameObject.Map;
@@ -410,20 +409,23 @@ namespace OpenNos.GameObject.Battle
             return 0;
         }
 
-        public int[] GetBuff(CardType type, byte subtype)
+        public int[] GetBuff(CardType type, byte subtype, bool getStatic = true)
         {
             int value1 = 0;
             int value2 = 0;
 
-            lock(StaticBcards)
+            if (getStatic)
             {
-                foreach (BCard entry in StaticBcards.Concat(SkillBcards)
-                    .Where(s => s != null && s.Type.Equals((byte)type) && s.SubType.Equals(subtype)))
+                lock (StaticBcards)
                 {
-                    value1 += entry.IsLevelScaled
-                        ? entry.IsLevelDivided ? Level / entry.FirstData : entry.FirstData * Level
-                        : entry.FirstData;
-                    value2 += entry.SecondData;
+                    foreach (BCard entry in StaticBcards.Concat(SkillBcards)
+                        .Where(s => s != null && s.Type.Equals((byte)type) && s.SubType.Equals(subtype)))
+                    {
+                        value1 += entry.IsLevelScaled
+                            ? entry.IsLevelDivided ? Level / entry.FirstData : entry.FirstData * Level
+                            : entry.FirstData;
+                        value2 += entry.SecondData;
+                    }
                 }
             }
 

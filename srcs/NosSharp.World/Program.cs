@@ -33,8 +33,6 @@ using OpenNos.DAL.EF.Entities;
 using OpenNos.DAL.EF.Helpers;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Extensions;
-using OpenNos.GameObject.Item.Instance;
-using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
 using OpenNos.GameObject.Packets.ClientPackets;
 using OpenNos.Handler;
