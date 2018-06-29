@@ -1260,7 +1260,7 @@ namespace OpenNos.GameObject.Helpers
             }
 
 
-            if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical)
+            if ((ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical) || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
             {
                 double multiplier = attacker.CriticalRate / 100D;
                 if (multiplier > 3)
