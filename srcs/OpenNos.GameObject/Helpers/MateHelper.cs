@@ -461,19 +461,20 @@ namespace OpenNos.GameObject.Helpers
 
         public void AddPetBuff(ClientSession session, Mate mate)
         {
-            int cardId = -1;
-            if (MateBuffs.TryGetValue(mate.NpcMonsterVNum, out cardId) &&
+            if (MateBuffs.TryGetValue(mate.NpcMonsterVNum, out int cardId) &&
                 session.Character.Buff.All(b => b.Card.CardId != cardId))
             {
                 session.Character.AddBuff(new Buff.Buff(cardId, isPermaBuff: true));
             }
 
-            if (mate.MateType == MateType.Pet)
+            if (mate.MateType != MateType.Pet)
             {
-                foreach (NpcMonsterSkill skill in mate.Monster.Skills.Where(sk => PetSkills.Contains(sk.SkillVNum)))
-                {
-                    session.SendPacket(session.Character.GeneratePetskill(skill.SkillVNum));
-                }
+                return;
+            }
+
+            foreach (NpcMonsterSkill skill in mate.Monster.Skills.Where(sk => PetSkills.Contains(sk.SkillVNum)))
+            {
+                session.SendPacket(session.Character.GeneratePetskill(skill.SkillVNum));
             }
         }
 
@@ -605,7 +606,9 @@ namespace OpenNos.GameObject.Helpers
                 1514, // Baron scratch ?
                 1515, // Amiral (le chat chelou) 
                 1516, // roi des pirates pussifer 
-                1524 // Miaou fou
+                1524, // Miaou fou
+                1575, // Marié Bouhmiaou 
+                1576 // Marie Bouhmiaou 
             };
         }
 
