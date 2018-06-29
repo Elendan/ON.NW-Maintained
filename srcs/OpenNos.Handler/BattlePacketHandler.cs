@@ -298,6 +298,9 @@ namespace OpenNos.Handler
                     if (ski.Skill.TargetType == 1 && ski.Skill.HitType == 1)
                     {
                         Session.Character.Mp -= Session.Character.HasGodMode ? 0 : ski.Skill.MpCost;
+                        int mpPerc =
+                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
 
                         if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
                         {
@@ -514,6 +517,9 @@ namespace OpenNos.Handler
                                     if (!Session.Character.HasGodMode)
                                     {
                                         Session.Character.Mp -= ski.Skill.MpCost;
+                                        int mpPerc =
+                                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
                                     }
 
                                     if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
@@ -753,6 +759,9 @@ namespace OpenNos.Handler
                                     if (!Session.Character.HasGodMode)
                                     {
                                         Session.Character.Mp -= ski.Skill.MpCost;
+                                        int mpPerc =
+                                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
                                     }
 
                                     if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
@@ -965,6 +974,10 @@ namespace OpenNos.Handler
                     if (!Session.Character.HasGodMode)
                     {
                         Session.Character.Mp -= characterSkill.Skill.MpCost;
+                        int mpPerc =
+                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * characterSkill.Skill.MpCost;
+                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
+
                     }
 
                     Session.SendPacket(Session.Character.GenerateStat());
