@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ArrayExtensions;
-using OpenNos.PathFinder.PathFinder;
 
 namespace ArrayExtensions
 {

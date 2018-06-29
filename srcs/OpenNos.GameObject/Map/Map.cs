@@ -23,7 +23,6 @@ using OpenNos.Data;
 using OpenNos.Data.Interfaces;
 using OpenNos.DAL;
 using OpenNos.GameObject.Event;
-using OpenNos.GameObject.Networking;
 using OpenNos.PathFinder.PathFinder;
 
 namespace OpenNos.GameObject.Map

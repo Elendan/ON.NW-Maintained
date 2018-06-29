@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using log4net.Core;
 using NosSharp.Enums;
+using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Buff;
@@ -34,9 +32,9 @@ namespace OpenNos.GameObject.Helpers
             {
                 cards = subtype % 10 == 1
                     ? bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype)) && s.FirstData >= 0)
+                        s.Type.Equals((byte)type) && s.SubType.Equals((subtype)) && s.FirstData >= 0)
                     : bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                        s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                         && (s.FirstData <= 0 || s.ThirdData < 0));
 
                 foreach (BCard entry in cards)
@@ -69,12 +67,12 @@ namespace OpenNos.GameObject.Helpers
                 {
                     cards = subtype % 10 == 1
                         ? buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData >= 0)
                         : buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData <= 0);
@@ -480,7 +478,6 @@ namespace OpenNos.GameObject.Helpers
             int targetMorale = target.Morale;
             int attackUpgrade = attacker.AttackUpgrade;
             int targetDefenseUpgrade = target.DefenseUpgrade;
-            int defenseUpgrade = attacker.DefenseUpgrade;
 
             morale +=
                 GetAttackerBenefitingBuffs(BCardType.CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
@@ -1004,15 +1001,16 @@ namespace OpenNos.GameObject.Helpers
 
                 chance = (-0.25 * Math.Pow(multiplier, 3)) - (0.57 * Math.Pow(multiplier, 2)) + (25.3 * multiplier)
                          - 1.41;
+
+                if (attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
+                {
+                    chance = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0] / 10;
+                }
+
                 if (chance <= 1)
                 {
                     chance = 1;
                 }
-
-                //if (GetBuff(CardType.Buff, (byte)AdditionalTypes.DodgeAndDefencePercent.)[0] != 0)    TODO: Eagle Eyes AND Other Fixed Hitrates
-                //{
-                //    chance = 10;
-                //}
             }
 
             double bonus = 0;
@@ -1051,6 +1049,10 @@ namespace OpenNos.GameObject.Helpers
             else
             {
                 int magicalEvasiveness = (int)((1 - (1 - bonus / 100) * (1 - magicBonus / 100)) * 100);
+                if (attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
+                {
+                    magicalEvasiveness = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0] / 10;
+                }
                 if (ServerManager.Instance.RandomNumber() < magicalEvasiveness)
                 {
                     hitmode = 1;
@@ -1072,17 +1074,10 @@ namespace OpenNos.GameObject.Helpers
 
             int[] atklvlfix = GetDefenderBenefitingBuffs(BCardType.CardType.CalculatingLevel,
                 (byte)AdditionalTypes.CalculatingLevel.CalculatedAttackLevel);
-            int[] deflvlfix = GetAttackerBenefitingBuffs(BCardType.CardType.CalculatingLevel,
-                (byte)AdditionalTypes.CalculatingLevel.CalculatedDefenceLevel);
 
             if (atklvlfix[3] != 0)
             {
                 attackUpgrade = (short)atklvlfix[0];
-            }
-
-            if (deflvlfix[3] != 0)
-            {
-                defenseUpgrade = (short)deflvlfix[0];
             }
 
             attackUpgrade -= (short)targetDefenseUpgrade;
@@ -1141,14 +1136,9 @@ namespace OpenNos.GameObject.Helpers
                 case 10:
                     weaponDamage += weaponDamage * 2;
                     break;
-
-                    //default:
-                    //    if (attackUpgrade > 0)
-                    //    {
-                    //        weaponDamage *= attackUpgrade / 5;
-                    //    }
-
-                    //    break;
+                default:
+                    Logger.Log.Error("Dmg Error");
+                    break;
             }
 
             #endregion
@@ -1251,7 +1241,11 @@ namespace OpenNos.GameObject.Helpers
 
             attacker.CriticalChance += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritChance);
             attacker.CriticalChance -= GetShellArmorEffectValue(ShellOptionType.ReduceCriticalChance);
+            attacker.CriticalChance += attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.InflictingIncreased, false)[0];
+            attacker.CriticalChance -= attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.InflictingReduced, false)[0];
             attacker.CriticalRate += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritDamages);
+            attacker.CriticalRate += attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.DamageIncreased, false)[0];
+            attacker.CriticalRate -= target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[0];
 
             if (target.CellonOptions != null)
             {
@@ -1260,15 +1254,21 @@ namespace OpenNos.GameObject.Helpers
             }
 
 
-            if ((ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical) || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
+            if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
             {
                 double multiplier = attacker.CriticalRate / 100D;
+                int reducer = 1 - target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[0] / 100;
+                double reducerChance = target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[1];
                 if (multiplier > 3)
                 {
                     multiplier = 3;
                 }
 
                 normalDamage += (int)(normalDamage * multiplier);
+                if (ServerManager.Instance.RandomNumber() < reducerChance)
+                {
+                    normalDamage *= reducer;
+                }
                 hitmode = 3;
             }
 
@@ -1422,9 +1422,10 @@ namespace OpenNos.GameObject.Helpers
                               * boostCategory1) * shellBoostCategory1);
 
 
-            if (attacker is Character && targetEntity is Character)
+            if (attacker.Entity is Character && targetEntity is Character)
             {
                 totalDamage /= 2;
+                totalDamage *= 1 + attacker.GetBuff(BCardType.CardType.LeonaPassiveSkill, (byte)AdditionalTypes.LeonaPassiveSkill.AttackIncreasedInPVP, false)[0] / 100;
             }
 
             if (target.EntityType == EntityType.Monster || target.EntityType == EntityType.NPC)
@@ -1477,26 +1478,23 @@ namespace OpenNos.GameObject.Helpers
             {
                 return 0;
             }
-            else if (level < 55)
+            if (level < 55)
             {
                 return level;
             }
-            else if (level < 60)
+            if (level < 60)
             {
                 return level * 2;
             }
-            else if (level < 65)
+            if (level < 65)
             {
                 return level * 3;
             }
-            else if (level < 70)
+            if (level < 70)
             {
                 return level * 4;
             }
-            else
-            {
-                return level * 5;
-            }
+            return level * 5;
         }
 
         #endregion

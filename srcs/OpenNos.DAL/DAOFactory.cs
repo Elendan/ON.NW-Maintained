@@ -12,7 +12,6 @@
  * GNU General Public License for more details.
  */
 
-using System.Net;
 using OpenNos.DAL.Interface;
 using OpenNos.DAL.EF;
 

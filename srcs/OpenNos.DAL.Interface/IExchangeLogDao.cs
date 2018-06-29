@@ -12,7 +12,6 @@
  * GNU General Public License for more details.
  */
 
-using NosSharp.Enums;
 using OpenNos.Data;
 using OpenNos.Data.Enums;
 

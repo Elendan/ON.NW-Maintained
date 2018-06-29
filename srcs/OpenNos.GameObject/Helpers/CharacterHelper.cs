@@ -15,7 +15,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using NosSharp.Enums;
-using OpenNos.Core;
 using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Helpers
