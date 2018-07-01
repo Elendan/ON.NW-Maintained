@@ -960,15 +960,15 @@ namespace OpenNos.Handler
                 Session.Character.MeditationDictionary.Clear();
             }
 
-            sitpacket?.Users.ForEach(u =>
+            sitpacket?.Users?.ForEach(u =>
             {
-                if (u.UserType == 1)
+                if (u.UserType == UserType.Player)
                 {
                     Session.Character.Rest();
                 }
                 else
                 {
-                    Session.CurrentMapInstance.Broadcast(Session.Character.Mates.FirstOrDefault(s => s.MateTransportId == (int)u.UserId)?.GenerateRest());
+                    Session.CurrentMapInstance.Broadcast(Session.Character.Mates.FirstOrDefault(s => s.MateTransportId == (int)u.UserId && u.UserType != UserType.Player)?.GenerateRest());
                 }
             });
         }
