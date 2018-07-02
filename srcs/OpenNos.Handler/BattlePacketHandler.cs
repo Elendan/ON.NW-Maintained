@@ -22,6 +22,7 @@ using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Buff;
@@ -148,6 +149,16 @@ namespace OpenNos.Handler
                         if (Session.Character.Hp > 0)
                         {
                             TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                            Session.Character.FocusedMonster = new UseSkillPacket
+                            {
+                                CastId = useSkillPacket.CastId,
+                                MapMonsterId = useSkillPacket.MapMonsterId,
+                                MapX = useSkillPacket.MapX,
+                                MapY = useSkillPacket.MapY,
+                                OriginalContent = useSkillPacket.OriginalContent,
+                                OriginalHeader = useSkillPacket.OriginalHeader,
+                                UserType = useSkillPacket.UserType
+                            };
                             int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
                             int random = ServerManager.Instance.RandomNumber();
                             CharacterSkill ski =
@@ -173,10 +184,30 @@ namespace OpenNos.Handler
                             if (useSkillPacket.MapMonsterId != Session.Character.CharacterId)
                             {
                                 TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId, true);
+                                Session.Character.FocusedMonster = new UseSkillPacket
+                                {
+                                    CastId = useSkillPacket.CastId,
+                                    MapMonsterId = useSkillPacket.MapMonsterId,
+                                    MapX = useSkillPacket.MapX,
+                                    MapY = useSkillPacket.MapY,
+                                    OriginalContent = useSkillPacket.OriginalContent,
+                                    OriginalHeader = useSkillPacket.OriginalHeader,
+                                    UserType = useSkillPacket.UserType
+                                };
                             }
                             else
                             {
                                 TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                                Session.Character.FocusedMonster = new UseSkillPacket
+                                {
+                                    CastId = useSkillPacket.CastId,
+                                    MapMonsterId = useSkillPacket.MapMonsterId,
+                                    MapX = useSkillPacket.MapX,
+                                    MapY = useSkillPacket.MapY,
+                                    OriginalContent = useSkillPacket.OriginalContent,
+                                    OriginalHeader = useSkillPacket.OriginalHeader,
+                                    UserType = useSkillPacket.UserType
+                                };
                             }
                             CharacterSkill ski =
                                 (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
@@ -210,6 +241,25 @@ namespace OpenNos.Handler
             {
                 Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = 0 });
             }
+        }
+
+        /// <summary>
+        ///     ob_a packet
+        /// </summary>
+        /// <param name="obaPacket"></param>
+        public void UseObSkill(ObaPacket obaPacket)
+        {
+            Session.SendPacket("ob_ar");
+            if (Session.Character.FocusedMonster == null)
+            {
+                return;
+            }
+
+            MapMonster mon = Session.Character.MapInstance.GetMonster(Session.Character.FocusedMonster.MapMonsterId);
+            SkillDTO sk = DaoFactory.SkillDao.LoadById(1248);
+            bool isPvp = Session.Character.MapInstance.MapInstanceType != MapInstanceType.BaseMapInstance;
+            Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleTargetHit, (Skill)sk, isPvp: isPvp);
+            Session.Character.MapInstance.Broadcast(Session.Character.GenerateEff(4295));
         }
 
         /// <summary>
@@ -258,7 +308,7 @@ namespace OpenNos.Handler
             }
         }
 
-        private void TargetHit(int castingId, int targetId, bool isPvp = false)
+        private void TargetHit(int castingId, int targetId, bool isPvp = false, short vnum = 0)
         {
             bool noComboReset = true;
             if ((DateTime.Now - Session.Character.LastTransform).TotalSeconds < 3)
@@ -269,15 +319,16 @@ namespace OpenNos.Handler
             }
 
             IEnumerable<CharacterSkill> skills = Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList();
+            CharacterSkill ski;
             if (skills != null)
             {
-                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
+                ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
                 if (castingId != 0)
                 {
                     Session.SendPacket("ms_c 0");
                 }
 
-                if (ski != null && (!Session.Character.WeaponLoaded(ski) || !ski.CanBeUsed()))
+                if (ski != null && (!Session.Character.WeaponLoaded(ski)))
                 {
                     Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
                     return;

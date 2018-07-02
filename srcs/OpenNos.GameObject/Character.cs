@@ -104,6 +104,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public UseSkillPacket FocusedMonster { get; set; }
+
         public IDisposable WeddingEffect { get; set; }
 
         public bool IsWaitingForWedding { get; set; }
