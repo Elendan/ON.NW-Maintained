@@ -579,6 +579,15 @@ namespace OpenNos.GameObject.Battle
             bool onyxWings = false;
             int damage = DamageHelper.Instance.GenerateDamage(this, target, skill, ref hitmode, ref onyxWings);
 
+            if (skill != null && SkillHelper.Instance.NoDamageSkills != null)
+            {
+                if (SkillHelper.Instance.NoDamageSkills.Any(s => s == skill.SkillVNum))
+                {
+                    target.DealtDamage = 0;
+                    damage = 0;
+                }
+            }
+
             if (Session is Character charact && mapInstance != null && hitmode != 1)
             {
                 if (onyxWings)

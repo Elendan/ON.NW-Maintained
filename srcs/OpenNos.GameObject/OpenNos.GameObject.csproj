@@ -185,6 +185,7 @@
     <Compile Include="Helpers\QuestHelper.cs" />
     <Compile Include="Helpers\RewardsHelper.cs" />
     <Compile Include="Helpers\ShellGeneratorHelper.cs" />
+    <Compile Include="Helpers\SkillHelper.cs" />
     <Compile Include="Helpers\StaticPacketHelper.cs" />
     <Compile Include="Helpers\VipHelper.cs" />
     <Compile Include="Logs\Classes\CharacterLog.cs" />
