@@ -1648,6 +1648,17 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.JumpBackPush:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.JumpBackPush.JumpBackChance:
+                            switch (session)
+                            {
+                                case MapMonster targetMob when caster is Character pushedbackChar:
+                                    pushedbackChar.PushBackToDirection(SecondData / 2);
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.FairyXPIncrease:

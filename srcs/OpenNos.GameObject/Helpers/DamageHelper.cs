@@ -1262,6 +1262,11 @@ namespace OpenNos.GameObject.Helpers
                 attacker.CriticalChance = target.GetBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.ReceivingChancePercent, false)[0];
             }
 
+            if (target.HasBuff(BCardType.CardType.SniperAttack, (byte)AdditionalTypes.SniperAttack.ReceiveCriticalFromSniper) && skill.SkillVNum == 1124) // Hardcoded, but this has to be this way
+            {
+                attacker.CriticalChance = target.GetBuff(BCardType.CardType.SniperAttack, (byte)AdditionalTypes.SniperAttack.ReceiveCriticalFromSniper, false)[0];
+            }
+
             if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
             {
                 double multiplier = attacker.CriticalRate / 100D;
