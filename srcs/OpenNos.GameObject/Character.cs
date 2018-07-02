@@ -573,9 +573,62 @@ namespace OpenNos.GameObject
 
 		public bool IsWaitingForGift { get;  set; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
+
+        public void PushBackToDirection(int range)
+        {
+            short x = PositionX, y = PositionY;
+            var type = MoveType.Up;
+            switch (Direction)
+            {
+                case 0:
+                    y += (short)range;
+                    type = MoveType.Down;
+                    break;
+                case 1:
+                    x -= (short)range;
+                    type = MoveType.Left;
+                    break;
+                case 2:
+                    y -= (short)range;
+                    type = MoveType.Up;
+                    break;
+                case 3:
+                    x += (short)range;
+                    type = MoveType.Right;
+                    break;
+                case 4:
+                    x += (short)range;
+                    y += (short)range;
+                    type = MoveType.DiagDownRight;
+                    break;
+                case 5:
+                    x -= (short)range;
+                    y += (short)range;
+                    type = MoveType.DiagDownLeft;
+                    break;
+                case 6:
+                    x -= (short)range;
+                    y -= (short)range;
+                    type = MoveType.DiagUpLeft;
+                    break;
+                case 7:
+                    x += (short)range;
+                    y -= (short)range;
+                    type = MoveType.DiagUpRight;
+                    break;
+            }
+
+            MapCell cell = MapInstance.Map.GetLastGoodPosition(x, y, type, Session);
+
+            x = cell.X;
+            y = cell.Y;
+            MapInstance?.Broadcast($"guri 3 1 {CharacterId} {x} {y} 3 8 2 - 1");
+            PositionX = x;
+            PositionY = y;
+        }
 
         public string GenerateSmemo(string message, byte type) => $"s_memo {type} {message}";
 
