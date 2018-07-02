@@ -385,6 +385,7 @@ namespace OpenNos.GameObject.Helpers
             {
                 return 0;
             }
+
             int[] GetAttackerBenefitingBuffs(BCardType.CardType type, byte subtype)
             {
                 int value1 = 0;
@@ -1142,9 +1143,6 @@ namespace OpenNos.GameObject.Helpers
                 case 10:
                     weaponDamage += weaponDamage * 2;
                     break;
-                default:
-                    Logger.Log.Error("Dmg Error");
-                    break;
             }
 
             #endregion
@@ -1259,6 +1257,10 @@ namespace OpenNos.GameObject.Helpers
                     .Sum(s => s.Value);
             }
 
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.ReceivingChancePercent))
+            {
+                attacker.CriticalChance = target.GetBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.ReceivingChancePercent, false)[0];
+            }
 
             if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
             {
@@ -1484,6 +1486,15 @@ namespace OpenNos.GameObject.Helpers
                 targetEntity.DealtDamage = 0;
                 return 0;
             }
+
+            if (target.HasBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased))
+            {
+                if (ServerManager.Instance.RandomNumber() < target.GetBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased)[0])
+                {
+                    totalDamage -= totalDamage * (target.GetBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased)[1] / 100);
+                }
+            }
+
             attacker.SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
             return totalDamage;

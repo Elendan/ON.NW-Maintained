@@ -1016,6 +1016,16 @@ namespace OpenNos.GameObject.Buff
                                 break;
                         }
                     }
+
+                    if (caster is Character teleportedUser)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.SpecialEffects2.TeleportInRadius:
+                                teleportedUser.TeleportInRadius(FirstData);
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.CalculatingLevel:
