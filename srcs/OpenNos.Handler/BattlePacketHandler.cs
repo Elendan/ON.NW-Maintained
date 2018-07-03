@@ -249,6 +249,26 @@ namespace OpenNos.Handler
         /// <param name="obaPacket"></param>
         public void UseObSkill(ObaPacket obaPacket)
         {
+            PenaltyLogDTO penalty = Session.Account.PenaltyLogs.OrderByDescending(s => s.DateEnd).FirstOrDefault();
+            if (Session.Character.IsMuted() && penalty != null)
+            {
+                if (Session.Character.Gender == GenderType.Female)
+                {
+                    Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_FEMALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 12));
+                }
+                else
+                {
+                    Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_MALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 12));
+                }
+
+                return;
+            }
             Session.SendPacket("ob_ar");
             if (Session.Character.FocusedMonster == null)
             {
@@ -1043,10 +1063,20 @@ namespace OpenNos.Handler
                             $"{characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
 
                         IEnumerable<MapMonster> monstersInRange = Session.CurrentMapInstance?.GetListMonsterInRange(x, y, characterSkill.Skill.TargetRange).ToList();
+                        MapMonster target = monstersInRange?.FirstOrDefault();
+
+                        if (target != null && characterSkill.Skill.SkillVNum == 1120) // I dont give a shit
+                        {
+                            target.MapInstance?.Broadcast($"su 3 {target.MapMonsterId} 1 1 1251 10 0 4262 131 147 1 95 0 0 3");
+                        }
                         if (monstersInRange != null)
                         {
                             foreach (MapMonster mon in monstersInRange.Where(s => s.CurrentHp > 0))
                             {
+                                if (characterSkill.Skill.SkillVNum == 1120)
+                                {
+                                    mon?.AddBuff(new Buff(558));
+                                }
                                 if (mon?.CurrentHp > 0)
                                 {
                                     foreach (BCard bcard in characterSkill.Skill.BCards)
@@ -1081,10 +1111,23 @@ namespace OpenNos.Handler
                             Session.Character.TeleportOnMap(x, y);
                         }
 
-                        foreach (ClientSession character in ServerManager.Instance.Sessions.Where(s =>
+                        IEnumerable<ClientSession> inRangeSessions = ServerManager.Instance.Sessions.Where(s =>
                             s.CurrentMapInstance == Session.CurrentMapInstance && s.Character.CharacterId != Session.Character.CharacterId &&
-                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange)))
+                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange));
+
+                        ClientSession targetSess = inRangeSessions?.FirstOrDefault();
+
+                        if (targetSess != null && characterSkill.Skill.SkillVNum == 1120)
                         {
+                            targetSess.Character.MapInstance?.Broadcast($"su 1 {targetSess.Character.CharacterId} 1 1 1251 10 0 4262 131 147 1 95 0 0 3");
+                        }
+                        
+                        foreach (ClientSession character in inRangeSessions)
+                        {
+                            if (characterSkill.Skill.SkillVNum == 1120)
+                            {
+                                character?.Character.AddBuff(new Buff(558));
+                            }
                             if (Session.CurrentMapInstance == null || !Session.CurrentMapInstance.IsPvp)
                             {
                                 continue;
