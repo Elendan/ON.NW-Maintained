@@ -1240,11 +1240,20 @@ namespace OpenNos.GameObject.Buff
                                 switch (session)
                                 {
                                     case MapMonster monster when caster is Character pusher:
+                                        if (!monster.MapInstance.Map.GetDefinedPosition(pusher.PositionX + FirstData, pusher.PositionY))
+                                        {
+                                            break;
+                                        }
                                         pusher.MapInstance?.Broadcast($"guri 3 3 {monster.MapMonsterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
                                         monster.MapX = pusher.PositionX += (short)FirstData;
                                         monster.MapY = pusher.PositionY;
                                         break;
                                     case Character target when caster is Character pusher:
+                                        if (!target.MapInstance.Map.GetDefinedPosition(pusher.PositionX + FirstData, pusher.PositionY))
+                                        {
+                                            break;
+                                        }
+
                                         pusher.MapInstance?.Broadcast($"guri 3 1 {target.CharacterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
                                         target.PositionX = pusher.PositionX += (short)FirstData;
                                         target.PositionY = pusher.PositionY;
