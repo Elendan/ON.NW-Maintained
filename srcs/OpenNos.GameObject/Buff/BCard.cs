@@ -15,6 +15,7 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -1602,14 +1603,70 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.FalconSkill:
-                    if (character == null)
-                    {
-                        break;
-                    }
-
                     switch (SubType)
                     {
+                        case (byte)AdditionalTypes.FalconSkill.CausingChanceLocation:
+                            if (session is Character trapper)
+                            {
+                                var trap = new MapMonster
+                                {
+                                    MonsterVNum = 1436,
+                                    MapX = trapper.PositionX,
+                                    MapY = trapper.PositionY,
+                                    MapMonsterId = trapper.MapInstance.GetNextId(),
+                                    IsHostile = false,
+                                    IsMoving = false,
+                                    ShouldRespawn = false
+                                };
+
+                                trapper.MapInstance?.AddMonster(trap);
+                                trap.Initialize();
+                                trapper.MapInstance?.Broadcast(trap.GenerateIn());
+
+                                IDisposable dispo = null;
+
+                                Thread.Sleep(1000);
+
+                                dispo = Observable.Interval(TimeSpan.FromMilliseconds(250)).Subscribe(s =>
+                                {
+                                    if (trapper.MapInstance.IsPvp)
+                                    {
+                                        foreach (Character trapped in trapper.MapInstance.GetCharactersInRange(trap.MapX, trap.MapY, 2).Where(p => p.CharacterId != trapper.CharacterId))
+                                        {
+                                            trapper.MapInstance.Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, trap.MapMonsterId, 3, trap.MapMonsterId, 1250, 600, 11, 4270, trap.MapX, trap.MapY, true, 0, 0, -2, 0));
+                                            trapped.AddBuff(new Buff(572, 1));
+                                            trapped.AddBuff(new Buff(557, 1));
+                                            trapper.MapInstance.RemoveMonster(trap);
+                                            trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                            dispo?.Dispose();
+                                        }
+                                    }
+                                    foreach (MapMonster trappedMonster in trapper.MapInstance.GetListMonsterInRange(trap.MapX, trap.MapY, 2).Where(m => m.MapMonsterId != trap.MapMonsterId))
+                                    {
+                                        trapper.MapInstance.Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, trap.MapMonsterId, 3, trap.MapMonsterId, 1250, 600, 11, 4270, trap.MapX, trap.MapY, true, 0, 0, -2, 0));
+                                        trappedMonster.AddBuff(new Buff(572, 1));
+                                        trappedMonster.AddBuff(new Buff(557, 1));
+                                        trapper.MapInstance.RemoveMonster(trap);
+                                        trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                        dispo?.Dispose();
+                                    }
+
+                                });
+
+                                Observable.Timer(TimeSpan.FromSeconds(60)).Subscribe(s =>
+                                {
+                                    trapper.MapInstance.RemoveMonster(trap);
+                                    trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                    dispo?.Dispose();
+                                });
+                            }
+                            break;
                         case (byte)AdditionalTypes.FalconSkill.Hide:
+                            if (character == null)
+                            {
+                                break;
+                            }
+
                             character.Invisible = true;
                             character.Mates.Where(s => s.IsTeamMember).ToList().ForEach(s =>
                                 character.Session.CurrentMapInstance?.Broadcast(s.GenerateOut()));

@@ -590,10 +590,13 @@ namespace OpenNos.GameObject.Map
             LastMove = DateTime.Now.AddMilliseconds(500);
             BattleEntity.Buffs.Clear();
             Target = null;
-            MapInstance.InstanceBag.Combo += IsBonus ? 1 : 0;
-            MapInstance.InstanceBag.Point +=
-                EventHelper.Instance.CalculateComboPoint(MapInstance.InstanceBag.Combo + (IsBonus ? 1 : 0));
-            MapInstance.InstanceBag.MonstersKilled++;
+            if (MapInstance?.InstanceBag != null)
+            {
+                MapInstance.InstanceBag.Combo += IsBonus ? 1 : 0;
+                MapInstance.InstanceBag.Point +=
+                    EventHelper.Instance.CalculateComboPoint(MapInstance.InstanceBag.Combo + (IsBonus ? 1 : 0));
+                MapInstance.InstanceBag.MonstersKilled++;
+            }
             BattleEntity.OnDeathEvents.ToList().ForEach(e => { EventHelper.Instance.RunEvent(e, monster: this); });
             killer?.GenerateRewards(this);
         }
