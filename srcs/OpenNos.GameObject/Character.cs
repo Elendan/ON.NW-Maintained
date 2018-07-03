@@ -621,10 +621,16 @@ namespace OpenNos.GameObject
                     break;
             }
 
-            MapCell cell = MapInstance.Map.GetLastGoodPosition(x, y, type, Session);
+            //MapCell cell = MapInstance.Map.GetLastGoodPosition(x, y, type, Session);
 
-            x = cell.X;
-            y = cell.Y;
+            //x = cell.X;
+            //y = cell.Y;
+
+            if (!MapInstance.Map.GetDefinedPosition(x, y))
+            {
+                return;
+            }
+
             MapInstance?.Broadcast($"guri 3 1 {CharacterId} {x} {y} 3 8 2 - 1");
             PositionX = x;
             PositionY = y;
