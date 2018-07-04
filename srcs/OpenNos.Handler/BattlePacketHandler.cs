@@ -343,9 +343,17 @@ namespace OpenNos.Handler
             if (skills != null)
             {
                 ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
-                if (castingId != 0)
+
+                if (ski != null)
                 {
-                    Session.SendPacket("ms_c 0");
+                    if (castingId != 0)
+                    {
+                        Session.SendPacket("ms_c 0");
+                        if (SkillHelper.Instance.AvengingAngelBuffs.Contains(ski.Skill.SkillVNum))
+                        {
+                            Session.SendPacket("mslot 0 -1");
+                        }
+                    }
                 }
 
                 if (ski != null && (!Session.Character.WeaponLoaded(ski)))

@@ -1481,6 +1481,14 @@ namespace OpenNos.GameObject.Helpers
 
             #endregion
 
+            if (target.Buffs.Any(s => s.Card.CardId == 608) && target.Entity is Character chara) // This has no bcard, thx entwell, xoxo
+            {
+                chara.Session.SendPacket($"mslot {(attacker.Element == 0 ? 15 : 10 + attacker.Element)} 0");
+                chara.RemoveBuff(608);
+                chara.SkillComboCount++;
+                chara.LastSkillCombo = DateTime.Now;
+            }
+
             totalDamage += attacker.ChargeValue;
             attacker.ChargeValue = 0;
 
