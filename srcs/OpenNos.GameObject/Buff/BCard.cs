@@ -911,7 +911,7 @@ namespace OpenNos.GameObject.Buff
 							}
 							break;
 						case (byte)AdditionalTypes.SpecialisationBuffResistance.RemoveGoodEffects:
-							List<BuffType> buffsToDisable2 = new List<BuffType> { BuffType.Bad };
+							List<BuffType> buffsToDisable2 = new List<BuffType> { BuffType.Good };
 							switch (session)
 							{
 								case Character isCharacter:
