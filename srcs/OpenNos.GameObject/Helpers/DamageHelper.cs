@@ -1510,12 +1510,29 @@ namespace OpenNos.GameObject.Helpers
 
             if (target.HasBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP))
             {
-                double reducer = (double)target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 100;
-                totalDamage -= (ushort)(totalDamage * reducer);
-                if (target.Entity is Character manaReducer)
+                // Need to hardcode this because entwell & opennos fucking sucks
+                double reducer = 0;
+                if (target.Buffs.All(s => s.Card.CardId != 618))
                 {
-                    manaReducer.Mp -= (ushort)(totalDamage * reducer);
-                    manaReducer.Session.SendPacket(manaReducer.GenerateStat());
+                    reducer = (double)target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 100;
+                    totalDamage -= (ushort)(totalDamage * reducer);
+                    if (target.Entity is Character manaReducer)
+                    {
+                        manaReducer.Mp -= (ushort)(totalDamage * reducer);
+                        manaReducer.Session.SendPacket(manaReducer.GenerateStat());
+                    }
+                }
+                else
+                {
+                    Card archimageRegen = ServerManager.Instance.GetCardByCardId(618);
+
+                    if (archimageRegen != null && target.Entity is Character archimageCharacter)
+                    {
+                        reducer = (double)((double)archimageCharacter.Level / target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 10);
+                        totalDamage = (ushort)(reducer * totalDamage);
+                        archimageCharacter.Mp -= (ushort)(totalDamage * reducer);
+                        archimageCharacter.Session.SendPacket(archimageCharacter.GenerateStat());
+                    }
                 }
             }
 
