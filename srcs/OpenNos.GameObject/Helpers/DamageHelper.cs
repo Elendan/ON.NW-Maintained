@@ -1508,6 +1508,17 @@ namespace OpenNos.GameObject.Helpers
                 }
             }
 
+            if (target.HasBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP))
+            {
+                double reducer = (double)target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 100;
+                totalDamage -= (ushort)(totalDamage * reducer);
+                if (target.Entity is Character manaReducer)
+                {
+                    manaReducer.Mp -= (ushort)(totalDamage * reducer);
+                    manaReducer.Session.SendPacket(manaReducer.GenerateStat());
+                }
+            }
+
             attacker.SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
             return totalDamage;

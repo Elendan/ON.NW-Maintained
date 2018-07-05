@@ -25,8 +25,7 @@ namespace OpenNos.GameObject.Helpers
         public List<short> AvengingAngelBuffs { get; set; }
 
         #endregion  
-
-
+        
         #region Singleton
 
         private static SkillHelper _instance;
