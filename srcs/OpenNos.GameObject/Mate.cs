@@ -110,9 +110,11 @@ namespace OpenNos.GameObject
             set => BattleEntity.MinDamage = value;
         }
 
-        #endregion
+		#endregion
 
-        public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
+		public void DisableBuffs(List<BuffType> types, int level = 100) => BattleEntity.DisableBuffs(types, level);
+
+		public ConcurrentDictionary<short, int?> ReflectiveBuffs { get; set; }
 
         public ItemInstance ArmorInstance { get; set; }
 

@@ -886,7 +886,54 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialisationBuffResistance:
-                    break;
+					switch (SubType)
+					{
+						case (byte)AdditionalTypes.SpecialisationBuffResistance.RemoveBadEffects:
+							List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
+							switch (session)
+							{
+								case Character isCharacter:
+									{
+										if (FirstData > ServerManager.Instance.RandomNumber())
+										{
+											isCharacter.DisableBuffs(buffsToDisable, FirstData);
+										}
+									}
+									break;
+								case Mate IsMate:
+									{
+										if (FirstData > ServerManager.Instance.RandomNumber())
+										{
+											IsMate.DisableBuffs(buffsToDisable, FirstData);
+										}
+									}
+									break;
+							}
+							break;
+						case (byte)AdditionalTypes.SpecialisationBuffResistance.RemoveGoodEffects:
+							List<BuffType> buffsToDisable2 = new List<BuffType> { BuffType.Bad };
+							switch (session)
+							{
+								case Character isCharacter:
+									{
+										if (FirstData > ServerManager.Instance.RandomNumber())
+										{
+											isCharacter.DisableBuffs(buffsToDisable2, FirstData);
+										}
+									}
+									break;
+								case Mate IsMate:
+									{
+										if (FirstData > ServerManager.Instance.RandomNumber())
+										{
+											IsMate.DisableBuffs(buffsToDisable2, FirstData);
+										}
+									}
+									break;
+							}
+							break;
+					}
+					break;
 
                 case BCardType.CardType.SpecialEffects:
                     Card speedCard = ServerManager.Instance.GetCardByCardId(CardId);
@@ -1273,6 +1320,25 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.LightAndShadow:
+					switch (SubType)
+					{
+						case (byte)AdditionalTypes.LightAndShadow.RemoveBadEffects:
+							List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
+							switch (session)
+							{
+								case Character isCharacter:
+									{										
+										isCharacter.DisableBuffs(buffsToDisable, FirstData);
+									}
+									break;
+								case Mate IsMate:
+									{
+										IsMate.DisableBuffs(buffsToDisable, FirstData);
+									}
+									break;
+							}
+							break;
+					}
                     break;
 
                 case BCardType.CardType.Item:

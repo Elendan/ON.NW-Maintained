@@ -5793,7 +5793,7 @@ namespace OpenNos.GameObject
         {
             Session.Character.PositionX = x;
             Session.Character.PositionY = y;
-            Session.SendPacket($"tp {1} {CharacterId} {x} {y} 0");
+			Session.CurrentMapInstance.Broadcast($"tp {1} {CharacterId} {x} {y} 0");
             Session.SendPacket(GenerateCond());
         }
 
