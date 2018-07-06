@@ -1460,46 +1460,107 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.Drain:
-                    if (session is Character drain)
+                    IDisposable drainObservable = null;
+                    Card drainCard = ServerManager.Instance.GetCardByCardId(CardId);
+                    int drain = 0;
+                    switch (SubType)
                     {
-                        switch (SubType)
-                        {
-                            case (byte)AdditionalTypes.Drain.TransferEnemyHP:
-                                int heal = FirstData;
-                                bool change = false;
-                                if (IsLevelScaled)
-                                {
-                                    if (IsLevelDivided)
+                        case (byte)AdditionalTypes.Drain.TransferEnemyHP:
+                            switch (session)
+                            {
+                                case MapMonster targetMonster when caster is Character casterChar:
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= drain.Level;
-                                    }
-                                    else
-                                    {
-                                        heal *= drain.Level;
-                                    }
-                                }
-                                if (drain.Hp + heal < drain.HpLoad())
-                                {
-                                    drain.Hp += heal;
-                                    drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc(heal));
-                                    change = true;
-                                }
-                                else
-                                {
-                                    if (drain.Hp != (int)drain.HpLoad())
-                                    {
-                                        drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc((int)(drain.HpLoad() - drain.Hp)));
-                                        change = true;
-                                    }
-                                    drain.Hp = (int)drain.HpLoad();
-                                }
-                                if (change)
-                                {
-                                    drain.Session?.SendPacket(drain.GenerateStat());
-                                }
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
 
-                                break;
-                        }
+                                        drain = casterChar.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetMonster.CurrentHp > 0)
+                                            {
+                                                targetMonster.CurrentHp = targetMonster.CurrentHp - drain < 0 ? 1 : targetMonster.CurrentHp - drain;
+                                                casterChar.Hp = (int)(casterChar.Hp + drain > casterChar.HpLoad() ? casterChar.HpLoad() : casterChar.Hp + drain);
+                                                casterChar.MapInstance?.Broadcast(casterChar.GenerateRc(drain));
+                                                casterChar.MapInstance?.Broadcast(targetMonster.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+                                case Character targetCharacter when caster is Character casterChar:
+                                    if (IsLevelScaled)
+                                    {
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
+
+                                        drain = casterChar.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetCharacter.Hp > 0)
+                                            {
+                                                targetCharacter.Hp = targetCharacter.Hp - drain < 0 ? 1 : targetCharacter.Hp - drain;
+                                                casterChar.Hp = (int)(casterChar.Hp + drain > casterChar.HpLoad() ? casterChar.HpLoad() : casterChar.Hp + drain);
+                                                casterChar.MapInstance?.Broadcast(casterChar.GenerateRc(drain));
+                                                casterChar.MapInstance?.Broadcast(targetCharacter.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+
+                                case Character targetCharacter when caster is MapMonster casterMapMonster:
+                                    if (IsLevelScaled)
+                                    {
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
+
+                                        drain = casterMapMonster.Monster.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetCharacter.Hp > 0)
+                                            {
+                                                targetCharacter.Hp = targetCharacter.Hp - drain < 0 ? 1 : targetCharacter.Hp - drain;
+                                                casterMapMonster.CurrentHp = casterMapMonster.CurrentHp + drain > casterMapMonster.MaxHp ? casterMapMonster.MaxHp : casterMapMonster.CurrentHp + drain;
+                                                casterMapMonster.MapInstance?.Broadcast(casterMapMonster.GenerateRc(drain));
+                                                casterMapMonster.MapInstance?.Broadcast(targetCharacter.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+                            }
+                            break;
                     }
                     break;
 
