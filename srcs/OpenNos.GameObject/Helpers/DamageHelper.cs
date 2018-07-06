@@ -452,11 +452,7 @@ namespace OpenNos.GameObject.Helpers
 
             if (targetEntity is Character character)
             {
-				if (character.Buff.Any(s => s.Card.CardId == 548))
-				{
-					targetEntity.RemoveBuff(548);
-				}
-				targetEntity.BattleEntity.ShellOptionsMain = character.ShellOptionsMain;
+                targetEntity.BattleEntity.ShellOptionsMain = character.ShellOptionsMain;
                 targetEntity.BattleEntity.ShellOptionsSecondary = character.ShellOptionsSecondary;
                 targetEntity.BattleEntity.ShellOptionArmor = character.ShellOptionArmor;
                 if (character.HasGodMode)

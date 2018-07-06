@@ -894,19 +894,23 @@ namespace OpenNos.GameObject.Buff
 							{
 								case Character isCharacter:
 									{
-										if (FirstData > ServerManager.Instance.RandomNumber())
+										if (FirstData <= ServerManager.Instance.RandomNumber())
 										{
-											isCharacter.DisableBuffs(buffsToDisable, FirstData);
+										    break;
 										}
-									}
+
+									    isCharacter.DisableBuffs(buffsToDisable, FirstData);
+                                    }
 									break;
-								case Mate IsMate:
+								case Mate isMate:
 									{
-										if (FirstData > ServerManager.Instance.RandomNumber())
+										if (FirstData <= ServerManager.Instance.RandomNumber())
 										{
-											IsMate.DisableBuffs(buffsToDisable, FirstData);
-										}
-									}
+										    break;
+									    }
+
+									    isMate.BattleEntity.DisableBuffs(buffsToDisable, FirstData);
+                                    }
 									break;
 							}
 							break;
@@ -916,19 +920,22 @@ namespace OpenNos.GameObject.Buff
 							{
 								case Character isCharacter:
 									{
-										if (FirstData > ServerManager.Instance.RandomNumber())
-										{
-											isCharacter.DisableBuffs(buffsToDisable2, FirstData);
-										}
-									}
+									    if (FirstData <= ServerManager.Instance.RandomNumber())
+									    {
+									        break;
+									    }
+									    isCharacter.DisableBuffs(buffsToDisable2, FirstData);
+                                    }
 									break;
-								case Mate IsMate:
+								case Mate isMate:
 									{
-										if (FirstData > ServerManager.Instance.RandomNumber())
-										{
-											IsMate.DisableBuffs(buffsToDisable2, FirstData);
-										}
-									}
+									    if (FirstData <= ServerManager.Instance.RandomNumber())
+									    {
+									        break;
+									    }
+
+									    isMate.BattleEntity.DisableBuffs(buffsToDisable2, FirstData);
+                                    }
 									break;
 							}
 							break;
@@ -1320,25 +1327,21 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.LightAndShadow:
-					switch (SubType)
-					{
-						case (byte)AdditionalTypes.LightAndShadow.RemoveBadEffects:
-							List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
-							switch (session)
-							{
-								case Character isCharacter:
-									{										
-										isCharacter.DisableBuffs(buffsToDisable, FirstData);
-									}
-									break;
-								case Mate IsMate:
-									{
-										IsMate.DisableBuffs(buffsToDisable, FirstData);
-									}
-									break;
-							}
-							break;
-					}
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.LightAndShadow.RemoveBadEffects:
+                            List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
+                            switch (session)
+                            {
+                                case Character isCharacter:
+                                    isCharacter.DisableBuffs(buffsToDisable, FirstData);
+                                    break;
+                                case Mate isMate:
+                                    isMate.BattleEntity.DisableBuffs(buffsToDisable, FirstData);
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Item:

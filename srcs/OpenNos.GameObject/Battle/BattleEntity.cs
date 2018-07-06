@@ -590,6 +590,7 @@ namespace OpenNos.GameObject.Battle
 
             if (Session is Character charact && mapInstance != null && hitmode != 1)
             {
+                target.RemoveBuff(548);
                 if (onyxWings)
                 {
                     short onyxX = (short)(charact.PositionX + 2);

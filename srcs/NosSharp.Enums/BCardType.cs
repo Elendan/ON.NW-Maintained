@@ -988,7 +988,7 @@ namespace NosSharp.Enums
             ResistanceToEffectNegated = 32,
             IncreaseDamageInPVP = 41,
             DecreaseDamageInPVP = 42,
-			RemoveGoodEffects = 51,
+            RemoveGoodEffects = 51,
             RemoveBadEffects = 52
         }
 
