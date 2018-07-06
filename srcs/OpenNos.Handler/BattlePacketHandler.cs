@@ -1085,6 +1085,32 @@ namespace OpenNos.Handler
                                 {
                                     mon?.AddBuff(new Buff(558));
                                 }
+
+                                if (characterSkill.Skill.SkillVNum == 1108)
+                                {
+                                    int id = Session.CurrentMapInstance.GetNextId();
+                                    var m = new MapMonster
+                                    {
+                                        MapMonsterId = id,
+                                        MonsterVNum = 1439,
+                                        MapX = x,
+                                        MapY = y,
+                                        ShouldRespawn = false,
+                                        IsHostile = false,
+                                        IsMoving = false
+                                    };
+                                    mon.AddBuff(new Buff(550));
+                                    Session.CurrentMapInstance?.AddMonster(m);
+                                    m.Initialize();
+                                    Session.CurrentMapInstance?.Broadcast(m.GenerateIn());
+                                    Session.CurrentMapInstance?.Broadcast(mon.GenerateEff(212));
+                                    Session.CurrentMapInstance?.Broadcast(mon.GenerateEff(4644));
+                                    Session.CurrentMapInstance?.Broadcast($"guri 3 3 {mon.MapMonsterId} {x} {y} 3 4 2 -1");
+                                    mon.MapX = x;
+                                    mon.MapY = y;
+                                    Session.CurrentMapInstance?.RemoveMonster(m);
+                                    StaticPacketHelper.Out(UserType.Monster, id);
+                                }
                                 if (mon?.CurrentHp > 0)
                                 {
                                     foreach (BCard bcard in characterSkill.Skill.BCards)
@@ -1136,6 +1162,33 @@ namespace OpenNos.Handler
                             {
                                 character?.Character.AddBuff(new Buff(558));
                             }
+
+                            if (characterSkill.Skill.SkillVNum == 1108)
+                            {
+                                int id = Session.CurrentMapInstance.GetNextId();
+                                var m = new MapMonster
+                                {
+                                    MapMonsterId = id,
+                                    MonsterVNum = 1439,
+                                    MapX = x,
+                                    MapY = y,
+                                    ShouldRespawn = false,
+                                    IsHostile = false,
+                                    IsMoving = false
+                                };
+                                character.Character.AddBuff(new Buff(550));
+                                Session.CurrentMapInstance?.AddMonster(m);
+                                m.Initialize();
+                                Session.CurrentMapInstance?.Broadcast(m.GenerateIn());
+                                Session.CurrentMapInstance?.Broadcast(character.Character.GenerateEff(212));
+                                Session.CurrentMapInstance?.Broadcast(character.Character.GenerateEff(4644));
+                                Session.CurrentMapInstance?.Broadcast($"guri 3 3 {character.Character.CharacterId} {x} {y} 3 4 2 -1");
+                                character.Character.PositionX = x;
+                                character.Character.PositionY = y;
+                                Session.CurrentMapInstance?.RemoveMonster(m);
+                                StaticPacketHelper.Out(UserType.Monster, id);
+                            }
+
                             if (Session.CurrentMapInstance == null || !Session.CurrentMapInstance.IsPvp)
                             {
                                 continue;
