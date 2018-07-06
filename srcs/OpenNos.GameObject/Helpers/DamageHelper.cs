@@ -1496,6 +1496,18 @@ namespace OpenNos.GameObject.Helpers
 
             #endregion
 
+
+            #region EndBuffs
+
+            if (target.HasBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance) && attacker.Element == 4)
+            {
+                if (ServerManager.Instance.RandomNumber() < target.GetBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance, false)[0])
+                {
+                    double increase = totalDamage * (double)target.GetBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance, false)[1] / 100;
+                    totalDamage = (ushort)(totalDamage + increase);
+                }
+            }
+
             if (target.Buffs.Any(s => s.Card.CardId == 608) && target.Entity is Character chara) // This has no bcard, thx entwell, xoxo
             {
                 chara.Session.SendPacket($"mslot {(attacker.Element == 0 ? 15 : 10 + attacker.Element)} 0");
@@ -1556,6 +1568,8 @@ namespace OpenNos.GameObject.Helpers
                 totalDamage -= target.GetBuff(BCardType.CardType.VulcanoElementBuff, (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence, false)[0];
                 totalDamage = totalDamage <= 0 ? ServerManager.Instance.RandomNumber(3, 6) : totalDamage;
             }
+
+            #endregion
 
             attacker.SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
