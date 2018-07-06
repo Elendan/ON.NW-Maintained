@@ -683,6 +683,19 @@ namespace OpenNos.GameObject.Buff
                                             receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
+                                        case Character receiverCharacter:
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(receiverCharacter.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
+                                            break;
                                     }
                                 });
                                 Observable.Timer(TimeSpan.FromSeconds(card.Duration * 0.1)).Subscribe(s =>
