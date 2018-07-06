@@ -1207,7 +1207,20 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.NoDefeatAndNoDamage:
-                    break;
+					switch (SubType)
+					{
+						//case (byte)AdditionalTypes.NoDefeatAndNoDamage.TransferAttackPower: // = Charge
+						case (byte)AdditionalTypes.NoDefeatAndNoDamage.NeverReceiveDamage:
+							switch (session)
+							{
+								case Character receiverCharacter:
+									receiverCharacter.HasGodMode = true;
+									break;
+							}
+							break;
+
+					}
+					break;
 
                 case BCardType.CardType.SpecialActions:
                     switch (SubType)
@@ -1605,7 +1618,18 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.HideBarrelSkill:
-                    break;
+					switch (SubType)
+					{
+						case (byte)AdditionalTypes.HideBarrelSkill.NoHPConsumption:
+							switch (session)
+							{
+								case Character receiverCharacter:
+									receiverCharacter.HasGodMode = true;
+									break;
+							}
+							break;
+					}
+					break;
 
                 case BCardType.CardType.FocusEnemyAttentionSkill:
                     break;

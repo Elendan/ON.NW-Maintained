@@ -548,7 +548,17 @@ namespace OpenNos.GameObject.Battle
                 return;
             }
 
-            character.Invisible = false;
+			if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.HideBarrelSkill && s.SubType.Equals((byte)AdditionalTypes.HideBarrelSkill.NoHPConsumption)))
+			{
+				character.HasGodMode = false;
+			}
+
+			if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.NoDefeatAndNoDamage && s.SubType.Equals((byte)AdditionalTypes.NoDefeatAndNoDamage.NeverReceiveDamage)))
+			{
+				character.HasGodMode = false;
+			}
+
+			character.Invisible = false;
             character.Mates.Where(m => m.IsTeamMember).ToList()
                 .ForEach(m => character.MapInstance?.Broadcast(m.GenerateIn()));
             character.MapInstance?.Broadcast(character.GenerateInvisible());
