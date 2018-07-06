@@ -1577,28 +1577,28 @@ namespace OpenNos.Handler
             {
                 if (Session.Character.MapInstance?.MapInstanceType == MapInstanceType.BaseMapInstance || Session.Character.MapInstance?.MapInstanceType == MapInstanceType.LobbyMapInstance)
                 {
-                    if (Session.Character.HasBuff(BCardType.CardType.FearSkill, (byte)AdditionalTypes.FearSkill.MoveAgainstWill))
-                    {
-                        Session.Character.MapX = (short)-walkPacket.XCoordinate;
-                        Session.Character.MapY = (short)-walkPacket.YCoordinate;
-                    }
-                    else
-                    {
+                 //   if (Session.Character.HasBuff(BCardType.CardType.FearSkill, (byte)AdditionalTypes.FearSkill.MoveAgainstWill))
+                   // {
+                     //   Session.Character.MapX = (short)-walkPacket.XCoordinate;
+                      //  Session.Character.MapY = (short)-walkPacket.YCoordinate;
+                   // }
+                 //   else
+                   // {
                         Session.Character.MapX = walkPacket.XCoordinate;
                         Session.Character.MapY = walkPacket.YCoordinate;
-                    }
+                    //}
                 }
 
-                if (Session.Character.HasBuff(BCardType.CardType.FearSkill, (byte)AdditionalTypes.FearSkill.MoveAgainstWill))
-                {
-                    Session.Character.PositionX = (short)-walkPacket.XCoordinate;
-                    Session.Character.PositionY = (short)-walkPacket.YCoordinate;
-                }
-                else
-                {
+              //  if (Session.Character.HasBuff(BCardType.CardType.FearSkill, (byte)AdditionalTypes.FearSkill.MoveAgainstWill))
+               // {
+                //    Session.Character.PositionX = (short)-walkPacket.XCoordinate;
+                 //   Session.Character.PositionY = (short)-walkPacket.YCoordinate;
+               // }
+                //else
+                //{
                     Session.Character.PositionX = walkPacket.XCoordinate;
                     Session.Character.PositionY = walkPacket.YCoordinate;
-                }
+                //}
 
                 if (Session.Character.LastMonsterAggro.AddSeconds(5) > DateTime.Now)
                 {
