@@ -386,6 +386,11 @@ namespace OpenNos.GameObject.Helpers
                 return 0;
             }
 
+            if (attacker.Entity is Character teleported && skill.SkillVNum == 1085) // Pas de bcard
+            {
+                teleported.TeleportOnMap(target.PositionX, target.PositionY);
+            }
+
             int[] GetAttackerBenefitingBuffs(BCardType.CardType type, byte subtype)
             {
                 int value1 = 0;
@@ -1538,12 +1543,18 @@ namespace OpenNos.GameObject.Helpers
 
                     if (archimageRegen != null && target.Entity is Character archimageCharacter)
                     {
-                        reducer = (double)((double)archimageCharacter.Level / target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 10);
+                        reducer = ((double)archimageCharacter.Level / target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 10);
                         totalDamage = (ushort)(reducer * totalDamage);
                         archimageCharacter.Mp -= (ushort)(totalDamage * reducer);
                         archimageCharacter.Session.SendPacket(archimageCharacter.GenerateStat());
                     }
                 }
+            }
+
+            if (target.HasBuff(BCardType.CardType.VulcanoElementBuff, (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence) && hitmode == 3)
+            {
+                totalDamage -= target.GetBuff(BCardType.CardType.VulcanoElementBuff, (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence, false)[0];
+                totalDamage = totalDamage <= 0 ? ServerManager.Instance.RandomNumber(3, 6) : totalDamage;
             }
 
             attacker.SkillBcards.Clear();
