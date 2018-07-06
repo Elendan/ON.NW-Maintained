@@ -1267,7 +1267,17 @@ namespace OpenNos.GameObject.Helpers
                 attacker.CriticalChance = target.GetBuff(BCardType.CardType.SniperAttack, (byte)AdditionalTypes.SniperAttack.ReceiveCriticalFromSniper, false)[0];
             }
 
-            if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
+            {
+                attacker.CriticalChance = 100;
+            }
+
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.NeverReceives))
+            {
+                attacker.CriticalChance = 0;
+            }
+
+            if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical)
             {
                 double multiplier = attacker.CriticalRate / 100D;
                 int reducer = 1 - target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[0] / 100;
