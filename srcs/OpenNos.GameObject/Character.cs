@@ -2303,7 +2303,7 @@ namespace OpenNos.GameObject
 
                 #region Act4
 
-                if (monsterToAttack.MapInstance.MapInstanceType == MapInstanceType.Act4Instance)
+                if (monsterToAttack.MapInstance?.MapInstanceType == MapInstanceType.Act4Instance)
                 {
                     if (ServerManager.Instance.Act4AngelStat.Mode == 0 &&
                         ServerManager.Instance.Act4DemonStat.Mode == 0)
