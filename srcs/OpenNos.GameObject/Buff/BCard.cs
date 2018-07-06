@@ -1870,6 +1870,31 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DarkCloneSummon:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.DarkCloneSummon.ConvertDamageToHPChance:
+                            switch (session)
+                            {
+                                case Character thoughtCharacter:
+                                    Card thoughtCard = ServerManager.Instance.GetCardByCardId(CardId);
+
+                                    if (thoughtCard == null)
+                                    {
+                                        break;
+                                    }
+
+                                    thoughtCharacter.RetainedHp = thoughtCharacter.Hp;
+
+                                    Observable.Timer(TimeSpan.FromSeconds(SecondData)).Subscribe(s =>
+                                    {
+                                        int total = thoughtCharacter.RetainedHp - thoughtCharacter.AccumulatedDamage;
+                                        thoughtCharacter.Hp = total <= 0 ? 1 : total;
+                                        thoughtCharacter.AccumulatedDamage = 0;
+                                    });
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.AbsorbedSpirit:

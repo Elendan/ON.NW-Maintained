@@ -1569,6 +1569,17 @@ namespace OpenNos.GameObject.Helpers
                 totalDamage = totalDamage <= 0 ? ServerManager.Instance.RandomNumber(3, 6) : totalDamage;
             }
 
+            if (target.HasBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.ConvertDamageToHPChance) && target.Entity is Character thoughtCharacter)
+            {
+                thoughtCharacter.AccumulatedDamage += totalDamage;
+                thoughtCharacter.Hp = (int)(thoughtCharacter.Hp + totalDamage > thoughtCharacter.HpLoad() ? thoughtCharacter.HpLoad() : thoughtCharacter.Hp + totalDamage);
+                thoughtCharacter.MapInstance?.Broadcast(thoughtCharacter.GenerateRc(totalDamage));
+                thoughtCharacter.Session.SendPacket(thoughtCharacter.GenerateStat());
+                attacker.SkillBcards.Clear();
+                targetEntity.DealtDamage = 0;
+                return 0;
+            }
+
             #endregion
 
             attacker.SkillBcards.Clear();
