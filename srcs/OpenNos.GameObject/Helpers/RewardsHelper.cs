@@ -67,7 +67,17 @@ namespace OpenNos.GameObject.Helpers
                 return;
             }
 
-            DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).ToList().ForEach(s => session.Character.GiftAdd(s.Vnum, (ushort)s.Amount));
+            DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
         }
 
         public void GetJobRewards(ClientSession session)
@@ -77,7 +87,17 @@ namespace OpenNos.GameObject.Helpers
                 return;
             }
 
-            DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).ToList().ForEach(s => session.Character.GiftAdd(s.Vnum, (ushort)s.Amount));
+            DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
         }
 
         public void GetHeroLvlRewards(ClientSession session)
@@ -87,7 +107,17 @@ namespace OpenNos.GameObject.Helpers
                 return;
             }
 
-            DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).ToList().ForEach(s => session.Character.GiftAdd(s.Vnum, (ushort)s.Amount));
+            DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort) s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
         }
 
         #endregion

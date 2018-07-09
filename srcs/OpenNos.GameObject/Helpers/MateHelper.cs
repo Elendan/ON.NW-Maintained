@@ -56,6 +56,30 @@ namespace OpenNos.GameObject.Helpers
 
         #region Methods
 
+        #region Utils
+
+        public void AddPetToTeam(ClientSession session, short vnum, byte level, MateType type)
+        {
+            Mate equipedMate = session.Character.Mates?.SingleOrDefault(s => s.IsTeamMember && s.MateType == type);
+
+            if (equipedMate != null)
+            {
+                equipedMate.RemoveTeamMember();
+                session.Character.MapInstance?.Broadcast(equipedMate.GenerateOut());
+            }
+
+            Mate mate = new Mate(session.Character, ServerManager.Instance.GetNpc(vnum), level, type);
+            session.Character.Mates?.Add(mate);
+            mate.RefreshStats();
+            session.SendPacket($"ctl 2 {mate.PetId} 3");
+            session.Character.MapInstance?.Broadcast(mate.GenerateIn());
+            session.SendPacket(UserInterfaceHelper.Instance.GeneratePClear());
+            session.SendPackets(session.Character.GenerateScN());
+            session.SendPackets(session.Character.GenerateScP());
+            session.SendPacket(session.Character.GeneratePinit());
+            session.SendPackets(session.Character.Mates.Where(s => s.IsTeamMember).OrderBy(s => s.MateType).Select(s => s.GeneratePst()));
+        }
+        #endregion
 
         //TODO: review this bullshit region
         #region Partners
