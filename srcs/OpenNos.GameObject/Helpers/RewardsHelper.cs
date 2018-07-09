@@ -1,5 +1,7 @@
-﻿using NosSharp.Enums;
+﻿using System.Linq;
+using NosSharp.Enums;
 using OpenNos.Core;
+using OpenNos.DAL;
 using OpenNos.GameObject.Networking;
 
 namespace OpenNos.GameObject.Helpers
@@ -60,76 +62,62 @@ namespace OpenNos.GameObject.Helpers
 
         public void GetLevelUpRewards(ClientSession session)
         {
-            switch (session.Character.Level)
+            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).Any())
             {
-                case 20:
-                    session.Character.GiftAdd(1010, 50); // 1K/1K healing pots
-                    break;
-                case 30:
-                    session.Character.GiftAdd(1011, 50); // 1K5/1K5 healing pots
-                    session.Character.GiftAdd(1452, 1); // ancelloan's blessing
-                    break;
-                case 40:
-                    session.Character.GiftAdd(1011, 50); // 1K5/1K5 healing pots
-                    session.Character.GiftAdd(1452, 2); // ancelloan's blessing
-                    session.Character.GiftAdd(1363, 2); // blue sp scroll
-                    break;
-                case 50:
-                    session.Character.GiftAdd(1011, 50); // 1K5/1K5 healing pots
-                    session.Character.GiftAdd(1452, 2); // Ancelloan's blessing
-                    session.Character.GiftAdd(1363, 2); // Blue sp scroll
-                    session.Character.GiftAdd(1218, 2); // equipment scroll
-                    break;
-                case 60:
-                    session.Character.GiftAdd(1011, 75); // 1K5/1K5 healing pots
-                    session.Character.GiftAdd(1452, 3); // Ancelloan's blessing
-                    session.Character.GiftAdd(1363, 2); // Blue sp scroll
-                    session.Character.GiftAdd(1218, 2); // Equipment scroll
-                    break;
-                case 70:
-                    session.Character.GiftAdd(1244, 30); // Full pot
-                    session.Character.GiftAdd(1452, 4); // Ancelloan's blessing
-                    session.Character.GiftAdd(1363, 3); // Blue sp scroll
-                    session.Character.GiftAdd(2282, 99); //  WOA
-                    break;
-                case 80:
-                    session.Character.GiftAdd(1244, 60); // Full pots
-                    session.Character.GiftAdd(1452, 5); // Ancelloan's blessing
-                    session.Character.GiftAdd(1364, 3); // red sp scroll
-                    session.Character.GiftAdd(282, 1); // betting amulet
-                    break;
-                case 90:
-                    session.Character.GiftAdd(1244, 99); // Full pot
-                    session.Character.GiftAdd(1452, 5); // Ancelloan's blessing
-                    session.Character.GiftAdd(1364, 5); // red sp scroll
-                    session.Character.GiftAdd(282, 1); // betting amulet
-                    session.Character.GiftAdd(282, 1); // betting amulet
-                    break;
+                return;
             }
+
+            DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
         }
 
         public void GetJobRewards(ClientSession session)
         {
-            switch (session.Character.JobLevel)
+            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).Any())
             {
-                case 20:
-                    session.SendPacket(
-                        UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("RECEIVE_SP"), 0));
-                    switch (session.Character.Class)
-                    {
-                        case ClassType.Swordman:
-                            session.Character.GiftAdd(901, 1);
-                            break;
-                        case ClassType.Archer:
-                            session.Character.GiftAdd(903, 1);
-                            break;
-                        case ClassType.Magician:
-                            session.Character.GiftAdd(905, 1);
-                            break;
-                    }
-
-                    break;
+                return;
             }
+
+            DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
+        }
+
+        public void GetHeroLvlRewards(ClientSession session)
+        {
+            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).Any())
+            {
+                return;
+            }
+
+            DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).ToList().ForEach(s =>
+            {
+                if (!s.IsMate)
+                {
+                    session.Character.GiftAdd(s.Vnum, (ushort) s.Amount);
+                }
+                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
+                {
+                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
+                }
+            });
         }
 
         #endregion

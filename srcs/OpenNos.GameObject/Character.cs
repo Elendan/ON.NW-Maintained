@@ -5258,6 +5258,7 @@ namespace OpenNos.GameObject
             {
                 HeroXp -= (long)t;
                 HeroLevel++;
+                RewardsHelper.Instance.GetHeroLvlRewards(Session);
                 t = HeroXpLoad();
                 if (HeroLevel >= ServerManager.Instance.MaxHeroLevel)
                 {

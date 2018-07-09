@@ -180,6 +180,7 @@
     <Compile Include="Entities\CharacterHome.cs" />
     <Compile Include="Entities\CharacterQuest.cs" />
     <Compile Include="Entities\ExchangeLog.cs" />
+    <Compile Include="Entities\LevelUpRewards.cs" />
     <Compile Include="Entities\LogChat.cs" />
     <Compile Include="Entities\LogCommands.cs" />
     <Compile Include="Entities\LogPlayerAction.cs" />
@@ -195,6 +196,7 @@
     <Compile Include="Entities\BCard.cs" />
     <Compile Include="Entities\UpgradeLog.cs" />
     <Compile Include="ExchangeLogDao.cs" />
+    <Compile Include="LevelUpRewardsDAO.cs" />
     <Compile Include="LogChatDAO.cs" />
     <Compile Include="LogCommandsDAO.cs" />
     <Compile Include="LogVIPDAO.cs" />
@@ -437,6 +439,22 @@
     <Compile Include="Migrations\201806191041596_Aphrodite114.cs" />
     <Compile Include="Migrations\201806191041596_Aphrodite114.Designer.cs">
       <DependentUpon>201806191041596_Aphrodite114.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807092004049_Aphrodite115.cs" />
+    <Compile Include="Migrations\201807092004049_Aphrodite115.Designer.cs">
+      <DependentUpon>201807092004049_Aphrodite115.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807092006325_Aphrodite116.cs" />
+    <Compile Include="Migrations\201807092006325_Aphrodite116.Designer.cs">
+      <DependentUpon>201807092006325_Aphrodite116.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807092036251_Aphrodite117.cs" />
+    <Compile Include="Migrations\201807092036251_Aphrodite117.Designer.cs">
+      <DependentUpon>201807092036251_Aphrodite117.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201807092046177_Aphrodite118.cs" />
+    <Compile Include="Migrations\201807092046177_Aphrodite118.Designer.cs">
+      <DependentUpon>201807092046177_Aphrodite118.cs</DependentUpon>
     </Compile>
     <Compile Include="QuestDAO.cs" />
     <Compile Include="QuestLogDAO.cs" />
@@ -1131,6 +1149,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806191041596_Aphrodite114.resx">
       <DependentUpon>201806191041596_Aphrodite114.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807092004049_Aphrodite115.resx">
+      <DependentUpon>201807092004049_Aphrodite115.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807092006325_Aphrodite116.resx">
+      <DependentUpon>201807092006325_Aphrodite116.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807092036251_Aphrodite117.resx">
+      <DependentUpon>201807092036251_Aphrodite117.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201807092046177_Aphrodite118.resx">
+      <DependentUpon>201807092046177_Aphrodite118.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
