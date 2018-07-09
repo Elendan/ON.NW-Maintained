@@ -5107,7 +5107,7 @@ namespace OpenNos.GameObject
             {
                 LevelXp -= (long)t;
                 Level++;
-                RewardsHelper.Instance.GetLevelUpRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.Level);
                 t = XpLoad();
                 if (Level >= ServerManager.Instance.MaxLevel)
                 {
@@ -5215,7 +5215,7 @@ namespace OpenNos.GameObject
                 Session.SendPacket(GenerateLevelUp());
                 Session.SendPacket(
                     UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("JOB_LEVELUP"), 0));
-                RewardsHelper.Instance.GetJobRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.JobLevel);
                 LearnAdventurerSkill();
                 Session.CurrentMapInstance?.Broadcast(GenerateEff(8), PositionX, PositionY);
                 Session.CurrentMapInstance?.Broadcast(GenerateEff(198), PositionX, PositionY);
@@ -5258,7 +5258,7 @@ namespace OpenNos.GameObject
             {
                 HeroXp -= (long)t;
                 HeroLevel++;
-                RewardsHelper.Instance.GetHeroLvlRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.Heroic);
                 t = HeroXpLoad();
                 if (HeroLevel >= ServerManager.Instance.MaxHeroLevel)
                 {

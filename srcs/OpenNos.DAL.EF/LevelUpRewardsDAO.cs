@@ -15,7 +15,7 @@ namespace OpenNos.DAL.EF
 {
     public class LevelUpRewardsDAO : MappingBaseDao<LevelUpRewards, LevelUpRewardsDTO>, ILevelUpRewardsDAO
     {
-        public IEnumerable<LevelUpRewardsDTO> LoadByLevel(byte? level)
+        private IEnumerable<LevelUpRewardsDTO> LoadByLevel(byte? level)
         {
             using (OpenNosContext context = DataAccessHelper.CreateContext())
             {
@@ -26,7 +26,7 @@ namespace OpenNos.DAL.EF
             }
         }
 
-        public IEnumerable<LevelUpRewardsDTO> LoadByJobLevel(byte? level)
+        private IEnumerable<LevelUpRewardsDTO> LoadByJobLevel(byte? level)
         {
             using (OpenNosContext context = DataAccessHelper.CreateContext())
             {
@@ -37,7 +37,7 @@ namespace OpenNos.DAL.EF
             }
         }
 
-        public IEnumerable<LevelUpRewardsDTO> LoadByHeroLevel(byte? level)
+        private IEnumerable<LevelUpRewardsDTO> LoadByHeroLevel(byte? level)
         {
             using (OpenNosContext context = DataAccessHelper.CreateContext())
             {

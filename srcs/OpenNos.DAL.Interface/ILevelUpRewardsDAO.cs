@@ -12,11 +12,5 @@ namespace OpenNos.DAL.Interface
     public interface ILevelUpRewardsDAO : IMappingBaseDAO
     {
         IEnumerable<LevelUpRewardsDTO> LoadByLevelAndLevelType(byte level, LevelType type);
-
-        IEnumerable<LevelUpRewardsDTO> LoadByLevel(byte? level);
-
-        IEnumerable<LevelUpRewardsDTO> LoadByJobLevel(byte? level);
-
-        IEnumerable<LevelUpRewardsDTO> LoadByHeroLevel(byte? level);
     }
 }

@@ -60,58 +60,18 @@ namespace OpenNos.GameObject.Helpers
             return 0;
         }
 
-        public void GetLevelUpRewards(ClientSession session)
+        public void GetLevelUpRewards(ClientSession session, LevelType type)
         {
-            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).Any())
+            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByLevelAndLevelType(session.Character.Level, type).Any())
             {
                 return;
             }
 
-            DaoFactory.LevelUpRewardsDao.LoadByLevel(session.Character.Level).ToList().ForEach(s =>
+            DaoFactory.LevelUpRewardsDao.LoadByLevelAndLevelType(session.Character.Level, type).ToList().ForEach(s =>
             {
                 if (!s.IsMate)
                 {
                     session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
-                }
-                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
-                {
-                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
-                }
-            });
-        }
-
-        public void GetJobRewards(ClientSession session)
-        {
-            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).Any())
-            {
-                return;
-            }
-
-            DaoFactory.LevelUpRewardsDao.LoadByJobLevel(session.Character.JobLevel).ToList().ForEach(s =>
-            {
-                if (!s.IsMate)
-                {
-                    session.Character.GiftAdd(s.Vnum, (ushort)s.Amount);
-                }
-                else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
-                {
-                    MateHelper.Instance.AddPetToTeam(session, s.Vnum, (byte)s.MateLevel, s.MateType);
-                }
-            });
-        }
-
-        public void GetHeroLvlRewards(ClientSession session)
-        {
-            if (session == null || !DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).Any())
-            {
-                return;
-            }
-
-            DaoFactory.LevelUpRewardsDao.LoadByHeroLevel(session.Character.HeroLevel).ToList().ForEach(s =>
-            {
-                if (!s.IsMate)
-                {
-                    session.Character.GiftAdd(s.Vnum, (ushort) s.Amount);
                 }
                 else if (s.IsMate && s.MateLevel < session.Character.Level && s.MateLevel > 0)
                 {
