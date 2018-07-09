@@ -41,6 +41,7 @@ namespace OpenNos.DAL
         private static IGeneralLogDAO _generallogDao;
         private static IItemDAO _itemDao;
         private static IItemInstanceDAO _iteminstanceDao;
+        private static ILevelUpRewardsDAO _levelUpRewardsDao;
         private static ILogChatDAO _logChatDao;
         private static ILogCommandsDAO _logCommandsDao;
         private static ILogVIPDAO _logVipDao;
@@ -162,6 +163,11 @@ namespace OpenNos.DAL
         public static IItemInstanceDAO IteminstanceDao
         {
             get { return _iteminstanceDao ?? (_iteminstanceDao = new ItemInstanceDAO()); }
+        }
+
+        public static ILevelUpRewardsDAO LevelUpRewardsDao
+        {
+            get { return _levelUpRewardsDao ?? (_levelUpRewardsDao = new LevelUpRewardsDAO()); }
         }
 
         public static ILogChatDAO LogChatDao

@@ -163,6 +163,7 @@
     <Compile Include="ICharacterRelationDAO.cs" />
     <Compile Include="IComboDAO.cs" />
     <Compile Include="IDropDAO.cs" />
+    <Compile Include="ILevelUpRewardsDAO.cs" />
     <Compile Include="ILogChatDAO.cs" />
     <Compile Include="ILogCommandsDAO.cs" />
     <Compile Include="ILogVIPDAO.cs" />

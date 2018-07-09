@@ -463,6 +463,8 @@ namespace OpenNos.DAL.EF.DB
 
         public virtual DbSet<ItemInstance> ItemInstance { get; set; }
 
+        public virtual DbSet<LevelUpRewards> LevelUpRewards { get; set; }
+
         public virtual DbSet<LogChat> LogChat { get; set; }
 
         public virtual DbSet<LogVip> LogVip { get; set; }
