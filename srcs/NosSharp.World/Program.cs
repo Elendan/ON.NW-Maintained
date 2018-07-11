@@ -33,8 +33,6 @@ using OpenNos.DAL.EF.Entities;
 using OpenNos.DAL.EF.Helpers;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Extensions;
-using OpenNos.GameObject.Item.Instance;
-using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
 using OpenNos.GameObject.Packets.ClientPackets;
 using OpenNos.Handler;
@@ -328,6 +326,7 @@ namespace ON.NW.World
             DaoFactory.UpgradeLogDao.RegisterMapping(typeof(UpgradeLogDTO)).InitializeMapper();
             DaoFactory.ExchangeLogDao.RegisterMapping(typeof(ExchangeLogDTO)).InitializeMapper();
             DaoFactory.LevelUpRewardsDao.RegisterMapping(typeof(LevelUpRewardsDTO)).InitializeMapper();
+            DaoFactory.CharacterHomeDao.RegisterMapping(typeof(CharacterHomeDTO)).InitializeMapper();
         }
 
         public class NativeMethods

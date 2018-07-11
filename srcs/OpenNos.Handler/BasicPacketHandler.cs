@@ -1360,6 +1360,14 @@ namespace OpenNos.Handler
 
             Session.CurrentMapInstance = Session.Character.MapInstance;
 
+            Session.Character.SaveObs = Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(s =>
+            {
+                if (Session?.Character?.MapInstance != null)
+                {
+                    Session.Character.Save();
+                }
+            });
+
             if (ConfigurationManager.AppSettings["SceneOnCreate"].ToLower() == "true" & Session.Character.GeneralLogs.Count(s => s.LogType == "Connection") < 2)
             {
                 Session.SendPacket("scene 40");
@@ -1581,7 +1589,6 @@ namespace OpenNos.Handler
                     Session.Character.MapX = walkPacket.XCoordinate;
                     Session.Character.MapY = walkPacket.YCoordinate;
                 }
-
                 Session.Character.PositionX = walkPacket.XCoordinate;
                 Session.Character.PositionY = walkPacket.YCoordinate;
 

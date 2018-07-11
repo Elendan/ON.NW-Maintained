@@ -22,6 +22,7 @@ using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Core.Handling;
 using OpenNos.Data;
+using OpenNos.DAL;
 using OpenNos.GameObject;
 using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Buff;
@@ -148,10 +149,24 @@ namespace OpenNos.Handler
                         if (Session.Character.Hp > 0)
                         {
                             TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                            Session.Character.FocusedMonster = new UseSkillPacket
+                            {
+                                CastId = useSkillPacket.CastId,
+                                MapMonsterId = useSkillPacket.MapMonsterId,
+                                MapX = useSkillPacket.MapX,
+                                MapY = useSkillPacket.MapY,
+                                OriginalContent = useSkillPacket.OriginalContent,
+                                OriginalHeader = useSkillPacket.OriginalHeader,
+                                UserType = useSkillPacket.UserType
+                            };
                             int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
                             int random = ServerManager.Instance.RandomNumber();
                             CharacterSkill ski =
                                 (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
+                            if (ski?.Skill.SkillVNum == 909) // Seriously entwell
+                            {
+                                Session.Character.AddBuff(new Buff(161));
+                            }
                             if (fairyWings[0] > random)
                             {
                                 Observable.Timer(TimeSpan.FromSeconds(1)).Subscribe(o =>
@@ -173,13 +188,37 @@ namespace OpenNos.Handler
                             if (useSkillPacket.MapMonsterId != Session.Character.CharacterId)
                             {
                                 TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId, true);
+                                Session.Character.FocusedMonster = new UseSkillPacket
+                                {
+                                    CastId = useSkillPacket.CastId,
+                                    MapMonsterId = useSkillPacket.MapMonsterId,
+                                    MapX = useSkillPacket.MapX,
+                                    MapY = useSkillPacket.MapY,
+                                    OriginalContent = useSkillPacket.OriginalContent,
+                                    OriginalHeader = useSkillPacket.OriginalHeader,
+                                    UserType = useSkillPacket.UserType
+                                };
                             }
                             else
                             {
                                 TargetHit(useSkillPacket.CastId, useSkillPacket.MapMonsterId);
+                                Session.Character.FocusedMonster = new UseSkillPacket
+                                {
+                                    CastId = useSkillPacket.CastId,
+                                    MapMonsterId = useSkillPacket.MapMonsterId,
+                                    MapX = useSkillPacket.MapX,
+                                    MapY = useSkillPacket.MapY,
+                                    OriginalContent = useSkillPacket.OriginalContent,
+                                    OriginalHeader = useSkillPacket.OriginalHeader,
+                                    UserType = useSkillPacket.UserType
+                                };
                             }
                             CharacterSkill ski =
                                 (Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList())?.Find(s => s.Skill?.CastId == useSkillPacket.CastId && s.Skill?.UpgradeSkill == 0);
+                            if (ski?.Skill.SkillVNum == 909) // Seriously entwell
+                            {
+                                Session.Character.AddBuff(new Buff(161));
+                            }
                             int[] fairyWings = Session.Character.GetBuff(BCardType.CardType.EffectSummon, (byte)AdditionalTypes.EffectSummon.LastSkillReset);
                             int random = ServerManager.Instance.RandomNumber();
                             if (fairyWings[0] > random)
@@ -210,6 +249,45 @@ namespace OpenNos.Handler
             {
                 Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = 0 });
             }
+        }
+
+        /// <summary>
+        ///     ob_a packet
+        /// </summary>
+        /// <param name="obaPacket"></param>
+        public void UseObSkill(ObaPacket obaPacket)
+        {
+            PenaltyLogDTO penalty = Session.Account.PenaltyLogs.OrderByDescending(s => s.DateEnd).FirstOrDefault();
+            if (Session.Character.IsMuted() && penalty != null)
+            {
+                if (Session.Character.Gender == GenderType.Female)
+                {
+                    Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_FEMALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 12));
+                }
+                else
+                {
+                    Session.SendPacket(new CancelPacket { Type = CancelType.NotInCombatMode, TargetId = 0 });
+                    Session.CurrentMapInstance?.Broadcast(Session.Character.GenerateSay(Language.Instance.GetMessageFromKey("MUTED_MALE"), 1));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 11));
+                    Session.SendPacket(Session.Character.GenerateSay(string.Format(Language.Instance.GetMessageFromKey("MUTE_TIME"), (penalty.DateEnd - DateTime.Now).ToString("hh\\:mm\\:ss")), 12));
+                }
+
+                return;
+            }
+            Session.SendPacket("ob_ar");
+            if (Session.Character.FocusedMonster == null)
+            {
+                return;
+            }
+
+            MapMonster mon = Session.Character.MapInstance.GetMonster(Session.Character.FocusedMonster.MapMonsterId);
+            SkillDTO sk = DaoFactory.SkillDao.LoadById(1248);
+            bool isPvp = Session.Character.MapInstance.MapInstanceType != MapInstanceType.BaseMapInstance;
+            Session.Character.BattleEntity.TargetHit(mon, TargetHitType.SingleTargetHit, (Skill)sk, isPvp: isPvp);
+            Session.Character.MapInstance.Broadcast(Session.Character.GenerateEff(4295));
         }
 
         /// <summary>
@@ -258,7 +336,7 @@ namespace OpenNos.Handler
             }
         }
 
-        private void TargetHit(int castingId, int targetId, bool isPvp = false)
+        private void TargetHit(int castingId, int targetId, bool isPvp = false, short vnum = 0)
         {
             bool noComboReset = true;
             if ((DateTime.Now - Session.Character.LastTransform).TotalSeconds < 3)
@@ -269,15 +347,24 @@ namespace OpenNos.Handler
             }
 
             IEnumerable<CharacterSkill> skills = Session.Character.UseSp ? Session.Character.SkillsSp?.Values.ToList() : Session.Character.Skills?.Values.ToList();
+            CharacterSkill ski;
             if (skills != null)
             {
-                CharacterSkill ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
-                if (castingId != 0)
+                ski = skills.FirstOrDefault(s => s.Skill?.CastId == castingId && (s.Skill?.UpgradeSkill == 0 || s.Skill?.SkillType == 1));
+
+                if (ski != null)
                 {
-                    Session.SendPacket("ms_c 0");
+                    if (castingId != 0)
+                    {
+                        Session.SendPacket("ms_c 0");
+                        if (SkillHelper.Instance.AvengingAngelBuffs.Contains(ski.Skill.SkillVNum))
+                        {
+                            Session.SendPacket("mslot 0 -1");
+                        }
+                    }
                 }
 
-                if (ski != null && (!Session.Character.WeaponLoaded(ski) || !ski.CanBeUsed()))
+                if (ski != null && (!Session.Character.WeaponLoaded(ski)))
                 {
                     Session.SendPacket(new CancelPacket { Type = CancelType.InCombatMode, TargetId = targetId });
                     return;
@@ -298,6 +385,9 @@ namespace OpenNos.Handler
                     if (ski.Skill.TargetType == 1 && ski.Skill.HitType == 1)
                     {
                         Session.Character.Mp -= Session.Character.HasGodMode ? 0 : ski.Skill.MpCost;
+                        int mpPerc =
+                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
 
                         if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
                         {
@@ -514,6 +604,9 @@ namespace OpenNos.Handler
                                     if (!Session.Character.HasGodMode)
                                     {
                                         Session.Character.Mp -= ski.Skill.MpCost;
+                                        int mpPerc =
+                                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
                                     }
 
                                     if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
@@ -753,6 +846,9 @@ namespace OpenNos.Handler
                                     if (!Session.Character.HasGodMode)
                                     {
                                         Session.Character.Mp -= ski.Skill.MpCost;
+                                        int mpPerc =
+                                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * ski.Skill.MpCost;
+                                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
                                     }
 
                                     if (Session.Character.UseSp && ski.Skill.CastEffect != -1)
@@ -769,7 +865,6 @@ namespace OpenNos.Handler
                                         }
                                     }
 
-                                    //monsterToAttack.Monster.BCards.Where(s => s.CastType == 1).ToList().ForEach(s => s.ApplyBCards(monsterToAttack, Session.Character));
                                     Session.SendPacket(Session.Character.GenerateStat());
                                     CharacterSkill characterSkillInfo = Session.Character.Skills.Select(s => s.Value).OrderBy(o => o.SkillVNum)
                                         .FirstOrDefault(s => s.Skill.UpgradeSkill == ski.Skill.SkillVNum && s.Skill.Effect > 0 && s.Skill.SkillType == 2);
@@ -965,6 +1060,10 @@ namespace OpenNos.Handler
                     if (!Session.Character.HasGodMode)
                     {
                         Session.Character.Mp -= characterSkill.Skill.MpCost;
+                        int mpPerc =
+                            (Session.Character.BattleEntity.GetBuff(BCardType.CardType.HealingBurningAndCasting, (byte)AdditionalTypes.HealingBurningAndCasting.HPDecreasedByConsumingMP, false)[0] / 100) * characterSkill.Skill.MpCost;
+                        Session.Character.Hp = Session.Character.Hp - mpPerc <= 0 ? 1 : Session.Character.Hp - mpPerc;
+
                     }
 
                     Session.SendPacket(Session.Character.GenerateStat());
@@ -980,10 +1079,46 @@ namespace OpenNos.Handler
                             $"{characterSkill.Skill.Effect} 0 0 1 1 0 0 0");
 
                         IEnumerable<MapMonster> monstersInRange = Session.CurrentMapInstance?.GetListMonsterInRange(x, y, characterSkill.Skill.TargetRange).ToList();
+                        MapMonster target = monstersInRange?.FirstOrDefault();
+
+                        if (target != null && characterSkill.Skill.SkillVNum == 1120) // I dont give a shit
+                        {
+                            target.MapInstance?.Broadcast($"su 3 {target.MapMonsterId} 1 1 1251 10 0 4262 131 147 1 95 0 0 3");
+                        }
                         if (monstersInRange != null)
                         {
                             foreach (MapMonster mon in monstersInRange.Where(s => s.CurrentHp > 0))
                             {
+                                if (characterSkill.Skill.SkillVNum == 1120)
+                                {
+                                    mon?.AddBuff(new Buff(558));
+                                }
+
+                                if (characterSkill.Skill.SkillVNum == 1108)
+                                {
+                                    int id = Session.CurrentMapInstance.GetNextId();
+                                    var m = new MapMonster
+                                    {
+                                        MapMonsterId = id,
+                                        MonsterVNum = 1439,
+                                        MapX = x,
+                                        MapY = y,
+                                        ShouldRespawn = false,
+                                        IsHostile = false,
+                                        IsMoving = false
+                                    };
+                                    mon.AddBuff(new Buff(550));
+                                    Session.CurrentMapInstance?.AddMonster(m);
+                                    m.Initialize();
+                                    Session.CurrentMapInstance?.Broadcast(m.GenerateIn());
+                                    Session.CurrentMapInstance?.Broadcast(mon.GenerateEff(212));
+                                    Session.CurrentMapInstance?.Broadcast(mon.GenerateEff(4644));
+                                    Session.CurrentMapInstance?.Broadcast($"guri 3 3 {mon.MapMonsterId} {x} {y} 3 4 2 -1");
+                                    mon.MapX = x;
+                                    mon.MapY = y;
+                                    Session.CurrentMapInstance?.RemoveMonster(m);
+                                    StaticPacketHelper.Out(UserType.Monster, id);
+                                }
                                 if (mon?.CurrentHp > 0)
                                 {
                                     foreach (BCard bcard in characterSkill.Skill.BCards)
@@ -1018,10 +1153,50 @@ namespace OpenNos.Handler
                             Session.Character.TeleportOnMap(x, y);
                         }
 
-                        foreach (ClientSession character in ServerManager.Instance.Sessions.Where(s =>
+                        IEnumerable<ClientSession> inRangeSessions = ServerManager.Instance.Sessions.Where(s =>
                             s.CurrentMapInstance == Session.CurrentMapInstance && s.Character.CharacterId != Session.Character.CharacterId &&
-                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange)))
+                            s.Character.IsInRange(x, y, characterSkill.Skill.TargetRange));
+
+                        ClientSession targetSess = inRangeSessions?.FirstOrDefault();
+
+                        if (targetSess != null && characterSkill.Skill.SkillVNum == 1120)
                         {
+                            targetSess.Character.MapInstance?.Broadcast($"su 1 {targetSess.Character.CharacterId} 1 1 1251 10 0 4262 131 147 1 95 0 0 3");
+                        }
+                        
+                        foreach (ClientSession character in inRangeSessions)
+                        {
+                            if (characterSkill.Skill.SkillVNum == 1120)
+                            {
+                                character?.Character.AddBuff(new Buff(558));
+                            }
+
+                            if (characterSkill.Skill.SkillVNum == 1108)
+                            {
+                                int id = Session.CurrentMapInstance.GetNextId();
+                                var m = new MapMonster
+                                {
+                                    MapMonsterId = id,
+                                    MonsterVNum = 1439,
+                                    MapX = x,
+                                    MapY = y,
+                                    ShouldRespawn = false,
+                                    IsHostile = false,
+                                    IsMoving = false
+                                };
+                                character.Character.AddBuff(new Buff(550));
+                                Session.CurrentMapInstance?.AddMonster(m);
+                                m.Initialize();
+                                Session.CurrentMapInstance?.Broadcast(m.GenerateIn());
+                                Session.CurrentMapInstance?.Broadcast(character.Character.GenerateEff(212));
+                                Session.CurrentMapInstance?.Broadcast(character.Character.GenerateEff(4644));
+                                Session.CurrentMapInstance?.Broadcast($"guri 3 3 {character.Character.CharacterId} {x} {y} 3 4 2 -1");
+                                character.Character.PositionX = x;
+                                character.Character.PositionY = y;
+                                Session.CurrentMapInstance?.RemoveMonster(m);
+                                StaticPacketHelper.Out(UserType.Monster, id);
+                            }
+
                             if (Session.CurrentMapInstance == null || !Session.CurrentMapInstance.IsPvp)
                             {
                                 continue;

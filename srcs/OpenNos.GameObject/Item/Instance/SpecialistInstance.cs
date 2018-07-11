@@ -15,7 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.RightsManagement;
 using NosSharp.Enums;
 using OpenNos.Core;
 using OpenNos.Data;

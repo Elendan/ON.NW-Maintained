@@ -4534,18 +4534,18 @@ namespace NosSharp.Parser
                             case ItemType.Special:
                                 switch (item.VNum)
                                 {
-									case 5853:
-										item.Effect = 1717;
-										item.EffectValue = 1;
-										break;
-									case 5854:
-										item.Effect = 1717;
-										item.EffectValue = 2;
-										break;
-									case 5855:
-										item.Effect = 1717;
-										item.EffectValue = 3;
-										break;
+                                    case 5853:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 1;
+                                        break;
+                                    case 5854:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 2;
+                                        break;
+                                    case 5855:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 3;
+                                        break;
                                     case 5932:
                                         item.Effect = 11112;
                                         break;
@@ -4962,17 +4962,17 @@ namespace NosSharp.Parser
 
                         switch (item.VNum)
                         {
-                                case 4046:
-                                case 4047:
-                                case 4048:
-                                case 4049:
-                                case 4050:
-                                case 4051:
-                                case 4052:
-                                case 4053:
-                                case 4054:
-                                case 4055:
-                                    item.ItemValidTime = 10800;
+                            case 4046:
+                            case 4047:
+                            case 4048:
+                            case 4049:
+                            case 4050:
+                            case 4051:
+                            case 4052:
+                            case 4053:
+                            case 4054:
+                            case 4055:
+                                item.ItemValidTime = 10800;
                                 break;
                         }
 

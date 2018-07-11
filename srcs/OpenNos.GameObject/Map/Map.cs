@@ -19,6 +19,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using ArrayExtensions;
+using NosSharp.Enums;
+using OpenNos.Core;
 using OpenNos.Data;
 using OpenNos.Data.Interfaces;
 using OpenNos.DAL;
@@ -135,6 +137,77 @@ namespace OpenNos.GameObject.Map
             }
 
             return true;
+        }
+
+        public MapCell GetLastGoodPosition(short x, short y, MoveType type, ClientSession session)
+        {
+            var cell = new MapCell { X = x, Y = y };
+
+            switch (type)
+            {
+                case MoveType.Right:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.X -= 1;
+                    }
+
+                    return cell;
+                case MoveType.Left:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.X += 1;
+                    }
+
+                    return cell;
+                case MoveType.Up:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y += 1;
+                    }
+
+                    return cell;
+                case MoveType.Down:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y -= 1;
+                    }
+
+                    return cell;
+                case MoveType.DiagUpRight:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y += 1;
+                        cell.X -= 1;
+                    }
+
+                    return cell;
+                case MoveType.DiagUpLeft:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y += 1;
+                        cell.X += 1;
+                    }
+
+                    return cell;
+                case MoveType.DiagDownLeft:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y -= 1;
+                        cell.X += 1;
+                    }
+
+                    return cell;
+                case MoveType.DiagDownRight:
+                    while (!GetDefinedPosition(cell.X, cell.Y))
+                    {
+                        cell.Y -= 1;
+                        cell.X -= 1;
+                    }
+
+                    return cell;
+            }
+
+            return cell;
         }
 
         public MapCell GetRandomPosition()

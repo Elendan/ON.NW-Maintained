@@ -155,6 +155,7 @@
     <Compile Include="GoldBankPacketType.cs" />
     <Compile Include="LevelType.cs" />
     <Compile Include="LoginFailType.cs" />
+    <Compile Include="MoveType.cs" />
     <Compile Include="QuestRewardType.cs" />
     <Compile Include="QuestType.cs" />
     <Compile Include="RaidDesignType.cs" />

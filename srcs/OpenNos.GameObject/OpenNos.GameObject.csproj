@@ -185,6 +185,7 @@
     <Compile Include="Helpers\QuestHelper.cs" />
     <Compile Include="Helpers\RewardsHelper.cs" />
     <Compile Include="Helpers\ShellGeneratorHelper.cs" />
+    <Compile Include="Helpers\SkillHelper.cs" />
     <Compile Include="Helpers\StaticPacketHelper.cs" />
     <Compile Include="Helpers\VipHelper.cs" />
     <Compile Include="Logs\Classes\CharacterLog.cs" />
@@ -206,6 +207,7 @@
     <Compile Include="Map\MapInstancePortalHandler.cs" />
     <Compile Include="Packets\ClientPackets\CsprPacket.cs" />
     <Compile Include="Packets\ClientPackets\GboxPacket.cs" />
+    <Compile Include="Packets\ClientPackets\ObaPacket.cs" />
     <Compile Include="Packets\ClientPackets\RInfoPacket.cs" />
     <Compile Include="Packets\ClientPackets\ScpCtsPacket.cs" />
     <Compile Include="Packets\ClientPackets\UpsPacket.cs" />
@@ -217,6 +219,7 @@
     <Compile Include="Packets\CommandPackets\MaintenancePacket.cs" />
     <Compile Include="Packets\CommandPackets\RestartPacket.cs" />
     <Compile Include="Packets\HomePackets\HomePacket.cs" />
+    <Compile Include="Packets\HomePackets\ListHomePacket.cs" />
     <Compile Include="Packets\HomePackets\SetHomePacket.cs" />
     <Compile Include="Packets\HomePackets\UnsetHomePacket.cs" />
     <Compile Include="Packets\ServerPackets\CancelPacket.cs" />

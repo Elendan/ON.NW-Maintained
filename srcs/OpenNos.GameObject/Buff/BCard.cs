@@ -15,6 +15,7 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
@@ -91,6 +92,21 @@ namespace OpenNos.GameObject.Buff
                     character.LastSpeedChange = DateTime.Now;
                     character.LoadSpeed();
                     character.Session.SendPacket(character.GenerateCond());
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.Move.MoveSpeedDecreased:
+                            Card speedDebuff = ServerManager.Instance.GetCardByCardId(CardId);
+                            if (speedDebuff == null)
+                            {
+                                return;
+                            }
+                            character.Speed /= (byte)(100 / FirstData);
+                            Observable.Timer(TimeSpan.FromSeconds(speedDebuff.Duration * 0.1)).Subscribe(s =>
+                            {
+                                character.LoadSpeed();
+                            });
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Summons:
@@ -667,6 +683,19 @@ namespace OpenNos.GameObject.Buff
                                             receiverMate.MapInstance?.Broadcast(receiverMate.GenerateDm(damage));
                                             receiverMate.Owner?.Session.SendPacket(receiverMate.GenerateStatInfo());
                                             break;
+                                        case Character receiverCharacter:
+                                            if (receiverCharacter.Hp > 0)
+                                            {
+                                                damage = (ushort)(receiverCharacter.Level * scale);
+                                                receiverCharacter.Hp = receiverCharacter.Hp - damage <= 0 ? 1 : receiverCharacter.Hp - damage;
+                                                receiverCharacter.MapInstance?.Broadcast(receiverCharacter.GenerateDm(damage));
+                                                receiverCharacter.Session.SendPacket(receiverCharacter.GenerateStat());
+                                            }
+                                            else
+                                            {
+                                                obs?.Dispose();
+                                            }
+                                            break;
                                     }
                                 });
                                 Observable.Timer(TimeSpan.FromSeconds(card.Duration * 0.1)).Subscribe(s =>
@@ -870,7 +899,61 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.SpecialisationBuffResistance:
-                    break;
+					switch (SubType)
+					{
+						case (byte)AdditionalTypes.SpecialisationBuffResistance.RemoveBadEffects:
+							List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
+							switch (session)
+							{
+								case Character isCharacter:
+									{
+										if (FirstData <= ServerManager.Instance.RandomNumber())
+										{
+										    break;
+										}
+
+									    isCharacter.DisableBuffs(buffsToDisable, FirstData);
+                                    }
+									break;
+								case Mate isMate:
+									{
+										if (FirstData <= ServerManager.Instance.RandomNumber())
+										{
+										    break;
+									    }
+
+									    isMate.BattleEntity.DisableBuffs(buffsToDisable, FirstData);
+                                    }
+									break;
+							}
+							break;
+						case (byte)AdditionalTypes.SpecialisationBuffResistance.RemoveGoodEffects:
+							List<BuffType> buffsToDisable2 = new List<BuffType> { BuffType.Good };
+							switch (session)
+							{
+								case Character isCharacter:
+									{
+									    if (FirstData <= ServerManager.Instance.RandomNumber())
+									    {
+									        break;
+									    }
+									    isCharacter.DisableBuffs(buffsToDisable2, FirstData);
+                                    }
+									break;
+								case Mate isMate:
+									{
+									    if (FirstData <= ServerManager.Instance.RandomNumber())
+									    {
+									        break;
+									    }
+
+									    isMate.BattleEntity.DisableBuffs(buffsToDisable2, FirstData);
+                                    }
+									break;
+							}
+							break;
+					}
+					break;
 
                 case BCardType.CardType.SpecialEffects:
                     Card speedCard = ServerManager.Instance.GetCardByCardId(CardId);
@@ -1001,6 +1084,16 @@ namespace OpenNos.GameObject.Buff
                                 break;
                         }
                     }
+
+                    if (caster is Character teleportedUser)
+                    {
+                        switch (SubType)
+                        {
+                            case (byte)AdditionalTypes.SpecialEffects2.TeleportInRadius:
+                                teleportedUser.TeleportInRadius(FirstData);
+                                break;
+                        }
+                    }
                     break;
 
                 case BCardType.CardType.CalculatingLevel:
@@ -1114,7 +1207,20 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.NoDefeatAndNoDamage:
-                    break;
+					switch (SubType)
+					{
+						//case (byte)AdditionalTypes.NoDefeatAndNoDamage.TransferAttackPower: // = Charge
+						case (byte)AdditionalTypes.NoDefeatAndNoDamage.NeverReceiveDamage:
+							switch (session)
+							{
+								case Character receiverCharacter:
+									receiverCharacter.HasGodMode = true;
+									break;
+							}
+							break;
+
+					}
+					break;
 
                 case BCardType.CardType.SpecialActions:
                     switch (SubType)
@@ -1214,11 +1320,20 @@ namespace OpenNos.GameObject.Buff
                                 switch (session)
                                 {
                                     case MapMonster monster when caster is Character pusher:
+                                        if (!monster.MapInstance.Map.GetDefinedPosition(pusher.PositionX + FirstData, pusher.PositionY))
+                                        {
+                                            break;
+                                        }
                                         pusher.MapInstance?.Broadcast($"guri 3 3 {monster.MapMonsterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
                                         monster.MapX = pusher.PositionX += (short)FirstData;
                                         monster.MapY = pusher.PositionY;
                                         break;
                                     case Character target when caster is Character pusher:
+                                        if (!target.MapInstance.Map.GetDefinedPosition(pusher.PositionX + FirstData, pusher.PositionY))
+                                        {
+                                            break;
+                                        }
+
                                         pusher.MapInstance?.Broadcast($"guri 3 1 {target.CharacterId} {pusher.PositionX + FirstData} {pusher.PositionY} 3 8 2 - 1");
                                         target.PositionX = pusher.PositionX += (short)FirstData;
                                         target.PositionY = pusher.PositionY;
@@ -1238,6 +1353,21 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.LightAndShadow:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.LightAndShadow.RemoveBadEffects:
+                            List<BuffType> buffsToDisable = new List<BuffType> { BuffType.Bad };
+                            switch (session)
+                            {
+                                case Character isCharacter:
+                                    isCharacter.DisableBuffs(buffsToDisable, FirstData);
+                                    break;
+                                case Mate isMate:
+                                    isMate.BattleEntity.DisableBuffs(buffsToDisable, FirstData);
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.Item:
@@ -1356,46 +1486,107 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.Drain:
-                    if (session is Character drain)
+                    IDisposable drainObservable = null;
+                    Card drainCard = ServerManager.Instance.GetCardByCardId(CardId);
+                    int drain = 0;
+                    switch (SubType)
                     {
-                        switch (SubType)
-                        {
-                            case (byte)AdditionalTypes.Drain.TransferEnemyHP:
-                                int heal = FirstData;
-                                bool change = false;
-                                if (IsLevelScaled)
-                                {
-                                    if (IsLevelDivided)
+                        case (byte)AdditionalTypes.Drain.TransferEnemyHP:
+                            switch (session)
+                            {
+                                case MapMonster targetMonster when caster is Character casterChar:
+                                    if (IsLevelScaled)
                                     {
-                                        heal /= drain.Level;
-                                    }
-                                    else
-                                    {
-                                        heal *= drain.Level;
-                                    }
-                                }
-                                if (drain.Hp + heal < drain.HpLoad())
-                                {
-                                    drain.Hp += heal;
-                                    drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc(heal));
-                                    change = true;
-                                }
-                                else
-                                {
-                                    if (drain.Hp != (int)drain.HpLoad())
-                                    {
-                                        drain.Session?.CurrentMapInstance?.Broadcast(drain.GenerateRc((int)(drain.HpLoad() - drain.Hp)));
-                                        change = true;
-                                    }
-                                    drain.Hp = (int)drain.HpLoad();
-                                }
-                                if (change)
-                                {
-                                    drain.Session?.SendPacket(drain.GenerateStat());
-                                }
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
 
-                                break;
-                        }
+                                        drain = casterChar.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetMonster.CurrentHp > 0)
+                                            {
+                                                targetMonster.CurrentHp = targetMonster.CurrentHp - drain < 0 ? 1 : targetMonster.CurrentHp - drain;
+                                                casterChar.Hp = (int)(casterChar.Hp + drain > casterChar.HpLoad() ? casterChar.HpLoad() : casterChar.Hp + drain);
+                                                casterChar.MapInstance?.Broadcast(casterChar.GenerateRc(drain));
+                                                casterChar.MapInstance?.Broadcast(targetMonster.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+                                case Character targetCharacter when caster is Character casterChar:
+                                    if (IsLevelScaled)
+                                    {
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
+
+                                        drain = casterChar.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetCharacter.Hp > 0)
+                                            {
+                                                targetCharacter.Hp = targetCharacter.Hp - drain < 0 ? 1 : targetCharacter.Hp - drain;
+                                                casterChar.Hp = (int)(casterChar.Hp + drain > casterChar.HpLoad() ? casterChar.HpLoad() : casterChar.Hp + drain);
+                                                casterChar.MapInstance?.Broadcast(casterChar.GenerateRc(drain));
+                                                casterChar.MapInstance?.Broadcast(targetCharacter.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+
+                                case Character targetCharacter when caster is MapMonster casterMapMonster:
+                                    if (IsLevelScaled)
+                                    {
+                                        if (drainCard == null)
+                                        {
+                                            break;
+                                        }
+
+                                        drain = casterMapMonster.Monster.Level * FirstData;
+                                        drainObservable = Observable.Interval(TimeSpan.FromSeconds(ThirdData + 1)).Subscribe(s =>
+                                        {
+                                            if (targetCharacter.Hp > 0)
+                                            {
+                                                targetCharacter.Hp = targetCharacter.Hp - drain < 0 ? 1 : targetCharacter.Hp - drain;
+                                                casterMapMonster.CurrentHp = casterMapMonster.CurrentHp + drain > casterMapMonster.MaxHp ? casterMapMonster.MaxHp : casterMapMonster.CurrentHp + drain;
+                                                casterMapMonster.MapInstance?.Broadcast(casterMapMonster.GenerateRc(drain));
+                                                casterMapMonster.MapInstance?.Broadcast(targetCharacter.GenerateDm((ushort)drain));
+                                            }
+                                            else
+                                            {
+                                                drainObservable?.Dispose();
+                                            }
+                                        });
+
+                                        Observable.Timer(TimeSpan.FromSeconds(drainCard.Duration * 0.1)).Subscribe(s =>
+                                        {
+                                            drainObservable?.Dispose();
+                                        });
+                                    }
+                                    break;
+                            }
+                            break;
                     }
                     break;
 
@@ -1427,7 +1618,18 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.HideBarrelSkill:
-                    break;
+					switch (SubType)
+					{
+						case (byte)AdditionalTypes.HideBarrelSkill.NoHPConsumption:
+							switch (session)
+							{
+								case Character receiverCharacter:
+									receiverCharacter.HasGodMode = true;
+									break;
+							}
+							break;
+					}
+					break;
 
                 case BCardType.CardType.FocusEnemyAttentionSkill:
                     break;
@@ -1577,14 +1779,70 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.FalconSkill:
-                    if (character == null)
-                    {
-                        break;
-                    }
-
                     switch (SubType)
                     {
+                        case (byte)AdditionalTypes.FalconSkill.CausingChanceLocation:
+                            if (session is Character trapper)
+                            {
+                                var trap = new MapMonster
+                                {
+                                    MonsterVNum = 1436,
+                                    MapX = trapper.PositionX,
+                                    MapY = trapper.PositionY,
+                                    MapMonsterId = trapper.MapInstance.GetNextId(),
+                                    IsHostile = false,
+                                    IsMoving = false,
+                                    ShouldRespawn = false
+                                };
+
+                                trapper.MapInstance?.AddMonster(trap);
+                                trap.Initialize();
+                                trapper.MapInstance?.Broadcast(trap.GenerateIn());
+
+                                IDisposable dispo = null;
+
+                                Thread.Sleep(1000);
+
+                                dispo = Observable.Interval(TimeSpan.FromMilliseconds(250)).Subscribe(s =>
+                                {
+                                    if (trapper.MapInstance.IsPvp)
+                                    {
+                                        foreach (Character trapped in trapper.MapInstance.GetCharactersInRange(trap.MapX, trap.MapY, 2).Where(p => p.CharacterId != trapper.CharacterId))
+                                        {
+                                            trapper.MapInstance.Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, trap.MapMonsterId, 3, trap.MapMonsterId, 1250, 600, 11, 4270, trap.MapX, trap.MapY, true, 0, 0, -2, 0));
+                                            trapped.AddBuff(new Buff(572, 1));
+                                            trapped.AddBuff(new Buff(557, 1));
+                                            trapper.MapInstance.RemoveMonster(trap);
+                                            trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                            dispo?.Dispose();
+                                        }
+                                    }
+                                    foreach (MapMonster trappedMonster in trapper.MapInstance.GetListMonsterInRange(trap.MapX, trap.MapY, 2).Where(m => m.MapMonsterId != trap.MapMonsterId))
+                                    {
+                                        trapper.MapInstance.Broadcast(StaticPacketHelper.SkillUsed(UserType.Monster, trap.MapMonsterId, 3, trap.MapMonsterId, 1250, 600, 11, 4270, trap.MapX, trap.MapY, true, 0, 0, -2, 0));
+                                        trappedMonster.AddBuff(new Buff(572, 1));
+                                        trappedMonster.AddBuff(new Buff(557, 1));
+                                        trapper.MapInstance.RemoveMonster(trap);
+                                        trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                        dispo?.Dispose();
+                                    }
+
+                                });
+
+                                Observable.Timer(TimeSpan.FromSeconds(60)).Subscribe(s =>
+                                {
+                                    trapper.MapInstance.RemoveMonster(trap);
+                                    trapper.MapInstance.Broadcast(StaticPacketHelper.Out(UserType.Monster, trap.MapMonsterId));
+                                    dispo?.Dispose();
+                                });
+                            }
+                            break;
                         case (byte)AdditionalTypes.FalconSkill.Hide:
+                            if (character == null)
+                            {
+                                break;
+                            }
+
                             character.Invisible = true;
                             character.Mates.Where(s => s.IsTeamMember).ToList().ForEach(s =>
                                 character.Session.CurrentMapInstance?.Broadcast(s.GenerateOut()));
@@ -1623,6 +1881,17 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.JumpBackPush:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.JumpBackPush.JumpBackChance:
+                            switch (session)
+                            {
+                                case MapMonster targetMob when caster is Character pushedbackChar:
+                                    pushedbackChar.PushBackToDirection(SecondData / 2);
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.FairyXPIncrease:
@@ -1638,6 +1907,31 @@ namespace OpenNos.GameObject.Buff
                     break;
 
                 case BCardType.CardType.DarkCloneSummon:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.DarkCloneSummon.ConvertDamageToHPChance:
+                            switch (session)
+                            {
+                                case Character thoughtCharacter:
+                                    Card thoughtCard = ServerManager.Instance.GetCardByCardId(CardId);
+
+                                    if (thoughtCard == null)
+                                    {
+                                        break;
+                                    }
+
+                                    thoughtCharacter.RetainedHp = thoughtCharacter.Hp;
+
+                                    Observable.Timer(TimeSpan.FromSeconds(SecondData)).Subscribe(s =>
+                                    {
+                                        int total = thoughtCharacter.RetainedHp - thoughtCharacter.AccumulatedDamage;
+                                        thoughtCharacter.Hp = total <= 0 ? 1 : total;
+                                        thoughtCharacter.AccumulatedDamage = 0;
+                                    });
+                                    break;
+                            }
+                            break;
+                    }
                     break;
 
                 case BCardType.CardType.AbsorbedSpirit:

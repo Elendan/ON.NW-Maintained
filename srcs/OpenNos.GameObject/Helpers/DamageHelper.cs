@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using log4net.Core;
 using NosSharp.Enums;
+using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Buff;
@@ -34,9 +32,9 @@ namespace OpenNos.GameObject.Helpers
             {
                 cards = subtype % 10 == 1
                     ? bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype)) && s.FirstData >= 0)
+                        s.Type.Equals((byte)type) && s.SubType.Equals((subtype)) && s.FirstData >= 0)
                     : bcards.Where(s =>
-                        s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                        s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                         && (s.FirstData <= 0 || s.ThirdData < 0));
 
                 foreach (BCard entry in cards)
@@ -69,12 +67,12 @@ namespace OpenNos.GameObject.Helpers
                 {
                     cards = subtype % 10 == 1
                         ? buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData >= 0)
                         : buff.Card.BCards.Where(s =>
-                            s.Type.Equals((byte)type) && s.SubType.Equals((byte)(subtype))
+                            s.Type.Equals((byte)type) && s.SubType.Equals((subtype))
                             && (s.CastType != 1 || (s.CastType == 1
                                                  && buff.Start.AddMilliseconds(buff.Card.Delay * 100) < DateTime.Now))
                             && s.FirstData <= 0);
@@ -387,6 +385,12 @@ namespace OpenNos.GameObject.Helpers
             {
                 return 0;
             }
+
+            if (attacker.Entity is Character teleported && skill.SkillVNum == 1085) // Pas de bcard
+            {
+                teleported.TeleportOnMap(target.PositionX, target.PositionY);
+            }
+
             int[] GetAttackerBenefitingBuffs(BCardType.CardType type, byte subtype)
             {
                 int value1 = 0;
@@ -480,7 +484,6 @@ namespace OpenNos.GameObject.Helpers
             int targetMorale = target.Morale;
             int attackUpgrade = attacker.AttackUpgrade;
             int targetDefenseUpgrade = target.DefenseUpgrade;
-            int defenseUpgrade = attacker.DefenseUpgrade;
 
             morale +=
                 GetAttackerBenefitingBuffs(BCardType.CardType.Morale, (byte)AdditionalTypes.Morale.MoraleIncreased)[0];
@@ -1004,15 +1007,11 @@ namespace OpenNos.GameObject.Helpers
 
                 chance = (-0.25 * Math.Pow(multiplier, 3)) - (0.57 * Math.Pow(multiplier, 2)) + (25.3 * multiplier)
                          - 1.41;
+
                 if (chance <= 1)
                 {
                     chance = 1;
                 }
-
-                //if (GetBuff(CardType.Buff, (byte)AdditionalTypes.DodgeAndDefencePercent.)[0] != 0)    TODO: Eagle Eyes AND Other Fixed Hitrates
-                //{
-                //    chance = 10;
-                //}
             }
 
             double bonus = 0;
@@ -1040,12 +1039,27 @@ namespace OpenNos.GameObject.Helpers
 
             if (attacker.AttackType != AttackType.Magical)
             {
-                if (ServerManager.Instance.RandomNumber() - bonus < chance)
+                if (!attacker.HasBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance))
                 {
-                    hitmode = 1;
-                    attacker.SkillBcards.Clear();
-                    targetEntity.DealtDamage = 0;
-                    return 0;
+                    if (ServerManager.Instance.RandomNumber() - bonus < chance)
+                    {
+                        hitmode = 1;
+                        attacker.SkillBcards.Clear();
+                        targetEntity.DealtDamage = 0;
+                        return 0;
+                    }
+                }
+                else
+                {
+                    chance = attacker.GetBuff(BCardType.CardType.GuarantedDodgeRangedAttack, (byte)AdditionalTypes.GuarantedDodgeRangedAttack.AttackHitChance, false)[0];
+
+                    if (ServerManager.Instance.RandomNumber() > chance)
+                    {
+                        hitmode = 1;
+                        attacker.SkillBcards.Clear();
+                        targetEntity.DealtDamage = 0;
+                        return 0;
+                    }
                 }
             }
             else
@@ -1072,17 +1086,10 @@ namespace OpenNos.GameObject.Helpers
 
             int[] atklvlfix = GetDefenderBenefitingBuffs(BCardType.CardType.CalculatingLevel,
                 (byte)AdditionalTypes.CalculatingLevel.CalculatedAttackLevel);
-            int[] deflvlfix = GetAttackerBenefitingBuffs(BCardType.CardType.CalculatingLevel,
-                (byte)AdditionalTypes.CalculatingLevel.CalculatedDefenceLevel);
 
             if (atklvlfix[3] != 0)
             {
                 attackUpgrade = (short)atklvlfix[0];
-            }
-
-            if (deflvlfix[3] != 0)
-            {
-                defenseUpgrade = (short)deflvlfix[0];
             }
 
             attackUpgrade -= (short)targetDefenseUpgrade;
@@ -1141,14 +1148,6 @@ namespace OpenNos.GameObject.Helpers
                 case 10:
                     weaponDamage += weaponDamage * 2;
                     break;
-
-                    //default:
-                    //    if (attackUpgrade > 0)
-                    //    {
-                    //        weaponDamage *= attackUpgrade / 5;
-                    //    }
-
-                    //    break;
             }
 
             #endregion
@@ -1251,7 +1250,11 @@ namespace OpenNos.GameObject.Helpers
 
             attacker.CriticalChance += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritChance);
             attacker.CriticalChance -= GetShellArmorEffectValue(ShellOptionType.ReduceCriticalChance);
+            attacker.CriticalChance += attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.InflictingIncreased, false)[0];
+            attacker.CriticalChance -= attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.InflictingReduced, false)[0];
             attacker.CriticalRate += GetShellWeaponEffectValue(ShellOptionType.IncreaseCritDamages);
+            attacker.CriticalRate += attacker.GetBuff(BCardType.CardType.Critical, (byte)AdditionalTypes.Critical.DamageIncreased, false)[0];
+            attacker.CriticalRate -= target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[0];
 
             if (target.CellonOptions != null)
             {
@@ -1259,16 +1262,41 @@ namespace OpenNos.GameObject.Helpers
                     .Sum(s => s.Value);
             }
 
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.ReceivingChancePercent))
+            {
+                attacker.CriticalChance = target.GetBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.ReceivingChancePercent, false)[0];
+            }
 
-            if ((ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical) || target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
+            if (target.HasBuff(BCardType.CardType.SniperAttack, (byte)AdditionalTypes.SniperAttack.ReceiveCriticalFromSniper) && skill.SkillVNum == 1124) // Hardcoded, but this has to be this way
+            {
+                attacker.CriticalChance = target.GetBuff(BCardType.CardType.SniperAttack, (byte)AdditionalTypes.SniperAttack.ReceiveCriticalFromSniper, false)[0];
+            }
+
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.AlwaysReceives))
+            {
+                attacker.CriticalChance = 100;
+            }
+
+            if (target.HasBuff(BCardType.CardType.SpecialCritical, (byte)AdditionalTypes.SpecialCritical.NeverReceives))
+            {
+                attacker.CriticalChance = 0;
+            }
+
+            if (ServerManager.Instance.RandomNumber() < attacker.CriticalChance && attacker.AttackType != AttackType.Magical)
             {
                 double multiplier = attacker.CriticalRate / 100D;
+                int reducer = 1 - target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[0] / 100;
+                double reducerChance = target.GetBuff(BCardType.CardType.StealBuff, (byte)AdditionalTypes.StealBuff.ReduceCriticalReceivedChance, false)[1];
                 if (multiplier > 3)
                 {
                     multiplier = 3;
                 }
 
                 normalDamage += (int)(normalDamage * multiplier);
+                if (ServerManager.Instance.RandomNumber() < reducerChance)
+                {
+                    normalDamage *= reducer;
+                }
                 hitmode = 3;
             }
 
@@ -1422,9 +1450,10 @@ namespace OpenNos.GameObject.Helpers
                               * boostCategory1) * shellBoostCategory1);
 
 
-            if (attacker is Character && targetEntity is Character)
+            if (attacker.Entity is Character && targetEntity is Character)
             {
                 totalDamage /= 2;
+                totalDamage *= 1 + attacker.GetBuff(BCardType.CardType.LeonaPassiveSkill, (byte)AdditionalTypes.LeonaPassiveSkill.AttackIncreasedInPVP, false)[0] / 100;
             }
 
             if (target.EntityType == EntityType.Monster || target.EntityType == EntityType.NPC)
@@ -1466,6 +1495,93 @@ namespace OpenNos.GameObject.Helpers
             }
 
             #endregion
+
+
+            #region EndBuffs
+
+            if (target.HasBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance) && attacker.Element == 4)
+            {
+                if (ServerManager.Instance.RandomNumber() < target.GetBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance, false)[0])
+                {
+                    double increase = totalDamage * (double)target.GetBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.DarkElementDamageIncreaseChance, false)[1] / 100;
+                    totalDamage = (ushort)(totalDamage + increase);
+                }
+            }
+
+            if (target.Buffs.Any(s => s.Card.CardId == 608) && target.Entity is Character chara) // This has no bcard, thx entwell, xoxo
+            {
+                chara.Session.SendPacket($"mslot {(attacker.Element == 0 ? 15 : 10 + attacker.Element)} 0");
+                chara.RemoveBuff(608);
+                chara.SkillComboCount++;
+                chara.LastSkillCombo = DateTime.Now;
+            }
+
+            totalDamage += attacker.ChargeValue;
+            attacker.ChargeValue = 0;
+
+            if (target.HasBuff(BCardType.CardType.NoDefeatAndNoDamage, (byte)AdditionalTypes.NoDefeatAndNoDamage.TransferAttackPower))
+            {
+                target.ChargeValue = totalDamage;
+                attacker.SkillBcards.Clear();
+                targetEntity.DealtDamage = 0;
+                return 0;
+            }
+
+            if (target.HasBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased))
+            {
+                if (ServerManager.Instance.RandomNumber() < target.GetBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased)[0])
+                {
+                    totalDamage -= totalDamage * (target.GetBuff(BCardType.CardType.Block, (byte)AdditionalTypes.Block.ChanceAllDecreased)[1] / 100);
+                }
+            }
+
+            if (target.HasBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP))
+            {
+                // Need to hardcode this because entwell & opennos fucking sucks
+                double reducer = 0;
+                if (target.Buffs.All(s => s.Card.CardId != 618))
+                {
+                    reducer = (double)target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 100;
+                    totalDamage -= (ushort)(totalDamage * reducer);
+                    if (target.Entity is Character manaReducer)
+                    {
+                        manaReducer.Mp -= (ushort)(totalDamage * reducer);
+                        manaReducer.Session.SendPacket(manaReducer.GenerateStat());
+                    }
+                }
+                else
+                {
+                    Card archimageRegen = ServerManager.Instance.GetCardByCardId(618);
+
+                    if (archimageRegen != null && target.Entity is Character archimageCharacter)
+                    {
+                        reducer = ((double)archimageCharacter.Level / target.GetBuff(BCardType.CardType.LightAndShadow, (byte)AdditionalTypes.LightAndShadow.InflictDamageToMP)[0] / 10);
+                        totalDamage = (ushort)(reducer * totalDamage);
+                        archimageCharacter.Mp -= (ushort)(totalDamage * reducer);
+                        archimageCharacter.Session.SendPacket(archimageCharacter.GenerateStat());
+                    }
+                }
+            }
+
+            if (target.HasBuff(BCardType.CardType.VulcanoElementBuff, (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence) && hitmode == 3)
+            {
+                totalDamage -= target.GetBuff(BCardType.CardType.VulcanoElementBuff, (byte)AdditionalTypes.VulcanoElementBuff.CriticalDefence, false)[0];
+                totalDamage = totalDamage <= 0 ? ServerManager.Instance.RandomNumber(3, 6) : totalDamage;
+            }
+
+            if (target.HasBuff(BCardType.CardType.DarkCloneSummon, (byte)AdditionalTypes.DarkCloneSummon.ConvertDamageToHPChance) && target.Entity is Character thoughtCharacter)
+            {
+                thoughtCharacter.AccumulatedDamage += totalDamage;
+                thoughtCharacter.Hp = (int)(thoughtCharacter.Hp + totalDamage > thoughtCharacter.HpLoad() ? thoughtCharacter.HpLoad() : thoughtCharacter.Hp + totalDamage);
+                thoughtCharacter.MapInstance?.Broadcast(thoughtCharacter.GenerateRc(totalDamage));
+                thoughtCharacter.Session.SendPacket(thoughtCharacter.GenerateStat());
+                attacker.SkillBcards.Clear();
+                targetEntity.DealtDamage = 0;
+                return 0;
+            }
+
+            #endregion
+
             attacker.SkillBcards.Clear();
             targetEntity.DealtDamage = totalDamage;
             return totalDamage;
@@ -1477,26 +1593,23 @@ namespace OpenNos.GameObject.Helpers
             {
                 return 0;
             }
-            else if (level < 55)
+            if (level < 55)
             {
                 return level;
             }
-            else if (level < 60)
+            if (level < 60)
             {
                 return level * 2;
             }
-            else if (level < 65)
+            if (level < 65)
             {
                 return level * 3;
             }
-            else if (level < 70)
+            if (level < 70)
             {
                 return level * 4;
             }
-            else
-            {
-                return level * 5;
-            }
+            return level * 5;
         }
 
         #endregion

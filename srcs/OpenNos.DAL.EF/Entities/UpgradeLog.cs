@@ -13,9 +13,7 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using NosSharp.Enums;
 
 namespace OpenNos.DAL.EF.Entities
 {

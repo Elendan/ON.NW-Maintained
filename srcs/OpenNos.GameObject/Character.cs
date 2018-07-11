@@ -24,15 +24,12 @@ using OpenNos.Core;
 using OpenNos.Core.Extensions;
 using OpenNos.Data;
 using OpenNos.DAL;
-using OpenNos.DAL.EF.DB;
-using OpenNos.DAL.EF.Helpers;
 using OpenNos.GameObject.Battle;
 using OpenNos.GameObject.Battle.Args;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Event;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
-using OpenNos.GameObject.Logs.Classes;
 using OpenNos.GameObject.Map;
 using OpenNos.GameObject.Networking;
 using OpenNos.GameObject.Npc;
@@ -106,6 +103,28 @@ namespace OpenNos.GameObject
         public int MaxHp => (int)HpLoad();
 
         #endregion
+
+        public IDisposable SaveObs { get; set; }
+
+        public IEnumerable<CharacterHomeDTO> Homes
+        {
+            get
+            {
+                lock (ServerManager.Instance.CharacterHomes)
+                {
+                    return ServerManager.Instance.CharacterHomes == null ||
+                        !ServerManager.Instance.CharacterHomes.Any()
+                            ? new List<CharacterHomeDTO>()
+                            : ServerManager.Instance.CharacterHomes.Where(s => s.CharacterId == CharacterId);
+                }
+            }
+        }
+
+        public int RetainedHp { get; set; }
+
+        public int AccumulatedDamage { get; set; }
+
+        public UseSkillPacket FocusedMonster { get; set; }
 
         public IDisposable WeddingEffect { get; set; }
 
@@ -574,9 +593,68 @@ namespace OpenNos.GameObject
 
 		public bool IsWaitingForGift { get;  set; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
+
+        public void PushBackToDirection(int range)
+        {
+            short x = PositionX, y = PositionY;
+            var type = MoveType.Up;
+            switch (Direction)
+            {
+                case 0:
+                    y += (short)range;
+                    type = MoveType.Down;
+                    break;
+                case 1:
+                    x -= (short)range;
+                    type = MoveType.Left;
+                    break;
+                case 2:
+                    y -= (short)range;
+                    type = MoveType.Up;
+                    break;
+                case 3:
+                    x += (short)range;
+                    type = MoveType.Right;
+                    break;
+                case 4:
+                    x += (short)range;
+                    y += (short)range;
+                    type = MoveType.DiagDownRight;
+                    break;
+                case 5:
+                    x -= (short)range;
+                    y += (short)range;
+                    type = MoveType.DiagDownLeft;
+                    break;
+                case 6:
+                    x -= (short)range;
+                    y -= (short)range;
+                    type = MoveType.DiagUpLeft;
+                    break;
+                case 7:
+                    x += (short)range;
+                    y -= (short)range;
+                    type = MoveType.DiagUpRight;
+                    break;
+            }
+
+            //MapCell cell = MapInstance.Map.GetLastGoodPosition(x, y, type, Session);
+
+            //x = cell.X;
+            //y = cell.Y;
+
+            if (!MapInstance.Map.GetDefinedPosition(x, y))
+            {
+                return;
+            }
+
+            MapInstance?.Broadcast($"guri 3 1 {CharacterId} {x} {y} 3 8 2 - 1");
+            PositionX = x;
+            PositionY = y;
+        }
 
         public string GenerateSmemo(string message, byte type) => $"s_memo {type} {message}";
 
@@ -2241,7 +2319,7 @@ namespace OpenNos.GameObject
 
                 #region Act4
 
-                if (monsterToAttack.MapInstance.MapInstanceType == MapInstanceType.Act4Instance)
+                if (monsterToAttack.MapInstance?.MapInstanceType == MapInstanceType.Act4Instance)
                 {
                     if (ServerManager.Instance.Act4AngelStat.Mode == 0 &&
                         ServerManager.Instance.Act4DemonStat.Mode == 0)
@@ -5045,7 +5123,7 @@ namespace OpenNos.GameObject
             {
                 LevelXp -= (long)t;
                 Level++;
-                RewardsHelper.Instance.GetLevelUpRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.Level);
                 t = XpLoad();
                 if (Level >= ServerManager.Instance.MaxLevel)
                 {
@@ -5153,7 +5231,7 @@ namespace OpenNos.GameObject
                 Session.SendPacket(GenerateLevelUp());
                 Session.SendPacket(
                     UserInterfaceHelper.Instance.GenerateMsg(Language.Instance.GetMessageFromKey("JOB_LEVELUP"), 0));
-                RewardsHelper.Instance.GetJobRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.JobLevel);
                 LearnAdventurerSkill();
                 Session.CurrentMapInstance?.Broadcast(GenerateEff(8), PositionX, PositionY);
                 Session.CurrentMapInstance?.Broadcast(GenerateEff(198), PositionX, PositionY);
@@ -5196,7 +5274,7 @@ namespace OpenNos.GameObject
             {
                 HeroXp -= (long)t;
                 HeroLevel++;
-                RewardsHelper.Instance.GetHeroLvlRewards(Session);
+                RewardsHelper.Instance.GetLevelUpRewards(Session, LevelType.Heroic);
                 t = HeroXpLoad();
                 if (HeroLevel >= ServerManager.Instance.MaxHeroLevel)
                 {
@@ -5736,7 +5814,7 @@ namespace OpenNos.GameObject
         {
             Session.Character.PositionX = x;
             Session.Character.PositionY = y;
-            Session.SendPacket($"tp {1} {CharacterId} {x} {y} 0");
+			Session.CurrentMapInstance.Broadcast($"tp {1} {CharacterId} {x} {y} 0");
             Session.SendPacket(GenerateCond());
         }
 

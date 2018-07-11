@@ -11,7 +11,6 @@ using OpenNos.Data;
 using OpenNos.GameObject.Battle.Args;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Event;
-using OpenNos.GameObject.Event.CALIGOR;
 using OpenNos.GameObject.Helpers;
 using OpenNos.GameObject.Item.Instance;
 using OpenNos.GameObject.Map;
@@ -410,20 +409,23 @@ namespace OpenNos.GameObject.Battle
             return 0;
         }
 
-        public int[] GetBuff(CardType type, byte subtype)
+        public int[] GetBuff(CardType type, byte subtype, bool getStatic = true)
         {
             int value1 = 0;
             int value2 = 0;
 
-            lock(StaticBcards)
+            if (getStatic)
             {
-                foreach (BCard entry in StaticBcards.Concat(SkillBcards)
-                    .Where(s => s != null && s.Type.Equals((byte)type) && s.SubType.Equals(subtype)))
+                lock (StaticBcards)
                 {
-                    value1 += entry.IsLevelScaled
-                        ? entry.IsLevelDivided ? Level / entry.FirstData : entry.FirstData * Level
-                        : entry.FirstData;
-                    value2 += entry.SecondData;
+                    foreach (BCard entry in StaticBcards.Concat(SkillBcards)
+                        .Where(s => s != null && s.Type.Equals((byte)type) && s.SubType.Equals(subtype)))
+                    {
+                        value1 += entry.IsLevelScaled
+                            ? entry.IsLevelDivided ? Level / entry.FirstData : entry.FirstData * Level
+                            : entry.FirstData;
+                        value2 += entry.SecondData;
+                    }
                 }
             }
 
@@ -546,7 +548,17 @@ namespace OpenNos.GameObject.Battle
                 return;
             }
 
-            character.Invisible = false;
+			if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.HideBarrelSkill && s.SubType.Equals((byte)AdditionalTypes.HideBarrelSkill.NoHPConsumption)))
+			{
+				character.HasGodMode = false;
+			}
+
+			if (indicator.Card.BCards.Any(s => s.Type == (byte)CardType.NoDefeatAndNoDamage && s.SubType.Equals((byte)AdditionalTypes.NoDefeatAndNoDamage.NeverReceiveDamage)))
+			{
+				character.HasGodMode = false;
+			}
+
+			character.Invisible = false;
             character.Mates.Where(m => m.IsTeamMember).ToList()
                 .ForEach(m => character.MapInstance?.Broadcast(m.GenerateIn()));
             character.MapInstance?.Broadcast(character.GenerateInvisible());
@@ -577,8 +589,18 @@ namespace OpenNos.GameObject.Battle
             bool onyxWings = false;
             int damage = DamageHelper.Instance.GenerateDamage(this, target, skill, ref hitmode, ref onyxWings);
 
+            if (skill != null && SkillHelper.Instance.NoDamageSkills != null)
+            {
+                if (SkillHelper.Instance.NoDamageSkills.Any(s => s == skill.SkillVNum))
+                {
+                    target.DealtDamage = 0;
+                    damage = 0;
+                }
+            }
+
             if (Session is Character charact && mapInstance != null && hitmode != 1)
             {
+                target.RemoveBuff(548);
                 if (onyxWings)
                 {
                     short onyxX = (short)(charact.PositionX + 2);

@@ -25,11 +25,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NosSharp.Enums;
 using OpenNos.Core;
-using OpenNos.Core.Extensions;
 using OpenNos.Core.Networking.Communication.Scs.Threading;
 using OpenNos.Data;
 using OpenNos.DAL;
-using OpenNos.DAL.EF.DB;
 using OpenNos.DAL.EF.Helpers;
 using OpenNos.GameObject.Buff;
 using OpenNos.GameObject.Event;
@@ -112,6 +110,8 @@ namespace OpenNos.GameObject.Networking
         #region Properties
 
         public static ServerManager Instance => _instance ?? (_instance = new ServerManager());
+
+        public IEnumerable<CharacterHomeDTO> CharacterHomes { get; set; }
 
         public ConcurrentBag<ScriptedInstance> Act4Raids { get; set; }
 
@@ -265,6 +265,12 @@ namespace OpenNos.GameObject.Networking
         #endregion
 
         #region Methods
+
+        public void RefreshHomes()
+        {
+            CharacterHomes.ToList().Clear();
+            CharacterHomes = DaoFactory.CharacterHomeDao.LoadAll();
+        }
 
         public List<MapNpc> GetMapNpcsPerVNum(short vnum) => _mapNpcs.ContainsKey(vnum) ? _mapNpcs[vnum] : null;
 
@@ -1526,6 +1532,7 @@ namespace OpenNos.GameObject.Networking
             Act4DemonStat = new PercentBar();
             Act6Erenia = new PercentBar();
             Act6Zenas = new PercentBar();
+            CharacterHomes = DaoFactory.CharacterHomeDao.LoadAll();
 
             CommunicationServiceClient.Instance.SetMaintenanceState(
                 bool.Parse(ConfigurationManager.AppSettings["Maintenance"]));
@@ -2366,7 +2373,7 @@ namespace OpenNos.GameObject.Networking
 
             Observable.Interval(TimeSpan.FromSeconds(1)).Subscribe(x => { RemoveItemProcess(); });
 
-            Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
+            //Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(x => { SaveAll(); });
 
             foreach (Schedule schedule in Schedules)
             {

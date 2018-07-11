@@ -12,7 +12,6 @@
  * GNU General Public License for more details.
  */
 
-using System.Net;
 using OpenNos.DAL.Interface;
 using OpenNos.DAL.EF;
 
@@ -30,6 +29,7 @@ namespace OpenNos.DAL
         private static IEquipmentOptionDAO _equipmentOptionDao;
         private static ICharacterDAO _characterDao;
         private static ICharacterRelationDAO _characterRelationDao;
+        private static ICharacterHomeDAO _characterHomeDao;
         private static ICharacterSkillDAO _characterskillDao;
         private static ICharacterQuestDAO _characterQuestDao;
         private static IComboDAO _comboDao;
@@ -85,275 +85,115 @@ namespace OpenNos.DAL
 
         #region Properties
 
-        public static IAccountDAO AccountDao
-        {
-            get { return _accountDao ?? (_accountDao = new AccountDAO()); }
-        }
+        public static IAccountDAO AccountDao => _accountDao ?? (_accountDao = new AccountDAO());
 
-        public static IBazaarItemDAO BazaarItemDao
-        {
-            get { return _bazaarItemDao ?? (_bazaarItemDao = new BazaarItemDAO()); }
-        }
+        public static IBazaarItemDAO BazaarItemDao => _bazaarItemDao ?? (_bazaarItemDao = new BazaarItemDAO());
 
-        public static ICardDAO CardDao
-        {
-            get { return _cardDao ?? (_cardDao = new CardDAO()); }
-        }
+        public static ICardDAO CardDao => _cardDao ?? (_cardDao = new CardDAO());
 
-        public static IEquipmentOptionDAO EquipmentOptionDao
-        {
-            get { return _equipmentOptionDao ?? (_equipmentOptionDao = new EquipmentOptionDAO()); }
-        }
+        public static IEquipmentOptionDAO EquipmentOptionDao => _equipmentOptionDao ?? (_equipmentOptionDao = new EquipmentOptionDAO());
 
-        public static ICharacterDAO CharacterDao
-        {
-            get { return _characterDao ?? (_characterDao = new CharacterDAO()); }
-        }
+        public static ICharacterDAO CharacterDao => _characterDao ?? (_characterDao = new CharacterDAO());
 
-        public static ICharacterRelationDAO CharacterRelationDao
-        {
-            get { return _characterRelationDao ?? (_characterRelationDao = new CharacterRelationDAO()); }
-        }
+        public static ICharacterHomeDAO CharacterHomeDao => _characterHomeDao ?? (_characterHomeDao = new CharacterHomeDAO());
 
-        public static ICharacterSkillDAO CharacterSkillDao
-        {
-            get { return _characterskillDao ?? (_characterskillDao = new CharacterSkillDAO()); }
-        }
+        public static ICharacterRelationDAO CharacterRelationDao => _characterRelationDao ?? (_characterRelationDao = new CharacterRelationDAO());
 
-        public static ICharacterQuestDAO CharacterQuestDao
-        {
-            get { return _characterQuestDao ?? (_characterQuestDao = new CharacterQuestDAO()); }
-        }
+        public static ICharacterSkillDAO CharacterSkillDao => _characterskillDao ?? (_characterskillDao = new CharacterSkillDAO());
 
-        public static IComboDAO ComboDao
-        {
-            get { return _comboDao ?? (_comboDao = new ComboDAO()); }
-        }
+        public static ICharacterQuestDAO CharacterQuestDao => _characterQuestDao ?? (_characterQuestDao = new CharacterQuestDAO());
 
-        public static IDropDAO DropDao
-        {
-            get { return _dropDao ?? (_dropDao = new DropDAO()); }
-        }
+        public static IComboDAO ComboDao => _comboDao ?? (_comboDao = new ComboDAO());
 
-        public static IFamilyCharacterDAO FamilyCharacterDao
-        {
-            get { return _familycharacterDao ?? (_familycharacterDao = new FamilyCharacterDAO()); }
-        }
+        public static IDropDAO DropDao => _dropDao ?? (_dropDao = new DropDAO());
 
-        public static IFamilyDAO FamilyDao
-        {
-            get { return _familyDao ?? (_familyDao = new FamilyDAO()); }
-        }
+        public static IFamilyCharacterDAO FamilyCharacterDao => _familycharacterDao ?? (_familycharacterDao = new FamilyCharacterDAO());
 
-        public static IFamilyLogDAO FamilyLogDao
-        {
-            get { return _familylogDao ?? (_familylogDao = new FamilyLogDAO()); }
-        }
+        public static IFamilyDAO FamilyDao => _familyDao ?? (_familyDao = new FamilyDAO());
 
-        public static IGeneralLogDAO GeneralLogDao
-        {
-            get { return _generallogDao ?? (_generallogDao = new GeneralLogDAO()); }
-        }
+        public static IFamilyLogDAO FamilyLogDao => _familylogDao ?? (_familylogDao = new FamilyLogDAO());
 
-        public static IItemDAO ItemDao
-        {
-            get { return _itemDao ?? (_itemDao = new ItemDAO()); }
-        }
+        public static IGeneralLogDAO GeneralLogDao => _generallogDao ?? (_generallogDao = new GeneralLogDAO());
 
-        public static IItemInstanceDAO IteminstanceDao
-        {
-            get { return _iteminstanceDao ?? (_iteminstanceDao = new ItemInstanceDAO()); }
-        }
+        public static IItemDAO ItemDao => _itemDao ?? (_itemDao = new ItemDAO());
 
-        public static ILevelUpRewardsDAO LevelUpRewardsDao
-        {
-            get { return _levelUpRewardsDao ?? (_levelUpRewardsDao = new LevelUpRewardsDAO()); }
-        }
+        public static IItemInstanceDAO IteminstanceDao => _iteminstanceDao ?? (_iteminstanceDao = new ItemInstanceDAO());
 
-        public static ILogChatDAO LogChatDao
-        {
-            get { return _logChatDao ?? (_logChatDao = new LogChatDAO()); }
-        }
+        public static ILevelUpRewardsDAO LevelUpRewardsDao => _levelUpRewardsDao ?? (_levelUpRewardsDao = new LevelUpRewardsDAO());
 
-        public static ILogCommandsDAO LogCommandsDao
-        {
-            get { return _logCommandsDao ?? (_logCommandsDao = new LogCommandsDAO()); }
-        }
+        public static ILogChatDAO LogChatDao => _logChatDao ?? (_logChatDao = new LogChatDAO());
 
-        public static ILogVIPDAO LogVipDao
-        {
-            get { return _logVipDao ?? (_logVipDao = new LogVIPDAO()); }
-        }
+        public static ILogCommandsDAO LogCommandsDao => _logCommandsDao ?? (_logCommandsDao = new LogCommandsDAO());
 
-        public static IMailDAO MailDao
-        {
-            get { return _mailDao ?? (_mailDao = new MailDAO()); }
-        }
+        public static ILogVIPDAO LogVipDao => _logVipDao ?? (_logVipDao = new LogVIPDAO());
 
-        public static IMapDAO MapDao
-        {
-            get { return _mapDao ?? (_mapDao = new MapDAO()); }
-        }
+        public static IMailDAO MailDao => _mailDao ?? (_mailDao = new MailDAO());
 
-        public static IMapMonsterDAO MapMonsterDao
-        {
-            get { return _mapmonsterDao ?? (_mapmonsterDao = new MapMonsterDAO()); }
-        }
+        public static IMapDAO MapDao => _mapDao ?? (_mapDao = new MapDAO());
 
-        public static IMapNpcDAO MapNpcDao
-        {
-            get { return _mapnpcDao ?? (_mapnpcDao = new MapNpcDAO()); }
-        }
+        public static IMapMonsterDAO MapMonsterDao => _mapmonsterDao ?? (_mapmonsterDao = new MapMonsterDAO());
 
-        public static IMapTypeDAO MapTypeDao
-        {
-            get { return _maptypeDao ?? (_maptypeDao = new MapTypeDAO()); }
-        }
+        public static IMapNpcDAO MapNpcDao => _mapnpcDao ?? (_mapnpcDao = new MapNpcDAO());
 
-        public static IMapTypeMapDAO MapTypeMapDao
-        {
-            get { return _maptypemapDao ?? (_maptypemapDao = new MapTypeMapDAO()); }
-        }
+        public static IMapTypeDAO MapTypeDao => _maptypeDao ?? (_maptypeDao = new MapTypeDAO());
 
-        public static IMateDAO MateDao
-        {
-            get { return _mateDao ?? (_mateDao = new MateDAO()); }
-        }
+        public static IMapTypeMapDAO MapTypeMapDao => _maptypemapDao ?? (_maptypemapDao = new MapTypeMapDAO());
 
-        public static IMinilandObjectDAO MinilandObjectDao
-        {
-            get { return _minilandobjectDao ?? (_minilandobjectDao = new MinilandObjectDAO()); }
-        }
+        public static IMateDAO MateDao => _mateDao ?? (_mateDao = new MateDAO());
 
-        public static INpcMonsterDAO NpcMonsterDao
-        {
-            get { return _npcmonsterDao ?? (_npcmonsterDao = new NpcMonsterDAO()); }
-        }
+        public static IMinilandObjectDAO MinilandObjectDao => _minilandobjectDao ?? (_minilandobjectDao = new MinilandObjectDAO());
 
-        public static INpcMonsterSkillDAO NpcMonsterSkillDao
-        {
-            get { return _npcmonsterskillDao ?? (_npcmonsterskillDao = new NpcMonsterSkillDAO()); }
-        }
+        public static INpcMonsterDAO NpcMonsterDao => _npcmonsterDao ?? (_npcmonsterDao = new NpcMonsterDAO());
 
-        public static IPenaltyLogDAO PenaltyLogDao
-        {
-            get { return _penaltylogDao ?? (_penaltylogDao = new PenaltyLogDAO()); }
-        }
+        public static INpcMonsterSkillDAO NpcMonsterSkillDao => _npcmonsterskillDao ?? (_npcmonsterskillDao = new NpcMonsterSkillDAO());
 
-        public static IPortalDAO PortalDao
-        {
-            get { return _portalDao ?? (_portalDao = new PortalDAO()); }
-        }
+        public static IPenaltyLogDAO PenaltyLogDao => _penaltylogDao ?? (_penaltylogDao = new PenaltyLogDAO());
 
-        public static IQuestDAO QuestDao
-        {
-            get { return _questDao ?? (_questDao = new QuestDAO()); }
-        }
+        public static IPortalDAO PortalDao => _portalDao ?? (_portalDao = new PortalDAO());
 
-        public static IQuestLogDAO QuestLogDao
-        {
-            get { return _questLogDao ?? (_questLogDao = new QuestLogDAO()); }
-        }
+        public static IQuestDAO QuestDao => _questDao ?? (_questDao = new QuestDAO());
 
-        public static IQuestObjectiveDAO QuestObjectiveDao
-        {
-            get { return _questObjectiveDao ?? (_questObjectiveDao = new QuestObjectiveDAO()); }
-        }
+        public static IQuestLogDAO QuestLogDao => _questLogDao ?? (_questLogDao = new QuestLogDAO());
 
-        public static IQuestRewardDAO QuestRewardDao
-        {
-            get { return _questRewardDao ?? (_questRewardDao = new QuestRewardDAO()); }
-        }
+        public static IQuestObjectiveDAO QuestObjectiveDao => _questObjectiveDao ?? (_questObjectiveDao = new QuestObjectiveDAO());
 
-        public static IQuicklistEntryDAO QuicklistEntryDao
-        {
-            get { return _quicklistDao ?? (_quicklistDao = new QuicklistEntryDAO()); }
-        }
+        public static IQuestRewardDAO QuestRewardDao => _questRewardDao ?? (_questRewardDao = new QuestRewardDAO());
 
-        public static IRaidLogDAO RaidLogDao
-        {
-            get { return _raidLogDao ?? (_raidLogDao = new RaidLogDAO()); }
-        }
+        public static IQuicklistEntryDAO QuicklistEntryDao => _quicklistDao ?? (_quicklistDao = new QuicklistEntryDAO());
 
-        public static IRecipeDAO RecipeDao
-        {
-            get { return _recipeDao ?? (_recipeDao = new RecipeDAO()); }
-        }
+        public static IRaidLogDAO RaidLogDao => _raidLogDao ?? (_raidLogDao = new RaidLogDAO());
 
-        public static IRecipeItemDAO RecipeItemDao
-        {
-            get { return _recipeitemDao ?? (_recipeitemDao = new RecipeItemDAO()); }
-        }
+        public static IRecipeDAO RecipeDao => _recipeDao ?? (_recipeDao = new RecipeDAO());
 
-        public static IRespawnDAO RespawnDao
-        {
-            get { return _respawnDao ?? (_respawnDao = new RespawnDAO()); }
-        }
+        public static IRecipeItemDAO RecipeItemDao => _recipeitemDao ?? (_recipeitemDao = new RecipeItemDAO());
 
-        public static IRespawnMapTypeDAO RespawnMapTypeDao
-        {
-            get { return _respawnMapTypeDao ?? (_respawnMapTypeDao = new RespawnMapTypeDAO()); }
-        }
+        public static IRespawnDAO RespawnDao => _respawnDao ?? (_respawnDao = new RespawnDAO());
 
-        public static IShopDAO ShopDao
-        {
-            get { return _shopDao ?? (_shopDao = new ShopDAO()); }
-        }
+        public static IRespawnMapTypeDAO RespawnMapTypeDao => _respawnMapTypeDao ?? (_respawnMapTypeDao = new RespawnMapTypeDAO());
 
-        public static IShopItemDAO ShopItemDao
-        {
-            get { return _shopitemDao ?? (_shopitemDao = new ShopItemDAO()); }
-        }
+        public static IShopDAO ShopDao => _shopDao ?? (_shopDao = new ShopDAO());
 
-        public static IShopSkillDAO ShopSkillDao
-        {
-            get { return _shopskillDao ?? (_shopskillDao = new ShopSkillDAO()); }
-        }
+        public static IShopItemDAO ShopItemDao => _shopitemDao ?? (_shopitemDao = new ShopItemDAO());
 
-        public static ISkillDAO SkillDao
-        {
-            get { return _skillDao ?? (_skillDao = new SkillDAO()); }
-        }
+        public static IShopSkillDAO ShopSkillDao => _shopskillDao ?? (_shopskillDao = new ShopSkillDAO());
 
-        public static IStaticBonusDAO StaticBonusDao
-        {
-            get { return _staticBonusDao ?? (_staticBonusDao = new StaticBonusDAO()); }
-        }
+        public static ISkillDAO SkillDao => _skillDao ?? (_skillDao = new SkillDAO());
 
-        public static IStaticBuffDAO StaticBuffDao
-        {
-            get { return _staticBuffDao ?? (_staticBuffDao = new StaticBuffDAO()); }
-        }
+        public static IStaticBonusDAO StaticBonusDao => _staticBonusDao ?? (_staticBonusDao = new StaticBonusDAO());
 
-        public static ITeleporterDAO TeleporterDao
-        {
-            get { return _teleporterDao ?? (_teleporterDao = new TeleporterDAO()); }
-        }
+        public static IStaticBuffDAO StaticBuffDao => _staticBuffDao ?? (_staticBuffDao = new StaticBuffDAO());
 
-        public static IScriptedInstanceDAO ScriptedInstanceDao
-        {
-            get { return _scriptedinstanceDao ?? (_scriptedinstanceDao = new ScriptedInstanceDAO()); }
-        }
+        public static ITeleporterDAO TeleporterDao => _teleporterDao ?? (_teleporterDao = new TeleporterDAO());
 
-        public static IBCardDAO BCardDao
-        {
-            get { return _bcardDao ?? (_bcardDao = new BCardDAO()); }
-        }
+        public static IScriptedInstanceDAO ScriptedInstanceDao => _scriptedinstanceDao ?? (_scriptedinstanceDao = new ScriptedInstanceDAO());
 
-        public static IRollGeneratedItemDAO RollGeneratedItemDao
-        {
-            get { return _rollGeneratedItemDao ?? (_rollGeneratedItemDao = new RollGeneratedItemDAO()); }
-        }
+        public static IBCardDAO BCardDao => _bcardDao ?? (_bcardDao = new BCardDAO());
 
-        public static IExchangeLogDao ExchangeLogDao
-        {
-            get { return _exchangeLogDao ?? (_exchangeLogDao = new ExchangeLogDao()); }
-        }
+        public static IRollGeneratedItemDAO RollGeneratedItemDao => _rollGeneratedItemDao ?? (_rollGeneratedItemDao = new RollGeneratedItemDAO());
 
-        public static IUpgradeLogDao UpgradeLogDao
-        {
-            get { return _upgradeLogDao ?? (_upgradeLogDao = new UpgradeLogDao());  }
-        }
+        public static IExchangeLogDao ExchangeLogDao => _exchangeLogDao ?? (_exchangeLogDao = new ExchangeLogDao());
+
+        public static IUpgradeLogDao UpgradeLogDao => _upgradeLogDao ?? (_upgradeLogDao = new UpgradeLogDao());
 
         #endregion
     }
