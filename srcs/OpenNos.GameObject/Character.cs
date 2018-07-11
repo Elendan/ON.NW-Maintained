@@ -457,7 +457,7 @@ namespace OpenNos.GameObject
             }
         }
 
-        public List<RespawnDTO> Respawns { private get; set; }
+        public List<RespawnDTO> Respawns { get; set; }
 
         public RespawnMapTypeDTO Return
         {

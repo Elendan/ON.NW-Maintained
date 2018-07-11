@@ -6,6 +6,12 @@ namespace OpenNos.GameObject.Packets.HomePackets
     [PacketHeader("$SetHome", Authority = AuthorityType.User, PassNonParseablePacket = true)]
     public class SetHomePacket : PacketDefinition
     {
-        public string Name { get; set; }
-    }
+		[PacketIndex(0)]
+		public long? HomeId { get; set; }
+
+		public override string ToString()
+		{
+			return "$SetHome HOMDEID";
+		}
+	}
 }
