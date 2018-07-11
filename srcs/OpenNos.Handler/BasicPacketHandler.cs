@@ -1553,6 +1553,7 @@ namespace OpenNos.Handler
 
             Session.Character.GeneratePairy();
             Session.Character.GenerateStatChar();
+            Session.SendPacket(Session.Character.GenerateSay("Use $Help to see available commands !", 12));
         }
 
         /// <summary>

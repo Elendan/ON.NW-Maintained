@@ -1469,24 +1469,36 @@ namespace OpenNos.Handler
             Session.SendPacket(Session.Character.GenerateSay("-------------Commands Info-------------", 11));
 
             // TODO: OPTIMIZE!
-            List<Type> classes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => t.IsClass && t.Namespace == "OpenNos.GameObject.Packets.CommandPackets")
-                .OrderBy(x => x.Name)
-                .ToList();
-            foreach (Type type in classes)
+            if (Session.Account.Authority >= AuthorityType.GameMaster)
             {
-                object classInstance = Activator.CreateInstance(type);
-                Type classType = classInstance.GetType();
-                MethodInfo method = classType.GetMethod("ReturnHelp");
-                if (method == null)
+                List<Type> classes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => t.IsClass && t.Namespace == "OpenNos.GameObject.Packets.CommandPackets")
+                    .OrderBy(x => x.Name)
+                    .ToList();
+                foreach (Type type in classes)
                 {
-                    continue;
-                }
+                    object classInstance = Activator.CreateInstance(type);
+                    Type classType = classInstance.GetType();
+                    MethodInfo method = classType.GetMethod("ReturnHelp");
+                    if (method == null)
+                    {
+                        continue;
+                    }
 
-                string message = method.Invoke(classInstance, null).ToString();
-                if (!string.IsNullOrEmpty(message))
-                {
-                    Session.SendPacket(Session.Character.GenerateSay(message, 12));
+                    string message = method.Invoke(classInstance, null).ToString();
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        Session.SendPacket(Session.Character.GenerateSay(message, 12));
+                    }
                 }
+            }
+            else
+            {
+                Session.SendPacket(Session.Character.GenerateSay("$SetHome <name>", 12));
+                Session.SendPacket(Session.Character.GenerateSay("$Home <name>", 12));
+                Session.SendPacket(Session.Character.GenerateSay("$$UnsetHome <name>", 12));
+                Session.SendPacket(Session.Character.GenerateSay("$ListHome", 12));
+                Session.SendPacket(Session.Character.GenerateSay("$Move", 12));
+                Session.SendPacket(Session.Character.GenerateSay("$Helpme", 12));
             }
 
             Session.SendPacket(Session.Character.GenerateSay("-----------------------------------------------", 11));
