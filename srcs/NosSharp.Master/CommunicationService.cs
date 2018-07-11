@@ -34,6 +34,23 @@ namespace ON.NW.Master
     {
         #region Methods
 
+        public long[][] RetrieveOnlineCharacters(long characterId)
+        {
+            List<AccountSession> connections = MsManager.Instance.ConnectedAccounts.ToList().Where(s => s.IpAddress == MsManager.Instance.ConnectedAccounts.ToList().Find(f => f.CharacterId == characterId)?.IpAddress && s.CharacterId != 0).ToList();
+
+            long[][] result = new long[connections.Count][];
+
+            int i = 0;
+            foreach (AccountSession acc in connections)
+            {
+                result[i] = new long[2];
+                result[i][0] = acc.CharacterId;
+                result[i][1] = acc.ConnectedWorld?.ChannelId ?? 0;
+                i++;
+            }
+            return result;
+        }
+
         public bool GetMaintenanceState() => MsManager.Instance.MaintenanceState;
 
         public void SetMaintenanceState(bool state)
@@ -240,7 +257,7 @@ namespace ON.NW.Master
             }
         }
 
-        public void RegisterAccountLogin(long accountId, long sessionId, string accountName)
+        public void RegisterAccountLogin(long accountId, long sessionId, string accountName, string ipAdress)
         {
             if (!MsManager.Instance.AuthentificatedClients.Any(s => s.Equals(CurrentClient.ClientId)))
             {
@@ -249,7 +266,7 @@ namespace ON.NW.Master
 
             MsManager.Instance.ConnectedAccounts.RemoveWhere(a => !a.AccountId.Equals(accountId), out ConcurrentBag<AccountSession> tmp);
             MsManager.Instance.ConnectedAccounts = tmp;
-            MsManager.Instance.ConnectedAccounts.Add(new AccountSession(accountId, sessionId, accountName));
+            MsManager.Instance.ConnectedAccounts.Add(new AccountSession(accountId, sessionId, accountName, ipAdress));
         }
 
         public void RegisterInternalAccountLogin(long accountId, int sessionId)

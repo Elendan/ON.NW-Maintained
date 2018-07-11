@@ -83,6 +83,8 @@ namespace OpenNos.Master.Library.Client
 
         #region Methods
 
+        public long[][] RetrieveOnlineCharacters(long characterId) => _client.ServiceProxy.RetrieveOnlineCharacters(characterId);
+
         public bool GetMaintenanceState() => _client.ServiceProxy.GetMaintenanceState();
 
         public void SetMaintenanceState(bool state)
@@ -141,9 +143,9 @@ namespace OpenNos.Master.Library.Client
             _client.ServiceProxy.RefreshPenalty(penaltyId);
         }
 
-        public void RegisterAccountLogin(long accountId, long sessionId, string accountName)
+        public void RegisterAccountLogin(long accountId, long sessionId, string accountName, string ipAddress)
         {
-            _client.ServiceProxy.RegisterAccountLogin(accountId, sessionId, accountName);
+            _client.ServiceProxy.RegisterAccountLogin(accountId, sessionId, accountName, ipAddress);
         }
 
         public bool ConnectAccountInternal(Guid worldId, long accountId, int sessionId) => _client.ServiceProxy.ConnectAccountInternal(worldId, accountId, sessionId);

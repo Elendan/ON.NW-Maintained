@@ -121,7 +121,7 @@ namespace OpenNos.Master.Library.Interface
         /// </summary>
         /// <param name="accountId">Id of the Account to register</param>
         /// <param name="sessionId">Id of the Session to register</param>
-        void RegisterAccountLogin(long accountId, long sessionId, string accountName);
+        void RegisterAccountLogin(long accountId, long sessionId, string accountName, string ipAddress);
 
         /// <summary>
         ///     Updates the Relations on the given WorldGroup
@@ -196,5 +196,7 @@ namespace OpenNos.Master.Library.Interface
         bool GetMaintenanceState();
 
         void SetMaintenanceState(bool state);
+
+        long[][] RetrieveOnlineCharacters(long characterId);
     }
 }

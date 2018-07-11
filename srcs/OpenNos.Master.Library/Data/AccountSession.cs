@@ -20,12 +20,13 @@ namespace OpenNos.Master.Library.Data
     {
         #region Instantiation
 
-        public AccountSession(long accountId, long session, string accountName)
+        public AccountSession(long accountId, long session, string accountName, string ipAddress)
         {
             AccountId = accountId;
             SessionId = session;
             LastPulse = DateTime.Now;
             AccountName = accountName;
+            IpAddress = ipAddress;
         }
 
         #endregion
@@ -67,6 +68,8 @@ namespace OpenNos.Master.Library.Data
         public WorldServer ConnectedWorld { get; set; }
 
         public WorldServer PreviousChannel { get; set; }
+
+        public string IpAddress { get; set; }
 
         public long SessionId { get; }
 

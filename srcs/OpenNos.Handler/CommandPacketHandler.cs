@@ -3336,8 +3336,21 @@ namespace OpenNos.Handler
                 return;
             }
 
-            Session.SendPacket(Session.Character.GenerateSay("----- SESSION -----", 13));
-            Session.SendPacket(Session.Character.GenerateSay($"Current IP: {session.IpAddress}", 13));
+            Session.SendPacket(Session.Character.GenerateSay("----- CONNECTED CHARACTERS -----", 13));
+            foreach (long[] connection in CommunicationServiceClient.Instance.RetrieveOnlineCharacters(character
+                .CharacterId))
+            {
+                if (connection != null)
+                {
+                    CharacterDTO characterDto = DaoFactory.CharacterDao.LoadById(connection[0]);
+                    if (characterDto != null)
+                    {
+                        Session.SendPacket(Session.Character.GenerateSay($"Character Name: {characterDto.Name}", 13));
+                        Session.SendPacket(Session.Character.GenerateSay($"ChannelId: {connection[1]}", 13));
+                        Session.SendPacket(Session.Character.GenerateSay("-----", 13));
+                    }
+                }
+            }
             Session.SendPacket(Session.Character.GenerateSay("----- ------------ -----", 13));
         }
 

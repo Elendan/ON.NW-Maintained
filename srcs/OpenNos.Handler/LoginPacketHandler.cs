@@ -123,7 +123,7 @@ namespace OpenNos.Handler
 
                                 try
                                 {
-                                    CommunicationServiceClient.Instance.RegisterAccountLogin(loadedAccount.AccountId, newSessionId, loadedAccount.Name);
+                                    CommunicationServiceClient.Instance.RegisterAccountLogin(loadedAccount.AccountId, newSessionId, loadedAccount.Name, _session.IpAddress.Substring(6, _session.IpAddress.LastIndexOf(':') - 6));
                                 }
                                 catch (Exception ex)
                                 {
