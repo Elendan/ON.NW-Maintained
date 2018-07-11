@@ -104,6 +104,20 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public IEnumerable<CharacterHomeDTO> Homes
+        {
+            get
+            {
+                lock (ServerManager.Instance.CharacterHomes)
+                {
+                    return ServerManager.Instance.CharacterHomes == null ||
+                        !ServerManager.Instance.CharacterHomes.Any()
+                            ? new List<CharacterHomeDTO>()
+                            : ServerManager.Instance.CharacterHomes.Where(s => s.CharacterId == CharacterId);
+                }
+            }
+        }
+
         public int RetainedHp { get; set; }
 
         public int AccumulatedDamage { get; set; }
@@ -457,7 +471,7 @@ namespace OpenNos.GameObject
             }
         }
 
-        public List<RespawnDTO> Respawns { get; set; }
+        public List<RespawnDTO> Respawns { private get; set; }
 
         public RespawnMapTypeDTO Return
         {

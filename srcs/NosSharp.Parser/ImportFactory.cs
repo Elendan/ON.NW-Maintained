@@ -1080,18 +1080,18 @@ namespace NosSharp.Parser
                 DaoFactory.MapTypeDao.Insert(ref mt25);
             }
 
-			var mt26 = new MapTypeDTO
-			{
-				MapTypeId = (short)MapTypeEnum.Act42,
-				MapTypeName = "Act42",
-				PotionDelay = 5000
-			};
-			if (list.All(s => s.MapTypeId != mt26.MapTypeId))
-			{
-				DaoFactory.MapTypeDao.Insert(ref mt26);
-			}
+            var mt26 = new MapTypeDTO
+            {
+                MapTypeId = (short)MapTypeEnum.Act42,
+                MapTypeName = "Act42",
+                PotionDelay = 5000
+            };
+            if (list.All(s => s.MapTypeId != mt26.MapTypeId))
+            {
+                DaoFactory.MapTypeDao.Insert(ref mt26);
+            }
 
-			Logger.Log.Info(Language.Instance.GetMessageFromKey("MAPTYPES_PARSED"));
+            Logger.Log.Info(Language.Instance.GetMessageFromKey("MAPTYPES_PARSED"));
         }
 
         public void ImportMapTypeMap()
@@ -3056,55 +3056,15 @@ namespace NosSharp.Parser
                     DefaultY = 102,
                     Name = "DefaultAct62"
                 },
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultOasis,
-					DefaultMapId = 261,
-					DefaultX = 66,
-					DefaultY = 70,
-					Name = "DefaultOasis"
-				},
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultFirstHome,
-					DefaultMapId = 1,
-					DefaultX = 100,
-					DefaultY = 100,
-					Name = "DefaultFirstHome"
-				},
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultSecondHome,
-					DefaultMapId = 1,
-					DefaultX = 100,
-					DefaultY = 100,
-					Name = "DefaultSecondHome"
-				},
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultThirdHome,
-					DefaultMapId = 1,
-					DefaultX = 100,
-					DefaultY = 100,
-					Name = "DefaultThirdHome"
-				},
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultFourthHome,
-					DefaultMapId = 1,
-					DefaultX = 100,
-					DefaultY = 100,
-					Name = "DefaultFourthHome"
-				},
-				new RespawnMapTypeDTO
-				{
-					RespawnMapTypeId = (long)RespawnType.DefaultFiveHome,
-					DefaultMapId = 1,
-					DefaultX = 100,
-					DefaultY = 100,
-					Name = "DefaultFiveHome"
-				}
-			};
+                new RespawnMapTypeDTO
+                {
+                    RespawnMapTypeId = (long)RespawnType.DefaultOasis,
+                    DefaultMapId = 261,
+                    DefaultX = 66,
+                    DefaultY = 70,
+                    Name = "DefaultOasis"
+                }
+            };
             DaoFactory.RespawnMapTypeDao.Insert(respawnmaptypemaps);
             Logger.Log.Info(Language.Instance.GetMessageFromKey("RESPAWNTYPE_PARSED"));
         }
@@ -4574,18 +4534,18 @@ namespace NosSharp.Parser
                             case ItemType.Special:
                                 switch (item.VNum)
                                 {
-									case 5853:
-										item.Effect = 1717;
-										item.EffectValue = 1;
-										break;
-									case 5854:
-										item.Effect = 1717;
-										item.EffectValue = 2;
-										break;
-									case 5855:
-										item.Effect = 1717;
-										item.EffectValue = 3;
-										break;
+                                    case 5853:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 1;
+                                        break;
+                                    case 5854:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 2;
+                                        break;
+                                    case 5855:
+                                        item.Effect = 1717;
+                                        item.EffectValue = 3;
+                                        break;
                                     case 5932:
                                         item.Effect = 11112;
                                         break;
@@ -5002,17 +4962,17 @@ namespace NosSharp.Parser
 
                         switch (item.VNum)
                         {
-                                case 4046:
-                                case 4047:
-                                case 4048:
-                                case 4049:
-                                case 4050:
-                                case 4051:
-                                case 4052:
-                                case 4053:
-                                case 4054:
-                                case 4055:
-                                    item.ItemValidTime = 10800;
+                            case 4046:
+                            case 4047:
+                            case 4048:
+                            case 4049:
+                            case 4050:
+                            case 4051:
+                            case 4052:
+                            case 4053:
+                            case 4054:
+                            case 4055:
+                                item.ItemValidTime = 10800;
                                 break;
                         }
 

@@ -6,7 +6,7 @@ using OpenNos.Data.Base;
 
 namespace OpenNos.Data
 {
-    public class CharacterHomeDto : SynchronizableBaseDTO
+    public class CharacterHomeDTO : SynchronizableBaseDTO
     {
         public Guid Id { get; set; }
 

@@ -111,6 +111,8 @@ namespace OpenNos.GameObject.Networking
 
         public static ServerManager Instance => _instance ?? (_instance = new ServerManager());
 
+        public IEnumerable<CharacterHomeDTO> CharacterHomes { get; set; }
+
         public ConcurrentBag<ScriptedInstance> Act4Raids { get; set; }
 
         public ConcurrentBag<ScriptedInstance> Act6Raids { get; set; }
@@ -263,6 +265,12 @@ namespace OpenNos.GameObject.Networking
         #endregion
 
         #region Methods
+
+        public void RefreshHomes()
+        {
+            CharacterHomes.ToList().Clear();
+            CharacterHomes = DaoFactory.CharacterHomeDao.LoadAll();
+        }
 
         public List<MapNpc> GetMapNpcsPerVNum(short vnum) => _mapNpcs.ContainsKey(vnum) ? _mapNpcs[vnum] : null;
 
@@ -1524,6 +1532,7 @@ namespace OpenNos.GameObject.Networking
             Act4DemonStat = new PercentBar();
             Act6Erenia = new PercentBar();
             Act6Zenas = new PercentBar();
+            CharacterHomes = DaoFactory.CharacterHomeDao.LoadAll();
 
             CommunicationServiceClient.Instance.SetMaintenanceState(
                 bool.Parse(ConfigurationManager.AppSettings["Maintenance"]));

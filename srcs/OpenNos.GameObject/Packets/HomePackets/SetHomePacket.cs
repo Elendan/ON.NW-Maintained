@@ -7,7 +7,7 @@ namespace OpenNos.GameObject.Packets.HomePackets
     public class SetHomePacket : PacketDefinition
     {
 		[PacketIndex(0)]
-		public long? HomeId { get; set; }
+		public string Name { get; set; }
 
 		public override string ToString()
 		{

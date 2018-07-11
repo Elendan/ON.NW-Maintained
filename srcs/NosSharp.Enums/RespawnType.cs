@@ -23,12 +23,6 @@ namespace NosSharp.Enums
         ReturnAct5 = 4,
         DefaultAct6 = 5,
         DefaultAct62 = 6,
-        DefaultOasis = 7,
-		DefaultFirstHome = 51,
-		DefaultSecondHome = 52,
-		DefaultThirdHome = 53,
-		DefaultFourthHome = 54,
-		DefaultFiveHome = 55
-
-	}
+        DefaultOasis = 7
+    }
 }
