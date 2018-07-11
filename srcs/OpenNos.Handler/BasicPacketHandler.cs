@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Threading.Tasks;
 using log4net;
 using NosSharp.Enums;
@@ -1358,6 +1359,14 @@ namespace OpenNos.Handler
             }
 
             Session.CurrentMapInstance = Session.Character.MapInstance;
+
+            Session.Character.SaveObs = Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(s =>
+            {
+                if (Session?.Character?.MapInstance != null)
+                {
+                    Session.Character.Save();
+                }
+            });
 
             if (ConfigurationManager.AppSettings["SceneOnCreate"].ToLower() == "true" & Session.Character.GeneralLogs.Count(s => s.LogType == "Connection") < 2)
             {

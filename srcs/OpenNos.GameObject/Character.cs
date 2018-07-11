@@ -104,6 +104,8 @@ namespace OpenNos.GameObject
 
         #endregion
 
+        public IDisposable SaveObs { get; set; }
+
         public IEnumerable<CharacterHomeDTO> Homes
         {
             get
