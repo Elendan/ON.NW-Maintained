@@ -1769,6 +1769,6 @@
     <value>Teleporting in 5 seconds.</value>
   </data>
   <data name="TOO_MANY_HOMEPOINTS" xml:space="preserve">
-    <value>You already have too many homepoints !</value>
+    <value>You already have {0} homepoints !</value>
   </data>
 </root>

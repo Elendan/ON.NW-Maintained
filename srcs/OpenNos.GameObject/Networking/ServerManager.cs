@@ -111,6 +111,8 @@ namespace OpenNos.GameObject.Networking
 
         public static ServerManager Instance => _instance ?? (_instance = new ServerManager());
 
+        public byte MaximumHomes { get; set; }
+
         public IEnumerable<CharacterHomeDTO> CharacterHomes { get; set; }
 
         public ConcurrentBag<ScriptedInstance> Act4Raids { get; set; }
@@ -1526,6 +1528,7 @@ namespace OpenNos.GameObject.Networking
             LodTimes = bool.Parse(ConfigurationManager.AppSettings["LodTimes"]);
             AutoLoot = bool.Parse(ConfigurationManager.AppSettings["AutoLoot"]);
             MinLodLevel = byte.Parse(ConfigurationManager.AppSettings["MinLodLevel"]);
+            MaximumHomes = byte.Parse(ConfigurationManager.AppSettings["MaximumHomes"]);
             Schedules = ConfigurationManager.GetSection("eventScheduler") as List<Schedule>;
             Act4RaidStart = DateTime.Now;
             Act4AngelStat = new PercentBar();

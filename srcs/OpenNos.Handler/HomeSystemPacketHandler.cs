@@ -34,9 +34,9 @@ namespace OpenNos.Handler
                 return;
             }
 
-            if (Session.Character.Homes.Count() >= 5 && Session.Account.Authority < AuthorityType.GameMaster)
+            if (Session.Character.Homes.Count() >= ServerManager.Instance.MaximumHomes && Session.Account.Authority < AuthorityType.GameMaster)
             {
-                Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(Language.Instance.GetMessageFromKey("TOO_MANY_HOMEPOINTS")));
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo(string.Format(Language.Instance.GetMessageFromKey("TOO_MANY_HOMEPOINTS"), ServerManager.Instance.MaximumHomes)));
                 return;
             }
 

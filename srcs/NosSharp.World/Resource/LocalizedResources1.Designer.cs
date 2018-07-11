@@ -4561,7 +4561,7 @@ namespace ON.NW.World.Resource {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to You already have too many homepoints !.
+        ///   Looks up a localized string similar to You already have {0} homepoints !.
         /// </summary>
         internal static string TOO_MANY_HOMEPOINTS {
             get {
