@@ -1172,7 +1172,7 @@ Veux-tu le porter ?</value>
     <value>{0} Quêtes chargées!</value>
   </data>
   <data name="CARDS_LOADED" xml:space="preserve">
-    <value>{0} Buffs chargées!</value>
+    <value>{0} Cartes chargées.</value>
   </data>
   <data name="MAPS_LOADED" xml:space="preserve">
     <value>{0} Carte chargées.</value>
@@ -1416,9 +1416,6 @@ Veux-tu le porter ?</value>
   </data>
   <data name="BUY_ITEM_VALID" xml:space="preserve">
     <value>Tu as acheté {1} de {0}</value>
-  </data>
-  <data name="CARDS_LOADED" xml:space="preserve">
-    <value>{0} Cartes chargées.</value>
   </data>
   <data name="DIVORCED" xml:space="preserve">
     <value>Tu es dès à présent divorcé.</value>
@@ -1747,9 +1744,6 @@ Veux-tu continuer ?</value>
   <data name="MAX_MATES_COUNT" xml:space="preserve">
     <value>Tu ne peux pas adopter encore plus de familiers.</value>
   </data>
-  <data name="MAX_MATES_COUNT" xml:space="preserve">
-    <value>Tu ne peux pas adopter encore plus de familiers.</value>
-  </data>
   <data name="MUST_BE_IN_CLASSIC_MAP" xml:space="preserve">
     <value>Vous n'êtes pas sur une map générale.</value>
   </data>
@@ -1762,16 +1756,22 @@ Veux-tu continuer ?</value>
   <data name="BOSS_DIED" xml:space="preserve">
     <value>Félicitations ! Vous avez vaincu le boss du donjon !</value>
   </data>
-  <data name="PARTNER_AUTO_RELIVE_DISABLED" xml:space="preserve"> 
-    <value /> 
+  <data name="PARTNER_AUTO_RELIVE_DISABLED" xml:space="preserve">
+    <value />
   </data>
-  <data name="PARTNER_AUTO_RELIVE_ENABLED" xml:space="preserve"> 
-    <value /> 
+  <data name="PARTNER_AUTO_RELIVE_ENABLED" xml:space="preserve">
+    <value />
   </data>
-  <data name="PET_AUTO_RELIVE_DISABLED" xml:space="preserve"> 
-    <value /> 
+  <data name="PET_AUTO_RELIVE_DISABLED" xml:space="preserve">
+    <value />
   </data>
-  <data name="PET_AUTO_RELIVE_ENABLED" xml:space="preserve"> 
-    <value /> 
+  <data name="PET_AUTO_RELIVE_ENABLED" xml:space="preserve">
+    <value />
+  </data>
+  <data name="ALREADY_QUEST" xml:space="preserve">
+    <value>Tu as déjà cette quête.</value>
+  </data>
+  <data name="EXCHANGE_MATERIAL" xml:space="preserve">
+    <value>Effectuer l'échange ?</value>
   </data>
 </root>
