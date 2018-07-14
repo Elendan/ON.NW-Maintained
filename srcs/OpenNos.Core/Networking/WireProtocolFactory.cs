@@ -16,8 +16,7 @@ using OpenNos.Core.Networking.Communication.Scs.Communication.Protocols;
 
 namespace OpenNos.Core.Networking
 {
-    public class WireProtocolFactory<EncryptorT> : IScsWireProtocolFactory
-    where EncryptorT : EncryptionBase
+    public class WireProtocolFactory<EncryptorT> : IScsWireProtocolFactory where EncryptorT : EncryptionBase
     {
         #region Methods
 
