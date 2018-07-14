@@ -227,6 +227,7 @@
     <Compile Include="Packets\ServerPackets\PsopPacket.cs" />
     <Compile Include="Packets\ServerPackets\ShPacket.cs" />
     <Compile Include="Packets\ServerPackets\SrPacket.cs" />
+    <Compile Include="PercentBar.cs" />
     <Compile Include="ToSummon.cs" />
     <Compile Include="Packets\ClientPackets\PslPacket.cs" />
     <Compile Include="Packets\ClientPackets\QtPacket.cs" />

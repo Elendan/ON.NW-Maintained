@@ -87,17 +87,11 @@ namespace OpenNos.Master.Library.Client
 
         public bool GetMaintenanceState() => _client.ServiceProxy.GetMaintenanceState();
 
-        public void SetMaintenanceState(bool state)
-        {
-            _client.ServiceProxy.SetMaintenanceState(state);
-        }
+        public void SetMaintenanceState(bool state) => _client.ServiceProxy.SetMaintenanceState(state);
 
         public bool Authenticate(string authKey) => _client.ServiceProxy.Authenticate(authKey);
 
-        public void Cleanup()
-        {
-            _client.ServiceProxy.Cleanup();
-        }
+        public void Cleanup() => _client.ServiceProxy.Cleanup();
 
         public bool ChangeAuthority(string worldGroup, string characterName, AuthorityType authority) => _client.ServiceProxy.ChangeAuthority(worldGroup, characterName, authority);
 
@@ -105,20 +99,11 @@ namespace OpenNos.Master.Library.Client
 
         public bool ConnectCharacter(Guid worldId, long characterId) => _client.ServiceProxy.ConnectCharacter(worldId, characterId);
 
-        public void SetWorldServerAsInvisible(Guid worldId)
-        {
-            _client.ServiceProxy.SetWorldServerAsInvisible(worldId);
-        }
+        public void SetWorldServerAsInvisible(Guid worldId) => _client.ServiceProxy.SetWorldServerAsInvisible(worldId);
 
-        public void DisconnectAccount(long accountId)
-        {
-            _client.ServiceProxy.DisconnectAccount(accountId);
-        }
+        public void DisconnectAccount(long accountId) => _client.ServiceProxy.DisconnectAccount(accountId);
 
-        public void DisconnectCharacter(Guid worldId, long characterId)
-        {
-            _client.ServiceProxy.DisconnectCharacter(worldId, characterId);
-        }
+        public void DisconnectCharacter(Guid worldId, long characterId) => _client.ServiceProxy.DisconnectCharacter(worldId, characterId);
 
         public int? GetChannelIdByWorldId(Guid worldId) => _client.ServiceProxy.GetChannelIdByWorldId(worldId);
 
@@ -128,32 +113,17 @@ namespace OpenNos.Master.Library.Client
 
         public bool IsLoginPermitted(long accountId, long sessionId) => _client.ServiceProxy.IsLoginPermitted(accountId, sessionId);
 
-        public void KickSession(long? accountId, long? sessionId)
-        {
-            _client.ServiceProxy.KickSession(accountId, sessionId);
-        }
+        public void KickSession(long? accountId, long? sessionId) => _client.ServiceProxy.KickSession(accountId, sessionId);
 
-        public void PulseAccount(long accountId)
-        {
-            _client.ServiceProxy.PulseAccount(accountId);
-        }
+        public void PulseAccount(long accountId) => _client.ServiceProxy.PulseAccount(accountId);
 
-        public void RefreshPenalty(int penaltyId)
-        {
-            _client.ServiceProxy.RefreshPenalty(penaltyId);
-        }
+        public void RefreshPenalty(int penaltyId) => _client.ServiceProxy.RefreshPenalty(penaltyId);
 
-        public void RegisterAccountLogin(long accountId, long sessionId, string accountName, string ipAddress)
-        {
-            _client.ServiceProxy.RegisterAccountLogin(accountId, sessionId, accountName, ipAddress);
-        }
+        public void RegisterAccountLogin(long accountId, long sessionId, string accountName, string ipAddress) => _client.ServiceProxy.RegisterAccountLogin(accountId, sessionId, accountName, ipAddress);
 
         public bool ConnectAccountInternal(Guid worldId, long accountId, int sessionId) => _client.ServiceProxy.ConnectAccountInternal(worldId, accountId, sessionId);
 
-        public void RegisterInternalAccountLogin(long accountId, int sessionId)
-        {
-            _client.ServiceProxy.RegisterInternalAccountLogin(accountId, sessionId);
-        }
+        public void RegisterInternalAccountLogin(long accountId, int sessionId) => _client.ServiceProxy.RegisterInternalAccountLogin(accountId, sessionId);
 
         public int? RegisterWorldServer(SerializableWorldServer worldServer) => _client.ServiceProxy.RegisterWorldServer(worldServer);
 
@@ -169,30 +139,15 @@ namespace OpenNos.Master.Library.Client
 
         public int? SendMessageToCharacter(SCSCharacterMessage message) => _client.ServiceProxy.SendMessageToCharacter(message);
 
-        public void Shutdown(string worldGroup)
-        {
-            _client.ServiceProxy.Shutdown(worldGroup);
-        }
+        public void Shutdown(string worldGroup) => _client.ServiceProxy.Shutdown(worldGroup);
 
-        public void UnregisterWorldServer(Guid worldId)
-        {
-            _client.ServiceProxy.UnregisterWorldServer(worldId);
-        }
+        public void UnregisterWorldServer(Guid worldId) => _client.ServiceProxy.UnregisterWorldServer(worldId);
 
-        public void UpdateBazaar(string worldGroup, long bazaarItemId)
-        {
-            _client.ServiceProxy.UpdateBazaar(worldGroup, bazaarItemId);
-        }
+        public void UpdateBazaar(string worldGroup, long bazaarItemId) => _client.ServiceProxy.UpdateBazaar(worldGroup, bazaarItemId);
 
-        public void UpdateFamily(string worldGroup, long familyId, bool changeFaction)
-        {
-            _client.ServiceProxy.UpdateFamily(worldGroup, familyId, changeFaction);
-        }
+        public void UpdateFamily(string worldGroup, long familyId, bool changeFaction) => _client.ServiceProxy.UpdateFamily(worldGroup, familyId, changeFaction);
 
-        public void UpdateRelation(string worldGroup, long relationId)
-        {
-            _client.ServiceProxy.UpdateRelation(worldGroup, relationId);
-        }
+        public void UpdateRelation(string worldGroup, long relationId) => _client.ServiceProxy.UpdateRelation(worldGroup, relationId);
 
         internal void OnCharacterConnected(long characterId)
         {
@@ -206,20 +161,11 @@ namespace OpenNos.Master.Library.Client
             CharacterDisconnectedEvent?.Invoke(new Tuple<long, string>(characterId, characterName), null);
         }
 
-        internal void OnKickSession(long? accountId, long? sessionId)
-        {
-            SessionKickedEvent?.Invoke(new Tuple<long?, long?>(accountId, sessionId), null);
-        }
+        internal void OnKickSession(long? accountId, long? sessionId) => SessionKickedEvent?.Invoke(new Tuple<long?, long?>(accountId, sessionId), null);
 
-        internal void OnSendMessageToCharacter(SCSCharacterMessage message)
-        {
-            MessageSentToCharacter?.Invoke(message, null);
-        }
+        internal void OnSendMessageToCharacter(SCSCharacterMessage message) => MessageSentToCharacter?.Invoke(message, null);
 
-        internal void OnUpdateBazaar(long bazaarItemId)
-        {
-            BazaarRefresh?.Invoke(bazaarItemId, null);
-        }
+        internal void OnUpdateBazaar(long bazaarItemId) => BazaarRefresh?.Invoke(bazaarItemId, null);
 
         internal void OnUpdateFamily(long familyId, bool changeFaction)
         {
@@ -227,20 +173,11 @@ namespace OpenNos.Master.Library.Client
             FamilyRefresh?.Invoke(tu, null);
         }
 
-        internal void OnUpdatePenaltyLog(int penaltyLogId)
-        {
-            PenaltyLogRefresh?.Invoke(penaltyLogId, null);
-        }
+        internal void OnUpdatePenaltyLog(int penaltyLogId) => PenaltyLogRefresh?.Invoke(penaltyLogId, null);
 
-        internal void OnUpdateRelation(long relationId)
-        {
-            RelationRefresh?.Invoke(relationId, null);
-        }
+        internal void OnUpdateRelation(long relationId) => RelationRefresh?.Invoke(relationId, null);
 
-        internal void OnSendMail(MailDTO mail)
-        {
-            MailSent?.Invoke(mail, null);
-        }
+        internal void OnSendMail(MailDTO mail) => MailSent?.Invoke(mail, null);
 
         internal void OnAuthorityChange(long accountId, AuthorityType authority)
         {
@@ -248,15 +185,9 @@ namespace OpenNos.Master.Library.Client
             AuthorityChange?.Invoke(tu, null);
         }
 
-        internal void OnShutdown()
-        {
-            ShutdownEvent?.Invoke(null, null);
-        }
+        internal void OnShutdown() => ShutdownEvent?.Invoke(null, null);
 
-        public void SendMail(string worldGroup, MailDTO mail)
-        {
-            _client.ServiceProxy.SendMail(worldGroup, mail);
-        }
+        public void SendMail(string worldGroup, MailDTO mail) => _client.ServiceProxy.SendMail(worldGroup, mail);
 
         #endregion
     }

@@ -27,7 +27,7 @@ namespace OpenNos.Core.Networking
 
         #region Methods
 
-        Task ClearLowPriorityQueue();
+        Task ClearLowPriorityQueueAsync();
 
         void Disconnect();
 
