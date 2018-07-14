@@ -146,7 +146,7 @@ namespace OpenNos.GameObject.Networking
 
         public void ClearLowPriorityQueue()
         {
-            _client.ClearLowPriorityQueue();
+            _client.ClearLowPriorityQueueAsync();
         }
 
         public void Destroy()

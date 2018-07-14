@@ -403,7 +403,7 @@ namespace ON.NW.Master
                 return null;
             }
 
-            WorldServer sourceWorld = MsManager.Instance.WorldServers.FirstOrDefault(s => s.Id.Equals(message.SourceWorldId));
+            WorldServer sourceWorld = MsManager.Instance.WorldServers.Find(s => s.Id.Equals(message.SourceWorldId));
             if (message?.Message == null || sourceWorld == null)
             {
                 return null;
@@ -417,7 +417,6 @@ namespace ON.NW.Master
                     {
                         world.ServiceClient.GetClientProxy<ICommunicationClient>().SendMessageToCharacter(message);
                     }
-
                     return -1;
 
                 case MessageType.PrivateChat:
@@ -425,14 +424,13 @@ namespace ON.NW.Master
                 case MessageType.WhisperGM:
                     if (message.DestinationCharacterId.HasValue)
                     {
-                        AccountSession account = MsManager.Instance.ConnectedAccounts.FirstOrDefault(a => a.CharacterId.Equals(message.DestinationCharacterId.Value));
+                        AccountSession account = MsManager.Instance.ConnectedAccounts.ToList().Find(a => a.CharacterId.Equals(message.DestinationCharacterId.Value));
                         if (account?.ConnectedWorld != null)
                         {
                             account.ConnectedWorld.ServiceClient.GetClientProxy<ICommunicationClient>().SendMessageToCharacter(message);
                             return account.ConnectedWorld.ChannelId;
                         }
                     }
-
                     break;
 
                 case MessageType.Shout:
@@ -440,10 +438,8 @@ namespace ON.NW.Master
                     {
                         world.ServiceClient.GetClientProxy<ICommunicationClient>().SendMessageToCharacter(message);
                     }
-
                     return -1;
             }
-
             return null;
         }
 
