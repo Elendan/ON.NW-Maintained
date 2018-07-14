@@ -113,7 +113,17 @@ namespace OpenNos.GameObject.Networking
 
         public byte MaximumHomes { get; set; }
 
-        public IEnumerable<CharacterHomeDTO> CharacterHomes { get; set; }
+		public bool Easter { get; set; }
+
+		public bool Winter { get; set; }
+
+		public bool Estival { get; set; }
+
+		public bool Halloween { get; set; }
+
+		public bool Valentine { get; set; }
+
+		public IEnumerable<CharacterHomeDTO> CharacterHomes { get; set; }
 
         public ConcurrentBag<ScriptedInstance> Act4Raids { get; set; }
 
@@ -260,7 +270,17 @@ namespace OpenNos.GameObject.Networking
 
         public long? FlowerQuestId { get; set; }
 
-        public MapInstance LobbyMapInstance { get; set; }
+		public long? CalvinQuest { get; set; }
+
+		public long? MimiQuest { get; set; }
+
+		public long? SluggQuest { get; set; }
+
+		public long? EvaQuest { get; set; }
+
+		public long? MalcolmQuest { get; set; }
+
+		public MapInstance LobbyMapInstance { get; set; }
 
         public byte LobbySpeed { get; set; }
 
@@ -1528,8 +1548,13 @@ namespace OpenNos.GameObject.Networking
             LodTimes = bool.Parse(ConfigurationManager.AppSettings["LodTimes"]);
             AutoLoot = bool.Parse(ConfigurationManager.AppSettings["AutoLoot"]);
             MinLodLevel = byte.Parse(ConfigurationManager.AppSettings["MinLodLevel"]);
-            MaximumHomes = byte.Parse(ConfigurationManager.AppSettings["MaximumHomes"]);
-            Schedules = ConfigurationManager.GetSection("eventScheduler") as List<Schedule>;
+			MaximumHomes = byte.Parse(ConfigurationManager.AppSettings["MaximumHomes"]);
+			Easter = bool.Parse(ConfigurationManager.AppSettings["Easter"]);
+			Winter = bool.Parse(ConfigurationManager.AppSettings["Winter"]);
+			Estival = bool.Parse(ConfigurationManager.AppSettings["Estival"]);
+			Halloween = bool.Parse(ConfigurationManager.AppSettings["Halloween"]);
+			Valentine = bool.Parse(ConfigurationManager.AppSettings["Valentine"]);
+			Schedules = ConfigurationManager.GetSection("eventScheduler") as List<Schedule>;
             Act4RaidStart = DateTime.Now;
             Act4AngelStat = new PercentBar();
             Act4DemonStat = new PercentBar();
@@ -1782,7 +1807,16 @@ namespace OpenNos.GameObject.Networking
 
             FlowerQuestId = Quests.FirstOrDefault(q => q.QuestType == (byte)QuestType.FlowerQuest)?.QuestId;
 
-            Logger.Log.Info(string.Format(Language.Instance.GetMessageFromKey("QUESTS_LOADED"), Quests.Count));
+			if (ConfigurationManager.AppSettings["Easter"].ToLower() == "true")
+			{
+				CalvinQuest = Quests.FirstOrDefault(q => q.QuestId == 5950)?.QuestId;
+				MimiQuest = Quests.FirstOrDefault(q => q.QuestId == 5946)?.QuestId;
+				SluggQuest = Quests.FirstOrDefault(q => q.QuestId == 5948)?.QuestId;
+				EvaQuest = Quests.FirstOrDefault(q => q.QuestId == 5953)?.QuestId;
+				MalcolmQuest = Quests.FirstOrDefault(q => q.QuestId == 5945)?.QuestId;
+			}
+
+			Logger.Log.Info(string.Format(Language.Instance.GetMessageFromKey("QUESTS_LOADED"), Quests.Count));
 
             // intialize mapnpcs
             _mapNpcs = new ConcurrentDictionary<short, List<MapNpc>>();

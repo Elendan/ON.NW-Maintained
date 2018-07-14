@@ -47,7 +47,420 @@ namespace OpenNos.GameObject.Npc
             var rand = new Random();
             switch (packet.Runner)
             {
-                case 321:
+				case 98:
+					// Quest Easter Calvin
+					if (npc == null)
+					{
+						return;
+					}
+
+					if (ServerManager.Instance.CalvinQuest != null)
+					{
+						session.Character.AddQuest((long)ServerManager.Instance.CalvinQuest);
+					}
+					else
+					{
+						session.SendPacket(
+							UserInterfaceHelper.Instance.GenerateMsg(
+								Language.Instance.GetMessageFromKey("ALREADY_QUEST"), 10));
+						return;
+					}
+					break;
+
+				case 94:
+					// Quest Easter Mimi 
+					if (npc == null)
+					{
+						return;
+					}
+					if (ServerManager.Instance.MimiQuest != null)
+					{
+						session.Character.AddQuest((long)ServerManager.Instance.MimiQuest);
+					}
+					else
+					{
+						session.SendPacket(
+							UserInterfaceHelper.Instance.GenerateMsg(
+								Language.Instance.GetMessageFromKey("ALREADY_QUEST"), 10));
+						return;
+					}
+					break;
+
+				case 96:
+					if (npc == null)
+					{
+						return;
+					}
+					// 30 Rabbits vs 1 Seal Chicken king
+					const short ChocolateRabbits = 2405;
+					const short SealChik = 5109;
+					switch (packet.Type)
+					{
+						case 0:
+							session.SendPacket($"qna #n_run^{packet.Runner}^61^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+							break;
+						case 61:
+							if (session.Character.Inventory.CountItem(ChocolateRabbits) <= 30)
+							{
+								// No Lapin                  
+								session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+								return;
+							}
+							session.Character.GiftAdd(SealChik, 1);
+							session.Character.Inventory.RemoveItemAmount(ChocolateRabbits, 30);
+							break;
+					}
+					break;
+
+				case 95:
+					if (npc == null)
+					{
+						return;
+					}
+					// 5 GoldenEggs vs 1 Box
+					const short GoldenEggs = 5258;
+					const short BoxPascal = 5261;
+					switch (packet.Type)
+					{
+						case 0:
+							session.SendPacket($"qna #n_run^{packet.Runner}^61^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+							break;
+						case 61:
+							if (session.Character.Inventory.CountItem(GoldenEggs) <= 5)
+							{
+								// No GoldenEggs                   
+								session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+								return;
+							}
+							session.Character.GiftAdd(BoxPascal, 1);
+							session.Character.Inventory.RemoveItemAmount(GoldenEggs, 5);
+							break;
+					}
+					break;
+
+				case 97:
+					// Quest Easter Slugg
+					if (npc == null)
+					{
+						return;
+					}
+					if (ServerManager.Instance.SluggQuest != null)
+					{
+						session.Character.AddQuest((long)ServerManager.Instance.SluggQuest);
+					}
+					else
+					{
+						session.SendPacket(
+							UserInterfaceHelper.Instance.GenerateMsg(
+								Language.Instance.GetMessageFromKey("ALREADY_QUEST"), 10));
+						return;
+					}
+					break;
+
+				case 99:
+					// Quest Eva Easter
+					if (npc == null)
+					{
+						return;
+					}
+					if (ServerManager.Instance.EvaQuest != null)
+					{
+						session.Character.AddQuest((long)ServerManager.Instance.EvaQuest);
+					}
+					else
+					{
+						session.SendPacket(
+							UserInterfaceHelper.Instance.GenerateMsg(
+								Language.Instance.GetMessageFromKey("ALREADY_QUEST"), 10));
+						return;
+					}
+					break;
+
+				case 100:
+					// Quest Easter Malcolm
+					if (npc == null)
+					{
+						return;
+					}
+					if (ServerManager.Instance.MalcolmQuest != null)
+					{
+						session.Character.AddQuest((long)ServerManager.Instance.MalcolmQuest);
+					}
+					else
+					{
+						session.SendPacket(
+							UserInterfaceHelper.Instance.GenerateMsg(
+								Language.Instance.GetMessageFromKey("ALREADY_QUEST"), 10));
+						return;
+					}
+					break;
+
+				case 195:
+					// 5 seed Vs 2 seal Laurena
+					if (npc == null)
+					{
+						return;
+					}
+					const short SeedDamnation = 5987;
+					const short SealLaurena = 5977;
+					switch (packet.Type)
+					{
+						case 0:
+							session.SendPacket($"qna #n_run^{packet.Runner}^61^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+							break;
+						case 61:
+							if (session.Character.Inventory.CountItem(SeedDamnation) <= 5)
+							{
+								// No Seed of damnation                   
+								session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+								return;
+							}
+							session.Character.GiftAdd(SealLaurena, 2);
+							session.Character.Inventory.RemoveItemAmount(SeedDamnation, 5);
+							break;
+					}
+					break;
+
+				case 111:
+					if (npc != null)
+					{
+						const short gdp = 1012;
+						const short Donna = 1027;
+						const short Gillion = 1013;
+						const short SealDraco = 5500;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Donna) <= 20 || session.Character.Inventory.CountItem(gdp) <= 20 || session.Character.Inventory.CountItem(Gillion) <= 20)
+								{
+									// No Material                 
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								session.Character.GiftAdd(SealDraco, 1);
+								session.Character.Inventory.RemoveItemAmount(Donna, 20);
+								session.Character.Inventory.RemoveItemAmount(gdp, 20);
+								session.Character.Inventory.RemoveItemAmount(Gillion, 20);
+								break;
+						}
+					}
+					break;
+
+				case 145:
+					if (npc != null)
+					{
+						const short Claw = 2522;
+						const short SP5A = 4501;
+						const short SP5E = 4500;
+						const short SP5M = 4502;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Claw) <= 50)
+								{
+									// No Material                 
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								switch (session.Character.Class)
+								{
+									case ClassType.Wrestler:
+									case ClassType.Adventurer:
+										return;
+									case ClassType.Archer:
+										session.Character.GiftAdd(SP5A, 1);
+										break;
+									case ClassType.Magician:
+										session.Character.GiftAdd(SP5M, 1);
+										break;
+									case ClassType.Swordman:
+										session.Character.GiftAdd(SP5E, 1);
+										break;
+								}
+								session.Character.Inventory.RemoveItemAmount(Claw, 50);
+								break;
+						}
+					}
+					break;
+
+				case 147:
+					if (npc != null)
+					{
+						const short Mane = 2523;
+						const short SP6A = 4498;
+						const short SP6E = 4497;
+						const short SP6M = 4499;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Mane) <= 50)
+								{
+									// No Material                 
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								switch (session.Character.Class)
+								{
+									case ClassType.Wrestler:
+									case ClassType.Adventurer:
+										return;
+									case ClassType.Archer:
+										session.Character.GiftAdd(SP6A, 1);
+										break;
+									case ClassType.Magician:
+										session.Character.GiftAdd(SP6M, 1);
+										break;
+									case ClassType.Swordman:
+										session.Character.GiftAdd(SP6E, 1);
+										break;
+								}
+								session.Character.Inventory.RemoveItemAmount(Mane, 50);
+								break;
+						}
+					}
+					break;
+
+				case 148:
+					if (npc != null)
+					{
+						const short Mane = 2523;
+						const short sapphir = 2519;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Mane) <= 5)
+								{
+									// No Item 2523                 
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								session.Character.GiftAdd(sapphir, 5);
+								session.Character.Inventory.RemoveItemAmount(Mane, 5);
+								break;
+						}
+					}
+					break;
+
+				case 146:
+					if (npc != null)
+					{
+						const short Claw = 2522;
+						const short Ruby = 2518;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Claw) <= 5)
+								{
+									// No Material                  
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								session.Character.GiftAdd(Ruby, 5);
+								session.Character.Inventory.RemoveItemAmount(Claw, 5);
+								break;
+						}
+					}
+					break;
+
+				case 133:
+					if (npc != null)
+					{
+						const short gdp = 1012;
+						const short Icecube = 2307;
+						const short Flower = 5911;
+						const short SealGlagla = 5512;
+						switch (packet.Type)
+						{
+							case 0:
+								session.SendPacket($"qna #n_run^{packet.Runner}^56^{packet.Value}^{packet.NpcId} {Language.Instance.GetMessageFromKey("EXCHANGE_MATERIAL")}");
+								break;
+							case 56:
+								if (session.Character.Inventory.CountItem(Flower) <= 20 || session.Character.Inventory.CountItem(gdp) <= 20 || session.Character.Inventory.CountItem(Icecube) <= 20)
+								{
+									// No Material                  
+									session.SendPacket(session.Character.GenerateSay(Language.Instance.GetMessageFromKey("NOT_ENOUGH_INGREDIENT"), 11));
+									return;
+								}
+								session.Character.GiftAdd(SealGlagla, 1);
+								session.Character.Inventory.RemoveItemAmount(Flower, 20);
+								session.Character.Inventory.RemoveItemAmount(gdp, 20);
+								session.Character.Inventory.RemoveItemAmount(Icecube, 20);
+								break;
+						}
+					}
+					break;
+
+				case 110:
+					if (npc != null)
+					{
+						session.Character.AddQuest(5954);
+					}
+					break;
+
+				case 131:
+					if (npc != null)
+					{
+						session.Character.AddQuest(5982);
+					}
+					break;
+
+				//quest Sp
+				case 2000:
+					if (npc != null)
+					{
+						// 932 = Pyjama
+						// 933 = sp1
+						// 934 = sp2
+						// 948 = 3
+						// 954 = 4
+						// 2051 = 6
+						// 2000 = quete pyj
+						// 2008 = quete sp1
+						// 2014 = quete sp 2
+						// 2060 = quete sp3 
+						// 2100 = sp4
+						session.Character.AddQuest(packet.Type);
+					}
+					break;
+
+				case 2001:
+					// recompence Sp
+					//n_run 2001 2 1 20966 = sp 1
+					// n_run 2001 1 1 20966 = sp pyj
+					// n_run 2001 3 1 20966 = sp 2
+					// sp3 Other <=
+					// sp4 Other <=
+					// Pas vérifier les autre 
+					break;
+
+				case 2002:
+					// Need to Add ONE Instance for 1 Rock ( With 1 npc  Rock For Quest Sp )
+					ServerManager.Instance.ChangeMap(session.Character.CharacterId, 2107, 5, 11);
+					break;
+
+				case 5:
+					if (npc != null)
+					{
+						// idk ? MAIS SA CASSE LES COUILLE QUE SA SPAM DE LA ZEUB FILS DE PUTE 
+					}
+					break;
+
+				case 321:
 					{
 						session.Character.OpenBank();
 					}

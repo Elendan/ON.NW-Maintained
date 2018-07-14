@@ -69,35 +69,32 @@ namespace OpenNos.Handler
                     break;
 
                 case 2: //leave
-                    ClientSession sender = ServerManager.Instance.GetSessionByCharacterId(rdPacket.CharacterId);
-                    if (sender?.Character?.Group == null)
-                    {
-                        return;
-                    }
 
-                    Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(string.Format(Language.Instance.GetMessageFromKey("LEFT_RAID")), 0));
-                    if (Session?.CurrentMapInstance?.MapInstanceType == MapInstanceType.RaidInstance)
-                    {
-                        ServerManager.Instance.ChangeMap(Session.Character.CharacterId, Session.Character.MapId, Session.Character.MapX, Session.Character.MapY);
-                    }
+					if (Session?.Character?.Group == null)
+					{
+						return;
+					}
 
-                    grp = sender.Character?.Group;
-                    Session.SendPacket(Session.Character.GenerateRaid(1, true));
-                    Session.SendPacket(Session.Character.GenerateRaid(2, true));
-                    grp.LeaveGroup(sender);
-
-                    foreach (ClientSession s in grp.Characters)
-                    {
-                        s.SendPacket(grp.GenerateRdlst());
-                        s.SendPacket(grp.GeneraterRaidmbf(s.CurrentMapInstance));
-                        s.SendPacket(s.Character.GenerateRaid(0, false));
-                        if (!grp.IsLeader(s))
-                        {
-                            s.SendPacket(s.Character.GenerateRaid(2, false));
-                        }
-                    }
-
+					Session.SendPacket(UserInterfaceHelper.Instance.GenerateMsg(string.Format(Language.Instance.GetMessageFromKey("LEFT_RAID")), 0));
+					if (Session?.CurrentMapInstance?.MapInstanceType == MapInstanceType.RaidInstance)
+					{
+						ServerManager.Instance.ChangeMap(Session.Character.CharacterId, Session.Character.MapId, Session.Character.MapX, Session.Character.MapY);
+					}
+					Session.SendPacket(Session.Character.GenerateRaid(1, true));
+					Session.SendPacket(Session.Character.GenerateRaid(2, true));
+					grp = Session.Character?.Group;
+					grp?.LeaveGroup(Session);
+					grp?.Characters.ToList().ForEach(s =>
+					{
+						s.SendPacket(grp.GenerateRdlst());
+						s.SendPacket(s.Character.GenerateRaid(0 , false));
+						if (!grp.IsLeader(s))
+						{
+							s.SendPacket(s.Character.GenerateRaid(2, false));
+						}
+					});
                     break;
+
                 case 3:
                     if (Session.CurrentMapInstance.MapInstanceType == MapInstanceType.RaidInstance)
                     {
