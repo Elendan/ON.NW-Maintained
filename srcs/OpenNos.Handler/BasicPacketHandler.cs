@@ -1362,7 +1362,7 @@ namespace OpenNos.Handler
 
             Session.Character.SaveObs = Observable.Interval(TimeSpan.FromMinutes(5)).Subscribe(s =>
             {
-                if (Session?.Character?.MapInstance != null)
+                if (Session?.IsConnected == true)
                 {
                     Session.Character.Save();
                 }
