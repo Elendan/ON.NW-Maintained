@@ -696,7 +696,14 @@ namespace OpenNos.Handler
                     ItemInstance mapItemInstance = mapItem.GetItemInstance();
                     if (mapItemInstance.Item.ItemType == ItemType.Map)
                     {
-                        if (mapItemInstance.Item.Effect == 71)
+						ushort amount = mapItem.Amount;
+
+						if (amount == 0) // Possible Dup ( If you spam X With another player )
+						{
+							return;
+						}
+
+						if (mapItemInstance.Item.Effect == 71)
                         {
                             Session.Character.SpPoint += mapItem.GetItemInstance().Item.EffectValue;
                             if (Session.Character.SpPoint > 10000)
@@ -723,6 +730,11 @@ namespace OpenNos.Handler
                         lock (Session.Character.Inventory)
                         {
                             ushort amount = mapItem.Amount;
+
+							if (amount == 0) // Possible Dup ( If you spam X With another player )
+							{
+								return;
+							}
 
                             ItemInstance inv = Session.Character.Inventory.AddToInventory(mapItemInstance).FirstOrDefault();
                             if (inv != null)

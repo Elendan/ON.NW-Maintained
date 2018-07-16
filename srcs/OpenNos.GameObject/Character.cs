@@ -2342,16 +2342,16 @@ namespace OpenNos.GameObject
 
                 #region Act6Stats
 
-                if (monsterToAttack.MapInstance.Map.MapId >= 229 && monsterToAttack.MapInstance.Map.MapId <= 232 &&
+                if (monsterToAttack.MapInstance?.Map.MapId >= 229 && monsterToAttack.MapInstance?.Map.MapId <= 232 &&
                     ServerManager.Instance.Act6Zenas.Mode == 0)
                 {
                     ServerManager.Instance.Act6Zenas.Percentage += 1000 / (ServerManager.Instance.CylloanPercentRate * 100);
                     ServerManager.Instance.Act6Process();
                 }
 
-                if (monsterToAttack.MapInstance.Map.MapId >= 233 &&
-                    monsterToAttack.MapInstance.Map.MapId <= 236 ||
-                    monsterToAttack.MapInstance.Map.MapId == 2604 &&
+                if (monsterToAttack.MapInstance?.Map.MapId >= 233 &&
+                    monsterToAttack.MapInstance?.Map.MapId <= 236 ||
+                    monsterToAttack.MapInstance?.Map.MapId == 2604 &&
                     ServerManager.Instance.Act6Erenia.Mode == 0)
                 {
                     ServerManager.Instance.Act6Erenia.Percentage += 1000 / (ServerManager.Instance.CylloanPercentRate * 100);
