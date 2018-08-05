@@ -29,78 +29,36 @@ using OpenNos.Core.Networking.Communication.Scs.Communication.Messages;
 namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
 {
     /// <summary>
-    /// This class is used to communicate with a remote application over TCP/IP protocol.
+    ///     This class is used to communicate with a remote application over TCP/IP protocol.
     /// </summary>
     public class TcpCommunicationChannel : CommunicationChannelBase, IDisposable
     {
-        #region Members
-
-        /// <summary>
-        /// Size of the buffer that is used to receive bytes from TCP socket.
-        /// </summary>
-        private const int RECEIVE_BUFFER_SIZE = 4 * 1024; // 4KB
-
-        private const ushort PING_REQUEST = 0x0779;
-
-        private const ushort PING_RESPONSE = 0x0988;
-
-        /// <summary>
-        /// This buffer is used to receive bytes
-        /// </summary>
-        private readonly byte[] _buffer;
-
-        /// <summary>
-        /// Socket object to send/reveice messages.
-        /// </summary>
-        private readonly Socket _clientSocket;
-
-        private readonly ConcurrentQueue<byte[]> _highPriorityBuffer;
-
-        private readonly ConcurrentQueue<byte[]> _lowPriorityBuffer;
-
-        private readonly ScsTcpEndPoint _remoteEndPoint;
-
-        private readonly CancellationTokenSource _sendCancellationToken = new CancellationTokenSource();
-
-        private readonly Task _sendTask;
-
-        /// <summary>
-        /// This object is just used for thread synchronizing (locking).
-        /// </summary>
-        private readonly object _syncLock;
-
-        private bool _disposed;
-
-        /// <summary>
-        /// A flag to control thread's running
-        /// </summary>
-        private volatile bool _running;
-
-        #endregion
-
         #region Instantiation
 
         /// <summary>
-        /// Creates a new TcpCommunicationChannel object.
+        ///     Creates a new TcpCommunicationChannel object.
         /// </summary>
         /// <param name="clientSocket">
-        /// A connected Socket object that is used to communicate over network
+        ///     A connected Socket object that is used to communicate over network
         /// </param>
         public TcpCommunicationChannel(Socket clientSocket)
         {
             _clientSocket = clientSocket;
             _clientSocket.NoDelay = true;
-            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
-            _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address, ipEndPoint.Port);
-            _buffer = new byte[RECEIVE_BUFFER_SIZE];
-            _syncLock = new object();
-            _highPriorityBuffer = new ConcurrentQueue<byte[]>();
-            _lowPriorityBuffer = new ConcurrentQueue<byte[]>();
-            CancellationToken cancellationToken = _sendCancellationToken.Token;
 
             // initialize lagging mode
             bool isLagMode = string.Equals(ConfigurationManager.AppSettings["LagMode"], "true", StringComparison.CurrentCultureIgnoreCase);
-            _sendTask = StartSendingAsync(SendInterval, new TimeSpan(0, 0, 0, 0, isLagMode ? 1000 : 10), cancellationToken);
+
+            var ipEndPoint = (IPEndPoint)_clientSocket.RemoteEndPoint;
+            _remoteEndPoint = new ScsTcpEndPoint(ipEndPoint.Address.ToString(), ipEndPoint.Port);
+
+            _buffer = new byte[_receiveBufferSize];
+            _syncLock = new object();
+
+            _highPriorityBuffer = new ConcurrentQueue<byte[]>();
+            _lowPriorityBuffer = new ConcurrentQueue<byte[]>();
+            CancellationToken cancellationToken = _sendCancellationToken.Token;
+            _sendTask = StartSending(SendInterval, new TimeSpan(0, 0, 0, 0, isLagMode ? 1000 : 10), cancellationToken);
         }
 
         #endregion
@@ -108,54 +66,74 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
         #region Properties
 
         /// <summary>
-        /// Gets the endpoint of remote application.
+        ///     Gets the endpoint of remote application.
         /// </summary>
         public override ScsEndPoint RemoteEndPoint => _remoteEndPoint;
 
         #endregion
 
-        #region Methods
+        #region Members
 
         /// <summary>
-        /// Duplicates the client socket and closes.
+        ///     Size of the buffer that is used to receive bytes from TCP socket.
         /// </summary>
-        /// <param name="processId">The process identifier.</param>
-        /// <returns></returns>
-        /// <summary>The callee should dispose anything relying on this channel immediately.</summary>
-        public SocketInformation DuplicateSocketAndClose(int processId)
-        {
-            // request ping from host to kill our async BeginReceive
-            _clientSocket.Send(BitConverter.GetBytes(PING_REQUEST));
+        private const int _receiveBufferSize = 4 * 1024;
 
-            // wait for response
-            while (_running)
-            {
-                Thread.Sleep(20);
-            }
+        /// <summary>
+        ///     This buffer is used to receive bytes
+        /// </summary>
+        private readonly byte[] _buffer;
 
-            return _clientSocket.DuplicateAndClose(processId);
-        }
+        /// <summary>
+        ///     Socket object to send/reveice messages.
+        /// </summary>
+        private readonly Socket _clientSocket;
 
-        public static async Task StartSendingAsync(Action action, TimeSpan period, CancellationToken _sendCancellationToken)
+        private readonly ConcurrentQueue<byte[]> _highPriorityBuffer;
+        private readonly ConcurrentQueue<byte[]> _lowPriorityBuffer;
+        private readonly Random _random = new Random();
+        private readonly ScsTcpEndPoint _remoteEndPoint;
+
+        private readonly CancellationTokenSource _sendCancellationToken = new CancellationTokenSource();
+
+        private readonly Task _sendTask;
+
+        /// <summary>
+        ///     This object is just used for thread synchronizing (locking).
+        /// </summary>
+        private readonly object _syncLock;
+
+        private bool _disposed;
+
+        /// <summary>
+        ///     A flag to control thread's running
+        /// </summary>
+        private volatile bool _running;
+
+        #endregion
+
+        #region Methods
+
+        public static async Task StartSending(Action action, TimeSpan period, CancellationToken _sendCancellationToken)
         {
             while (!_sendCancellationToken.IsCancellationRequested)
             {
                 await Task.Delay(period, _sendCancellationToken).ConfigureAwait(false);
                 if (!_sendCancellationToken.IsCancellationRequested)
                 {
-                    action?.Invoke();
+                    action();
                 }
             }
         }
 
-        public override Task ClearLowPriorityQueueAsync()
+        public override async Task ClearLowPriorityQueue()
         {
             _lowPriorityBuffer.Clear();
-            return Task.CompletedTask;
+            await Task.CompletedTask;
         }
 
         /// <summary>
-        /// Disconnects from remote application and closes channel.
+        ///     Disconnects from remote application and closes channel.
         /// </summary>
         public override void Disconnect()
         {
@@ -175,7 +153,7 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
 
                 _clientSocket.Dispose();
             }
-            catch (Exception)
+            catch
             {
                 // do nothing
             }
@@ -189,7 +167,7 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Calls Disconnect method.
+        ///     Calls Disconnect method.
         /// </summary>
         public void Dispose()
         {
@@ -207,14 +185,15 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
             {
                 if (WireProtocol != null)
                 {
-                    SendByPriority(_highPriorityBuffer);
-                    SendByPriority(_lowPriorityBuffer);
+                    sendByPriority(_highPriorityBuffer);
+                    sendByPriority(_lowPriorityBuffer);
                 }
             }
-            catch (Exception)
+            catch
             {
                 // disconnect
             }
+
             if (!_clientSocket.Connected)
             {
                 // do nothing
@@ -231,11 +210,11 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Sends a message to the remote application.
+        ///     Sends a message to the remote application.
         /// </summary>
         /// <param name="message">Message to be sent</param>
         /// <param name="priority">Priority of message to send</param>
-        protected override void SendMessagePublic(IScsMessage message, byte priority)
+        protected override void SendMessagepublic(IScsMessage message, byte priority)
         {
             if (priority > 5)
             {
@@ -248,15 +227,15 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
         }
 
         /// <summary>
-        /// Starts the thread to receive messages from socket.
+        ///     Starts the thread to receive messages from socket.
         /// </summary>
-        protected override void StartPublic()
+        protected override void Startpublic()
         {
             _running = true;
-            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
+            _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, receiveCallback, null);
         }
 
-        private static void SendCallback(IAsyncResult result)
+        private static void sendCallback(IAsyncResult result)
         {
             try
             {
@@ -271,18 +250,18 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
                 // Complete sending the data to the remote device.
                 int bytesSent = client.EndSend(result);
             }
-            catch (Exception)
+            catch
             {
                 // disconnect
             }
         }
 
         /// <summary>
-        /// This method is used as callback method in _clientSocket's BeginReceive method. It
-        /// reveives bytes from socker.
+        ///     This method is used as callback method in _clientSocket's BeginReceive method. It
+        ///     reveives bytes from socker.
         /// </summary>
         /// <param name="result">Asyncronous call result</param>
-        private void ReceiveCallback(IAsyncResult result)
+        private void receiveCallback(IAsyncResult result)
         {
             if (!_running)
             {
@@ -298,17 +277,6 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
 
                 if (bytesRead > 0)
                 {
-                    switch (BitConverter.ToUInt16(_buffer, 0))
-                    {
-                        case PING_REQUEST:
-                            _clientSocket.Send(BitConverter.GetBytes(PING_RESPONSE));
-                            goto CONT_RECEIVE;
-
-                        case PING_RESPONSE:
-                            _running = false;
-                            return;
-                    }
-
                     LastReceivedMessageTime = DateTime.Now;
 
                     // Copy received bytes to a new byte array
@@ -328,20 +296,19 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
                     Disconnect();
                 }
 
-                CONT_RECEIVE:
                 // Read more bytes if still running
                 if (_running)
                 {
-                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, ReceiveCallback, null);
+                    _clientSocket.BeginReceive(_buffer, 0, _buffer.Length, 0, receiveCallback, null);
                 }
             }
-            catch (Exception)
+            catch
             {
                 Disconnect();
             }
         }
 
-        private void SendByPriority(ConcurrentQueue<byte[]> buffer)
+        private void sendByPriority(ConcurrentQueue<byte[]> buffer)
         {
             IEnumerable<byte> outgoingPacket = new List<byte>();
 
@@ -361,7 +328,7 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Channels.Tcp
             if (outgoingPacket.Any())
             {
                 _clientSocket.BeginSend(outgoingPacket.ToArray(), 0, outgoingPacket.Count(), SocketFlags.None,
-                SendCallback, _clientSocket);
+                    sendCallback, _clientSocket);
             }
         }
 

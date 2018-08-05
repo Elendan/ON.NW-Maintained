@@ -17,7 +17,7 @@ using System;
 namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
 {
     /// <summary>
-    /// This message is used to send/receive a raw byte array as message data.
+    ///     This message is used to send/receive a raw byte array as message data.
     /// </summary>
     [Serializable]
     public class ScsRawDataMessage : ScsMessage, IComparable
@@ -25,20 +25,20 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
         #region Instantiation
 
         /// <summary>
-        /// Default empty constructor.
+        ///     Default empty constructor.
         /// </summary>
         public ScsRawDataMessage()
         {
         }
 
         /// <summary>
-        /// Creates a new ScsRawDataMessage object with MessageData property.
+        ///     Creates a new ScsRawDataMessage object with MessageData property.
         /// </summary>
         /// <param name="messageData">Message data that is being transmitted</param>
         public ScsRawDataMessage(byte[] messageData) => MessageData = messageData;
 
         /// <summary>
-        /// Creates a new reply ScsRawDataMessage object with MessageData property.
+        ///     Creates a new reply ScsRawDataMessage object with MessageData property.
         /// </summary>
         /// <param name="messageData">Message data that is being transmitted</param>
         /// <param name="repliedMessageId">Replied message id if this is a reply for a message.</param>
@@ -49,7 +49,7 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
         #region Properties
 
         /// <summary>
-        /// Message data that is being transmitted.
+        ///     Message data that is being transmitted.
         /// </summary>
         public byte[] MessageData { get; set; }
 
@@ -64,15 +64,15 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
         public int CompareTo(ScsRawDataMessage other) => Priority.CompareTo(other.Priority);
 
         /// <summary>
-        /// Creates a string to represents this object.
+        ///     Creates a string to represents this object.
         /// </summary>
         /// <returns>A string to represents this object</returns>
         public override string ToString()
         {
             int messageLength = MessageData?.Length ?? 0;
             return string.IsNullOrEmpty(RepliedMessageId)
-                       ? $"ScsRawDataMessage [{MessageId}]: {messageLength} bytes"
-                       : $"ScsRawDataMessage [{MessageId}] Replied To [{RepliedMessageId}]: {messageLength} bytes";
+                ? $"ScsRawDataMessage [{MessageId}]: {messageLength} bytes"
+                : $"ScsRawDataMessage [{MessageId}] Replied To [{RepliedMessageId}]: {messageLength} bytes";
         }
 
         public override bool Equals(object obj)
@@ -82,21 +82,21 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
                 return true;
             }
 
-            if (obj is null)
+            if (ReferenceEquals(obj, null))
             {
                 return false;
             }
 
-            return false;
+            throw new NotImplementedException();
         }
 
-        public override int GetHashCode() => GetHashCode();
+        public override int GetHashCode() => throw new NotImplementedException();
 
         public static bool operator ==(ScsRawDataMessage left, ScsRawDataMessage right)
         {
-            if (left is null)
+            if (ReferenceEquals(left, null))
             {
-                return right is null;
+                return ReferenceEquals(right, null);
             }
 
             return left.Equals(right);
@@ -104,13 +104,13 @@ namespace OpenNos.Core.Networking.Communication.Scs.Communication.Messages
 
         public static bool operator !=(ScsRawDataMessage left, ScsRawDataMessage right) => !(left == right);
 
-        public static bool operator <(ScsRawDataMessage left, ScsRawDataMessage right) => left is null ? !(right is null) : left.CompareTo(right) < 0;
+        public static bool operator <(ScsRawDataMessage left, ScsRawDataMessage right) => ReferenceEquals(left, null) ? !ReferenceEquals(right, null) : left.CompareTo(right) < 0;
 
-        public static bool operator <=(ScsRawDataMessage left, ScsRawDataMessage right) => left is null || left.CompareTo(right) <= 0;
+        public static bool operator <=(ScsRawDataMessage left, ScsRawDataMessage right) => ReferenceEquals(left, null) || left.CompareTo(right) <= 0;
 
-        public static bool operator >(ScsRawDataMessage left, ScsRawDataMessage right) => !(left is null) && left.CompareTo(right) > 0;
+        public static bool operator >(ScsRawDataMessage left, ScsRawDataMessage right) => !ReferenceEquals(left, null) && left.CompareTo(right) > 0;
 
-        public static bool operator >=(ScsRawDataMessage left, ScsRawDataMessage right) => left is null ? right is null : left.CompareTo(right) >= 0;
+        public static bool operator >=(ScsRawDataMessage left, ScsRawDataMessage right) => ReferenceEquals(left, null) ? ReferenceEquals(right, null) : left.CompareTo(right) >= 0;
 
         #endregion
     }

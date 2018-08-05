@@ -16,7 +16,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using OpenNos.Core.Networking.Communication.Scs.Communication;
 using OpenNos.Core.Networking.Communication.Scs.Communication.Messages;
 using OpenNos.Core.Networking.Communication.Scs.Communication.Protocols;
 
@@ -24,24 +23,6 @@ namespace OpenNos.Core.Networking
 {
     public class WireProtocol : IScsWireProtocol, IDisposable
     {
-        #region Members
-
-        /// <summary>
-        /// Maximum length of a message.
-        /// </summary>
-        private const short MAX_MESSAGE_LENGTH = 4096;
-
-        private readonly IDictionary<string, DateTime> _connectionHistory;
-
-        private bool _disposed;
-
-        /// <summary>
-        /// This MemoryStream object is used to collect receiving bytes to build messages.
-        /// </summary>
-        private MemoryStream _receiveMemoryStream;
-
-        #endregion
-
         #region Instantiation
 
         public WireProtocol()
@@ -49,6 +30,24 @@ namespace OpenNos.Core.Networking
             _receiveMemoryStream = new MemoryStream();
             _connectionHistory = new Dictionary<string, DateTime>();
         }
+
+        #endregion
+
+        #region Members
+
+        /// <summary>
+        ///     Maximum length of a message.
+        /// </summary>
+        private const short MaxMessageLength = 4096;
+
+        private IDictionary<string, DateTime> _connectionHistory;
+
+        private bool _disposed;
+
+        /// <summary>
+        ///     This MemoryStream object is used to collect receiving bytes to build messages.
+        /// </summary>
+        private MemoryStream _receiveMemoryStream;
 
         #endregion
 
@@ -63,7 +62,7 @@ namespace OpenNos.Core.Networking
             List<IScsMessage> messages = new List<IScsMessage>();
 
             // Read all available messages and add to messages collection
-            while (readSingleMessage(messages))
+            while (ReadSingleMessage(messages))
             {
             }
 
@@ -84,7 +83,10 @@ namespace OpenNos.Core.Networking
         public byte[] GetBytes(IScsMessage message)
         {
             // Serialize the message to a byte array
-            return message is ScsTextMessage textMessage ? Encoding.Default.GetBytes(textMessage.Text) : ((ScsRawDataMessage)message).MessageData;
+            var textMessage = message as ScsTextMessage;
+            byte[] bytes = textMessage != null ? Encoding.Default.GetBytes(textMessage.Text) : ((ScsRawDataMessage)message).MessageData;
+
+            return bytes;
         }
 
         public void Reset()
@@ -104,36 +106,38 @@ namespace OpenNos.Core.Networking
         }
 
         /// <summary>
-        /// Reads a byte array with specified length.
+        ///     Reads a byte array with specified length.
         /// </summary>
         /// <param name="stream">Stream to read from</param>
         /// <param name="length">Length of the byte array to read</param>
         /// <returns>Read byte array</returns>
         /// <exception cref="EndOfStreamException">
-        /// Throws EndOfStreamException if can not read from stream.
+        ///     Throws EndOfStreamException if can not read from stream.
         /// </exception>
         private static byte[] ReadByteArray(Stream stream, short length)
         {
             byte[] buffer = new byte[length];
+
             int read = stream.Read(buffer, 0, length);
             if (read <= 0)
             {
                 throw new EndOfStreamException("Can not read from stream! Input stream is closed.");
             }
+
             return buffer;
         }
 
         /// <summary>
-        /// This method tries to read a single message and add to the messages collection.
+        ///     This method tries to read a single message and add to the messages collection.
         /// </summary>
         /// <param name="messages">Messages collection to collect messages</param>
         /// <returns>
-        /// Returns a boolean value indicates that if there is a need to re-call this method.
+        ///     Returns a boolean value indicates that if there is a need to re-call this method.
         /// </returns>
         /// <exception cref="CommunicationException">
-        /// Throws CommunicationException if message is bigger than maximum allowed message length.
+        ///     Throws CommunicationException if message is bigger than maximum allowed message length.
         /// </exception>
-        private bool readSingleMessage(ICollection<IScsMessage> messages)
+        private bool ReadSingleMessage(ICollection<IScsMessage> messages)
         {
             // Go to the beginning of the stream
             _receiveMemoryStream.Position = 0;
@@ -148,9 +152,9 @@ namespace OpenNos.Core.Networking
             short frameLength = (short)_receiveMemoryStream.Length;
 
             // Read length of the message
-            if (frameLength > MAX_MESSAGE_LENGTH)
+            if (frameLength > MaxMessageLength)
             {
-                throw new CommunicationException("Message is too big (" + frameLength + " bytes). Max allowed length is " + MAX_MESSAGE_LENGTH + " bytes.");
+                throw new Exception("Message is too big (" + frameLength + " bytes). Max allowed length is " + MaxMessageLength + " bytes.");
             }
 
             // Read bytes of serialized message and deserialize it

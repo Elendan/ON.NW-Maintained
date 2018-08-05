@@ -143,11 +143,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Client\AuthentificationServiceClient.cs" />
     <Compile Include="Client\CommunicationClient.cs" />
     <Compile Include="Client\CommunicationServiceClient.cs" />
     <Compile Include="Data\AccountSession.cs" />
-    <Compile Include="Interface\IAuthentificationService.cs" />
+    <Compile Include="Data\PercentBar.cs" />
     <Compile Include="Interface\ICommunicationClient.cs" />
     <Compile Include="Interface\ICommunicationService.cs" />
     <Compile Include="Data\SCSCharacterMessage.cs" />

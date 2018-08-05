@@ -145,7 +145,6 @@
     <Compile Include="Extension.cs" />
     <Compile Include="Extensions\ArrayExtensions.cs" />
     <Compile Include="Handling\HandlerMethodReference.cs" />
-    <Compile Include="Networking\Communication\ScsServices\Communication\Messages\ScsRemoteInvocationException.cs" />
     <Compile Include="Networking\Communication\Scs\Threading\SequentialItemProcessor.cs" />
     <Compile Include="Networking\Communication\Scs\Threading\ThreadSafeGenericList.cs" />
     <Compile Include="Networking\Communication\Scs\Threading\ThreadSafeSortedList.cs" />

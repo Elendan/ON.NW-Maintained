@@ -15,75 +15,159 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using OpenNos.Core.Networking.Communication.Scs.Communication.Messages;
 using OpenNos.Core.Networking.Communication.Scs.Communication.Messengers;
 using OpenNos.Core.Networking.Communication.Scs.Server;
-using OpenNos.Core.Networking.Communication.Scs.Threading;
 using OpenNos.Core.Networking.Communication.ScsServices.Communication.Messages;
 
 namespace OpenNos.Core.Networking.Communication.ScsServices.Service
 {
     /// <summary>
-    /// Implements IScsServiceApplication and provides all functionallity.
+    ///     Implements IScsServiceApplication and provides all functionallity.
     /// </summary>
     public class ScsServiceApplication : IScsServiceApplication, IDisposable
     {
-        #region Members
-
-        /// <summary>
-        /// Underlying IScsServer object to accept and manage client connections.
-        /// </summary>
-        private readonly IScsServer _scsServer;
-
-        /// <summary>
-        /// All connected clients to service.
-        /// Key: Client's unique Id.
-        /// Value: Reference to the client.
-        /// </summary>
-        private readonly ThreadSafeSortedList<long, IScsServiceClient> _serviceClients;
-
-        /// <summary>
-        /// User service objects that is used to invoke incoming method invocation requests.
-        /// Key: Service interface type's name.
-        /// Value: Service object.
-        /// </summary>
-        private readonly ThreadSafeSortedList<string, ServiceObject> _serviceObjects;
-
-        private bool _disposed;
-
-        #endregion
-
         #region Instantiation
 
         /// <summary>
-        /// Creates a new ScsServiceApplication object.
+        ///     Creates a new ScsServiceApplication object.
         /// </summary>
         /// <param name="scsServer">Underlying IScsServer object to accept and manage client connections</param>
         /// <exception cref="ArgumentNullException">
-        /// Throws ArgumentNullException if scsServer argument is null
+        ///     Throws ArgumentNullException if scsServer argument is null
         /// </exception>
         public ScsServiceApplication(IScsServer scsServer)
         {
             _scsServer = scsServer ?? throw new ArgumentNullException(nameof(scsServer));
             _scsServer.ClientConnected += ScsServer_ClientConnected;
             _scsServer.ClientDisconnected += ScsServer_ClientDisconnected;
-            _serviceObjects = new ThreadSafeSortedList<string, ServiceObject>();
-            _serviceClients = new ThreadSafeSortedList<long, IScsServiceClient>();
+            _serviceObjects = new ConcurrentDictionary<string, ServiceObject>();
+            _serviceClients = new ConcurrentDictionary<long, IScsServiceClient>();
         }
+
+        #endregion
+
+        #region Classes
+
+        /// <summary>
+        ///     Represents a user service object. It is used to invoke methods on a ScsService object.
+        /// </summary>
+        private sealed class ServiceObject
+        {
+            #region Members
+
+            /// <summary>
+            ///     This collection stores a list of all methods of service object.
+            ///     Key: Method name
+            ///     Value: Informations about method.
+            /// </summary>
+            private readonly SortedList<string, MethodInfo> _methods;
+
+            #endregion
+
+            #region Instantiation
+
+            /// <summary>
+            ///     Creates a new ServiceObject.
+            /// </summary>
+            /// <param name="serviceInterfaceType">Type of service interface</param>
+            /// <param name="service">The service object that is used to invoke methods on</param>
+            public ServiceObject(Type serviceInterfaceType, ScsService service)
+            {
+                Service = service;
+                object[] classAttributes = serviceInterfaceType.GetCustomAttributes(typeof(ScsServiceAttribute), true);
+                if (classAttributes.Length <= 0)
+                {
+                    throw new Exception("Service interface (" + serviceInterfaceType.Name + ") must has ScsService attribute.");
+                }
+
+                ServiceAttribute = classAttributes[0] as ScsServiceAttribute;
+                _methods = new SortedList<string, MethodInfo>();
+                foreach (MethodInfo methodInfo in serviceInterfaceType.GetMethods())
+                {
+                    _methods.Add(methodInfo.Name, methodInfo);
+                }
+            }
+
+            #endregion
+
+            #region Methods
+
+            /// <summary>
+            ///     Invokes a method of Service object.
+            /// </summary>
+            /// <param name="methodName">Name of the method to invoke</param>
+            /// <param name="parameters">Parameters of method</param>
+            /// <returns>Return value of method</returns>
+            public object InvokeMethod(string methodName, params object[] parameters)
+            {
+                // Check if there is a method with name methodName
+                if (!_methods.ContainsKey(methodName))
+                {
+                    throw new Exception("There is not a method with name '" + methodName + "' in service class.");
+                }
+
+                // Get method
+                MethodInfo method = _methods[methodName];
+
+                // Invoke method and return invoke result
+                return method.Invoke(Service, parameters);
+            }
+
+            #endregion
+
+            #region Properties
+
+            /// <summary>
+            ///     The service object that is used to invoke methods on.
+            /// </summary>
+            public ScsService Service { get; }
+
+            /// <summary>
+            ///     ScsService attribute of Service object's class.
+            /// </summary>
+            public ScsServiceAttribute ServiceAttribute { get; }
+
+            #endregion
+        }
+
+        #endregion
+
+        #region Members
+
+        /// <summary>
+        ///     Underlying IScsServer object to accept and manage client connections.
+        /// </summary>
+        private readonly IScsServer _scsServer;
+
+        /// <summary>
+        ///     All connected clients to service.
+        ///     Key: Client's unique Id.
+        ///     Value: Reference to the client.
+        /// </summary>
+        private readonly ConcurrentDictionary<long, IScsServiceClient> _serviceClients;
+
+        /// <summary>
+        ///     User service objects that is used to invoke incoming method invocation requests.
+        ///     Key: Service interface type's name.
+        ///     Value: Service object.
+        /// </summary>
+        private readonly ConcurrentDictionary<string, ServiceObject> _serviceObjects;
+
+        private bool _disposed;
 
         #endregion
 
         #region Events
 
         /// <summary>
-        /// This event is raised when a new client connected to the service.
+        ///     This event is raised when a new client connected to the service.
         /// </summary>
         public event EventHandler<ServiceClientEventArgs> ClientConnected;
 
         /// <summary>
-        /// This event is raised when a client disconnected from the service.
+        ///     This event is raised when a client disconnected from the service.
         /// </summary>
         public event EventHandler<ServiceClientEventArgs> ClientDisconnected;
 
@@ -92,16 +176,16 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         #region Methods
 
         /// <summary>
-        /// Adds a service object to this service application. Only single service object can be
-        /// added for a service interface type.
+        ///     Adds a service object to this service application. Only single service object can be
+        ///     added for a service interface type.
         /// </summary>
         /// <typeparam name="TServiceInterface">Service interface type</typeparam>
         /// <typeparam name="TServiceClass">
-        /// Service class type. Must be delivered from ScsService and must implement TServiceInterface.
+        ///     Service class type. Must be delivered from ScsService and must implement TServiceInterface.
         /// </typeparam>
         /// <param name="service">An instance of TServiceClass.</param>
         /// <exception cref="ArgumentNullException">
-        /// Throws ArgumentNullException if service argument is null
+        ///     Throws ArgumentNullException if service argument is null
         /// </exception>
         /// <exception cref="Exception">Throws Exception if service is already added before</exception>
         public void AddService<TServiceInterface, TServiceClass>(TServiceClass service) where TServiceInterface : class where TServiceClass : ScsService, TServiceInterface
@@ -131,20 +215,20 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Removes a previously added service object from this service application. It removes
-        /// object according to interface type.
+        ///     Removes a previously added service object from this service application. It removes
+        ///     object according to interface type.
         /// </summary>
         /// <typeparam name="TServiceInterface">Service interface type</typeparam>
         /// <returns>True: removed. False: no service object with this interface</returns>
-        public bool RemoveService<TServiceInterface>() where TServiceInterface : class => _serviceObjects.Remove(typeof(TServiceInterface).Name);
+        public bool RemoveService<TServiceInterface>() where TServiceInterface : class => _serviceObjects.TryRemove(typeof(TServiceInterface).Name, out ServiceObject value);
 
         /// <summary>
-        /// Starts service application.
+        ///     Starts service application.
         /// </summary>
         public void Start() => _scsServer.Start();
 
         /// <summary>
-        /// Stops service application.
+        ///     Stops service application.
         /// </summary>
         public void Stop() => _scsServer.Stop();
 
@@ -152,22 +236,19 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         {
             if (disposing)
             {
-                _serviceClients.Dispose();
-                _serviceObjects.Dispose();
+                _serviceClients.Clear();
+                _serviceObjects.Clear();
             }
         }
 
         /// <summary>
-        /// Sends response to the remote application that invoked a service method.
+        ///     Sends response to the remote application that invoked a service method.
         /// </summary>
         /// <param name="client">Client that sent invoke message</param>
         /// <param name="requestMessage">Request message</param>
         /// <param name="returnValue">Return value to send</param>
         /// <param name="exception">Exception to send</param>
-        /// <param name="parameters">
-        /// Parameters possibly modified in the method call by out or ref
-        /// </param>
-        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception, object[] parameters = null)
+        private static void SendInvokeResponse(IMessenger client, IScsMessage requestMessage, object returnValue, ScsRemoteException exception)
         {
             try
             {
@@ -175,8 +256,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
                 {
                     RepliedMessageId = requestMessage.MessageId,
                     ReturnValue = returnValue,
-                    RemoteException = exception,
-                    Parameters = parameters
+                    RemoteException = exception
                 }, 10);
             }
             catch (Exception ex)
@@ -186,8 +266,8 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Handles MessageReceived events of all clients, evaluates each message, finds appropriate
-        /// service object and invokes appropriate method.
+        ///     Handles MessageReceived events of all clients, evaluates each message, finds appropriate
+        ///     service object and invokes appropriate method.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -197,7 +277,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
             RequestReplyMessenger<IScsServerClient> requestReplyMessenger = (RequestReplyMessenger<IScsServerClient>)sender;
 
             // Cast message to ScsRemoteInvokeMessage and check it
-            ScsRemoteInvokeMessage invokeMessage = e.Message as ScsRemoteInvokeMessage;
+            var invokeMessage = e.Message as ScsRemoteInvokeMessage;
             if (invokeMessage == null)
             {
                 return;
@@ -239,19 +319,21 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
                     }
 
                     // Send method invocation return value to the client
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, returnValue, null, invokeMessage.Parameters);
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, returnValue, null);
                 }
                 catch (TargetInvocationException ex)
                 {
                     Exception innerEx = ex.InnerException;
                     if (innerEx != null)
                     {
-                        SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteInvocationException(invokeMessage.ServiceClassName, serviceObject.ServiceAttribute?.Version ?? "", invokeMessage.MethodName, innerEx.Message, innerEx));
+                        SendInvokeResponse(requestReplyMessenger, invokeMessage, null,
+                            new ScsRemoteException(innerEx.Message + Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version, innerEx));
                     }
                 }
                 catch (Exception ex)
                 {
-                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null, new ScsRemoteInvocationException(invokeMessage.ServiceClassName, serviceObject.ServiceAttribute?.Version ?? "", invokeMessage.MethodName, ex.Message, ex));
+                    SendInvokeResponse(requestReplyMessenger, invokeMessage, null,
+                        new ScsRemoteException(ex.Message + Environment.NewLine + "Service Version: " + serviceObject.ServiceAttribute.Version, ex));
                 }
             }
             catch (Exception ex)
@@ -261,7 +343,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Raises ClientConnected event.
+        ///     Raises ClientConnected event.
         /// </summary>
         /// <param name="client"></param>
         private void OnClientConnected(IScsServiceClient client)
@@ -271,7 +353,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Raises ClientDisconnected event.
+        ///     Raises ClientDisconnected event.
         /// </summary>
         /// <param name="client"></param>
         private void OnClientDisconnected(IScsServiceClient client)
@@ -281,7 +363,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Handles ClientConnected event of _scsServer object.
+        ///     Handles ClientConnected event of _scsServer object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -297,7 +379,7 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
         }
 
         /// <summary>
-        /// Handles ClientDisconnected event of _scsServer object.
+        ///     Handles ClientDisconnected event of _scsServer object.
         /// </summary>
         /// <param name="sender">Source of event</param>
         /// <param name="e">Event arguments</param>
@@ -308,97 +390,10 @@ namespace OpenNos.Core.Networking.Communication.ScsServices.Service
             {
                 return;
             }
+
             e.Client.Disconnect();
-            _serviceClients.Remove(e.Client.ClientId);
+            _serviceClients.TryRemove(e.Client.ClientId, out IScsServiceClient value);
             OnClientDisconnected(serviceClient);
-        }
-
-        #endregion
-
-        #region Classes
-
-        /// <summary>
-        /// Represents a user service object. It is used to invoke methods on a ScsService object.
-        /// </summary>
-        private sealed class ServiceObject
-        {
-            #region Members
-
-            /// <summary>
-            /// This collection stores a list of all methods of service object.
-            /// Key: Method name
-            /// Value: Informations about method.
-            /// </summary>
-            private readonly SortedList<string, MethodInfo> _methods;
-
-            #endregion
-
-            #region Instantiation
-
-            /// <summary>
-            /// Creates a new ServiceObject.
-            /// </summary>
-            /// <param name="serviceInterfaceType">Type of service interface</param>
-            /// <param name="service">The service object that is used to invoke methods on</param>
-            public ServiceObject(Type serviceInterfaceType, ScsService service)
-            {
-                Service = service;
-                object[] classAttributes = serviceInterfaceType.GetCustomAttributes(typeof(ScsServiceAttribute), true);
-
-                ServiceAttribute = classAttributes.Length > 0
-                    ? classAttributes[0] as ScsServiceAttribute
-                    : new ScsServiceAttribute { Version = serviceInterfaceType.Assembly.GetName().Version.ToString() };
-
-                _methods = new SortedList<string, MethodInfo>();
-                foreach (Type serviceInterface in serviceInterfaceType.GetInterfaces().Union(new[] { serviceInterfaceType }))
-                {
-                    foreach (MethodInfo methodInfo in serviceInterface.GetMethods())
-                    {
-                        _methods[methodInfo.Name] = methodInfo;
-                    }
-                }
-            }
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// The service object that is used to invoke methods on.
-            /// </summary>
-            public ScsService Service { get; }
-
-            /// <summary>
-            /// ScsService attribute of Service object's class.
-            /// </summary>
-            public ScsServiceAttribute ServiceAttribute { get; }
-
-            #endregion
-
-            #region Methods
-
-            /// <summary>
-            /// Invokes a method of Service object.
-            /// </summary>
-            /// <param name="methodName">Name of the method to invoke</param>
-            /// <param name="parameters">Parameters of method</param>
-            /// <returns>Return value of method</returns>
-            public object InvokeMethod(string methodName, params object[] parameters)
-            {
-                // Check if there is a method with name methodName
-                if (!_methods.ContainsKey(methodName))
-                {
-                    throw new Exception("There is not a method with name '" + methodName + "' in service class.");
-                }
-
-                // Get method
-                MethodInfo method = _methods[methodName];
-
-                // Invoke method and return invoke result
-                return method.Invoke(Service, parameters);
-            }
-
-            #endregion
         }
 
         #endregion

@@ -22,18 +22,18 @@ namespace OpenNos.Core.Networking
 {
     public class NetworkClient : ScsServerClient, INetworkClient
     {
-        #region Members
-
-        private EncryptionBase _encryptor;
-        private object _session;
-
-        #endregion
-
         #region Instantiation
 
         public NetworkClient(ICommunicationChannel communicationChannel) : base(communicationChannel)
         {
         }
+
+        #endregion
+
+        #region Members
+
+        private EncryptionBase _encryptor;
+        private object _session;
 
         #endregion
 
@@ -49,28 +49,40 @@ namespace OpenNos.Core.Networking
 
         #region Methods
 
-        public void Initialize(EncryptionBase encryptor) => _encryptor = encryptor;
+        public void Initialize(EncryptionBase encryptor)
+        {
+            _encryptor = encryptor;
+        }
 
         public void SendPacket(string packet, byte priority = 10)
         {
-            if (!IsDisposing && !string.IsNullOrEmpty(packet))
+            if (IsDisposing || string.IsNullOrEmpty(packet))
             {
-                var rawMessage = new ScsRawDataMessage(_encryptor.Encrypt(packet));
-                SendMessage(rawMessage, priority);
+                return;
             }
+
+            var rawMessage = new ScsRawDataMessage(_encryptor.Encrypt(packet));
+            SendMessage(rawMessage, priority);
         }
 
-        public void SendPacketFormat(string packet, params object[] param) => SendPacket(string.Format(packet, param));
+        public void SendPacketFormat(string packet, params object[] param)
+        {
+            SendPacket(string.Format(packet, param));
+        }
 
         public void SendPackets(IEnumerable<string> packets, byte priority = 10)
         {
+            // TODO: maybe send at once with delimiter
             foreach (string packet in packets)
             {
                 SendPacket(packet, priority);
             }
         }
 
-        public void SetClientSession(object clientSession) => _session = clientSession;
+        public void SetClientSession(object clientSession)
+        {
+            _session = clientSession;
+        }
 
         #endregion
     }

@@ -15,24 +15,23 @@
 using System;
 using System.Collections.Concurrent;
 using OpenNos.Core.Networking.Communication.Scs.Communication.Protocols;
-using OpenNos.Core.Networking.Communication.Scs.Threading;
 
 namespace OpenNos.Core.Networking.Communication.Scs.Server
 {
     /// <summary>
-    /// Represents a SCS server that is used to accept and manage client connections.
+    ///     Represents a SCS server that is used to accept and manage client connections.
     /// </summary>
     public interface IScsServer
     {
         #region Events
 
         /// <summary>
-        /// This event is raised when a new client connected to the server.
+        ///     This event is raised when a new client connected to the server.
         /// </summary>
         event EventHandler<ServerClientEventArgs> ClientConnected;
 
         /// <summary>
-        /// This event is raised when a client disconnected from the server.
+        ///     This event is raised when a client disconnected from the server.
         /// </summary>
         event EventHandler<ServerClientEventArgs> ClientDisconnected;
 
@@ -41,12 +40,12 @@ namespace OpenNos.Core.Networking.Communication.Scs.Server
         #region Properties
 
         /// <summary>
-        /// A collection of clients that are connected to the server.
+        ///     A collection of clients that are connected to the server.
         /// </summary>
-        ThreadSafeSortedList<long, IScsServerClient> Clients { get; }
+        ConcurrentDictionary<long, IScsServerClient> Clients { get; }
 
         /// <summary>
-        /// Gets/sets wire protocol factory to create IWireProtocol objects.
+        ///     Gets/sets wire protocol factory to create IWireProtocol objects.
         /// </summary>
         IScsWireProtocolFactory WireProtocolFactory { get; set; }
 
@@ -55,12 +54,12 @@ namespace OpenNos.Core.Networking.Communication.Scs.Server
         #region Methods
 
         /// <summary>
-        /// Starts the server.
+        ///     Starts the server.
         /// </summary>
         void Start();
 
         /// <summary>
-        /// Stops the server.
+        ///     Stops the server.
         /// </summary>
         void Stop();
 
