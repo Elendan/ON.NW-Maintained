@@ -76,6 +76,7 @@ namespace OpenNos.DAL
         private static IStaticBuffDAO _staticBuffDao;
         private static ITeleporterDAO _teleporterDao;
         private static IUpgradeLogDao _upgradeLogDao;
+        private static IAntiBotLogDAO _antiBotLogDao;
 
         #endregion
 
@@ -84,6 +85,8 @@ namespace OpenNos.DAL
         #endregion
 
         #region Properties
+
+        public static IAntiBotLogDAO AntiBotLogDao => _antiBotLogDao ?? (_antiBotLogDao = new AntiBotLogDAO());
 
         public static IAccountDAO AccountDao => _accountDao ?? (_accountDao = new AccountDAO());
 

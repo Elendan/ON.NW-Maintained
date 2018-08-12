@@ -59,6 +59,7 @@ namespace OpenNos.GameObject
             MTListTargetQueue = new ConcurrentStack<MTListHitTarget>();
             ReflectiveBuffs = new ConcurrentDictionary<short, int?>();
             CanTriggerMegaTitan = true;
+            BrawlerMorphType = BrawlerMorphType.Normal;
         }
 
         #endregion
@@ -105,6 +106,18 @@ namespace OpenNos.GameObject
         #endregion
 
         public IDisposable SaveObs { get; set; }
+
+        public IDisposable AntiBotObservable { get; set; }
+
+        public IDisposable AntiBotMessageInterval { get; set; }
+
+        public short AntiBotIdentificator { get; set; }
+
+        public byte AntiBotCount { get; set; }
+
+        public IDisposable DragonModeObservable { get; set; }
+
+        public BrawlerMorphType BrawlerMorphType { get; set; }
 
         public IEnumerable<CharacterHomeDTO> Homes
         {

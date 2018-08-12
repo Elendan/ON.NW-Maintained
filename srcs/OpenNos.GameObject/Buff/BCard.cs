@@ -1978,6 +1978,45 @@ namespace OpenNos.GameObject.Buff
                 case BCardType.CardType.EffectSummon:
                     break;
 
+                case BCardType.CardType.DragonSkills:
+                    switch (SubType)
+                    {
+                        case (byte)AdditionalTypes.DragonSkills.TransformationInverted:
+                            if (session is Character reversedMorph)
+                            {
+                                reversedMorph.Morph = (byte)BrawlerMorphType.Normal;
+                                reversedMorph.Session.SendPacket(reversedMorph.GenerateCMode());
+                                reversedMorph.Session.SendPacket(reversedMorph.GenerateEff(196));
+                                reversedMorph.DragonModeObservable?.Dispose();
+                                reversedMorph.RemoveBuff(676);
+                            }
+                            break;
+                        case (byte)AdditionalTypes.DragonSkills.Transformation:
+                            Card morphCard = ServerManager.Instance.GetCardByCardId(CardId);
+
+                            if (morphCard == null)
+                            {
+                                return;
+                            }
+
+                            if (session is Character morphedChar)
+                            {
+                                morphedChar.Morph = (byte)BrawlerMorphType.Dragon;
+                                morphedChar.Session.SendPacket(morphedChar.GenerateCMode());
+                                morphedChar.Session.SendPacket(morphedChar.GenerateEff(196));
+                                morphedChar.DragonModeObservable?.Dispose();
+
+                                morphedChar.DragonModeObservable = Observable.Timer(TimeSpan.FromSeconds(morphCard.Duration * 0.1)).Subscribe(s =>
+                                {
+                                    morphedChar.Morph = (byte)BrawlerMorphType.Normal;
+                                    morphedChar.Session.SendPacket(morphedChar.GenerateCMode());
+                                    morphedChar.Session.SendPacket(morphedChar.GenerateEff(196));
+                                });
+                            }
+                            break;
+                    }
+                    break;
+
                 default:
                     Logger.Error(new ArgumentOutOfRangeException($"Card Type {Type} not defined!"));
                     //throw new ArgumentOutOfRangeException();

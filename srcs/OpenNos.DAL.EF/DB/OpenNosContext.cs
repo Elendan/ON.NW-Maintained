@@ -535,6 +535,8 @@ namespace OpenNos.DAL.EF.DB
 
         public virtual DbSet<UpgradeLog> UpgradeLog { get; set; }
 
+        public virtual DbSet<AntiBotLog> AntiBotLog { get; set; }
+
         #endregion
     }
 }

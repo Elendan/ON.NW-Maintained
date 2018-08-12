@@ -327,6 +327,7 @@ namespace ON.NW.World
             DaoFactory.ExchangeLogDao.RegisterMapping(typeof(ExchangeLogDTO)).InitializeMapper();
             DaoFactory.LevelUpRewardsDao.RegisterMapping(typeof(LevelUpRewardsDTO)).InitializeMapper();
             DaoFactory.CharacterHomeDao.RegisterMapping(typeof(CharacterHomeDTO)).InitializeMapper();
+            DaoFactory.AntiBotLogDao.RegisterMapping(typeof(AntiBotLogDTO)).InitializeMapper();
         }
 
         public class NativeMethods

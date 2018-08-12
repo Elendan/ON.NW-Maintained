@@ -48,9 +48,116 @@ namespace OpenNos.Handler
         protected static readonly ILog Log = LogManager.GetLogger(typeof(CharacterScreenPacketHandler));
         private ClientSession Session { get; }
 
-		#endregion
+        #endregion
 
-		#region Methods
+        #region Methods
+
+        /// <summary> 
+        ///     Char_NEW_JOB brawler creation packet 
+        /// </summary> 
+        /// <param name="brawlerCreatePacket"></param> 
+        public void CreateBrawler(BrawlerCreatePacket brawlerCreatePacket)
+        {
+            if (Session.HasCurrentMapInstance)
+            {
+                return;
+            }
+
+            bool canCreate = DaoFactory.CharacterDao.LoadByAccount(Session.Account.AccountId).Any(character => character.Level >= 80);
+
+            if (!canCreate)
+            {
+                Session.SendPacket(UserInterfaceHelper.Instance.GenerateInfo($"You cannot create a Martial artist"));
+                return;
+            }
+
+            long accountId = Session.Account.AccountId;
+            byte slot = brawlerCreatePacket.Slot;
+            string characterName = brawlerCreatePacket.Name;
+
+            if (slot > 3 || DaoFactory.CharacterDao.LoadBySlot(accountId, slot) != null)
+            {
+                return;
+            }
+
+            if (characterName.Length <= 3 || characterName.Length >= 15)
+            {
+                return;
+            }
+
+            var rg = new Regex(@"^[\u0021-\u007E\u00A1-\u00AC\u00AE-\u00FF\u4E00-\u9FA5\u0E01-\u0E3A\u0E3F-\u0E5B\u002E]*$");
+            if (rg.Matches(characterName).Count == 1)
+            {
+                CharacterDTO character = DaoFactory.CharacterDao.LoadByName(characterName);
+                if (character == null || character.State == CharacterState.Inactive)
+                {
+                    CharacterDTO newCharacter = DependencyContainer.Instance.Get<BaseCharacter>().Character;
+                    newCharacter.AccountId = accountId;
+                    newCharacter.Class = ClassType.Wrestler;
+                    newCharacter.Level = 81;
+                    newCharacter.JobLevel = 1;
+                    newCharacter.Gender = brawlerCreatePacket.Gender;
+                    newCharacter.HairColor = brawlerCreatePacket.HairColor;
+                    newCharacter.HairStyle = brawlerCreatePacket.HairStyle;
+                    newCharacter.Name = characterName;
+                    newCharacter.Slot = slot;
+                    DaoFactory.CharacterDao.InsertOrUpdate(ref newCharacter);
+
+                    // init quest 
+                    var firstQuest = new CharacterQuestDTO { CharacterId = newCharacter.CharacterId, QuestId = 1997, IsMainQuest = true };
+                    DaoFactory.CharacterQuestDao.InsertOrUpdate(firstQuest);
+
+
+                    // init skills 
+                    List<CharacterSkillDTO> wSkills = new List<CharacterSkillDTO>
+                    {
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1525 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1526 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1527 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1528 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1529 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1530 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1531 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1532 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1533 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1534 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1535 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1536 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1537 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1538 },
+                        new CharacterSkillDTO { CharacterId = newCharacter.CharacterId, SkillVNum = 1539 }
+                    };
+
+                    DaoFactory.CharacterSkillDao.InsertOrUpdate(wSkills);
+
+                    // init inventory 
+                    var inventory = new Inventory((Character)newCharacter);
+                    var startupInventory = DependencyContainer.Instance.Get<BaseInventory>();
+                    if (startupInventory != null)
+                    {
+                        foreach (BaseInventory.StartupInventoryItem item in startupInventory.Items)
+                        {
+                            inventory.AddNewToInventory(item.Vnum, item.Quantity, item.InventoryType);
+                        }
+                    }
+
+                    foreach (ItemInstance i in inventory.Select(s => s.Value))
+                    {
+                        DaoFactory.IteminstanceDao.InsertOrUpdate(i);
+                    }
+
+                    LoadCharacters(brawlerCreatePacket.OriginalContent);
+                }
+                else
+                {
+                    Session.SendPacketFormat($"info {Language.Instance.GetMessageFromKey("ALREADY_TAKEN")}");
+                }
+            }
+            else
+            {
+                Session.SendPacketFormat($"info {Language.Instance.GetMessageFromKey("INVALID_CHARNAME")}");
+            }
+        }
 
         /// <summary>
         ///     gbox Graphical Bank Packet
@@ -147,7 +254,6 @@ namespace OpenNos.Handler
         /// <param name="characterCreatePacket"></param>
         public void CreateCharacter(CharacterCreatePacket characterCreatePacket)
         {
-            bool isWrestler = false;
             if (Session.HasCurrentMapInstance)
             {
                 return;
@@ -179,30 +285,10 @@ namespace OpenNos.Handler
                     }
 
                     CharacterDTO newCharacter = DependencyContainer.Instance.Get<BaseCharacter>().Character;
-                    if (characterCreatePacket.Slot == 3 && DaoFactory.CharacterDao.LoadByAccount(Session.Account.AccountId).Any(s => s.Level >= 80))
-                    {
-                        isWrestler = true;
-                        newCharacter = new CharacterDTO
-                        {
-                            Class = ClassType.Wrestler,
-                            Hp = 20,
-                            JobLevel = 80,
-                            Level = 81,
-                            MapId = 2551,
-                            MapX = 8,
-                            MapY = 26,
-                            Mp = 221,
-                            MaxMateCount = 10,
-                            Gold = 15000,
-                            SpPoint = 10000,
-                            SpAdditionPoint = 1000000,
-                            MinilandMessage = "Welcome",
-                        };
-                    }
                     newCharacter.AccountId = accountId;
                     newCharacter.Gender = characterCreatePacket.Gender;
                     newCharacter.HairColor = characterCreatePacket.HairColor;
-                    newCharacter.HairStyle = isWrestler ? HairStyleType.HairStyleA : characterCreatePacket.HairStyle;
+                    newCharacter.HairStyle = characterCreatePacket.HairStyle;
                     newCharacter.Name = characterName;
                     newCharacter.Slot = slot;
                     newCharacter.State = CharacterState.Active;
@@ -211,84 +297,40 @@ namespace OpenNos.Handler
                     // init quest
                     var firstQuest = new CharacterQuestDTO { CharacterId = newCharacter.CharacterId, QuestId = 1997, IsMainQuest = true };
                     DaoFactory.CharacterQuestDao.InsertOrUpdate(firstQuest);
-                    
-                    // init skills
-                    if (!isWrestler)
-                    {
-                        var skills = DependencyContainer.Instance.Get<BaseSkill>();
-                        if (skills != null)
-                        {
-                            foreach (CharacterSkillDTO skill in skills.Skills)
-                            {
-                                skill.CharacterId = newCharacter.CharacterId;
-                                DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        List<CharacterSkillDTO> wSkills = new List<CharacterSkillDTO>
-                        {
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1525 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1526 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1527 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1528 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1529 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1530 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1531 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1532 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1533 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1534 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1535 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1536 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1537 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1538 },
-                            new CharacterSkillDTO { CharacterId = 0, SkillVNum = 1539 }
-                        };
 
-                        if (wSkills != null)
+                    // init skills
+                    var skills = DependencyContainer.Instance.Get<BaseSkill>();
+                    if (skills != null)
+                    {
+                        foreach (CharacterSkillDTO skill in skills.Skills)
                         {
-                            foreach (CharacterSkillDTO skill in wSkills)
-                            {
-                                skill.CharacterId = newCharacter.CharacterId;
-                                DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
-                            }
+                            skill.CharacterId = newCharacter.CharacterId;
+                            DaoFactory.CharacterSkillDao.InsertOrUpdate(skill);
                         }
                     }
 
 
                     // init quicklist
-                    if (!isWrestler)
-                    {
-                        var quicklist = DependencyContainer.Instance.Get<BaseQuicklist>();
+                    var quicklist = DependencyContainer.Instance.Get<BaseQuicklist>();
 
-                        if (quicklist != null)
+                    if (quicklist != null)
+                    {
+                        foreach (QuicklistEntryDTO quicklistEntry in quicklist.Quicklist)
                         {
-                            foreach (QuicklistEntryDTO quicklistEntry in quicklist.Quicklist)
-                            {
-                                quicklistEntry.CharacterId = newCharacter.CharacterId;
-                                DaoFactory.QuicklistEntryDao.InsertOrUpdate(quicklistEntry);
-                            }
+                            quicklistEntry.CharacterId = newCharacter.CharacterId;
+                            DaoFactory.QuicklistEntryDao.InsertOrUpdate(quicklistEntry);
                         }
                     }
 
                     // init inventory
                     var inventory = new Inventory((Character)newCharacter);
-                    if (!isWrestler)
+                    var startupInventory = DependencyContainer.Instance.Get<BaseInventory>();
+                    if (startupInventory != null)
                     {
-                        var startupInventory = DependencyContainer.Instance.Get<BaseInventory>();
-                        if (startupInventory != null)
+                        foreach (BaseInventory.StartupInventoryItem item in startupInventory.Items)
                         {
-                            foreach (BaseInventory.StartupInventoryItem item in startupInventory.Items)
-                            {
-                                inventory.AddNewToInventory(item.Vnum, item.Quantity, item.InventoryType);
-                            }
+                            inventory.AddNewToInventory(item.Vnum, item.Quantity, item.InventoryType);
                         }
-                    }
-                    else
-                    {
-                        inventory.AddNewToInventory(4719, 1, InventoryType.Equipment, 7, 8);
-                        inventory.AddNewToInventory(4737, 1, InventoryType.Equipment, 7, 8);
                     }
 
                     foreach (ItemInstance i in inventory.Select(s => s.Value))

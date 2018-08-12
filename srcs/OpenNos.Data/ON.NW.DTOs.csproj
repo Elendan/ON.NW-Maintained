@@ -147,6 +147,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AntiBotLogDTO.cs" />
     <Compile Include="Base\MappingBaseDTO.cs" />
     <Compile Include="Base\SynchronizableBaseDTO.cs" />
     <Compile Include="BazaarItemDTO.cs" />

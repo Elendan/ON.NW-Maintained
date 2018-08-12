@@ -118,6 +118,7 @@ namespace NosSharp.Enums
             AngerSkill = 82,
             MeteoriteTeleport = 83,
             StealBuff = 84,
+            DragonSkills = 89,
 
             SPSL = 200
         }
@@ -126,6 +127,12 @@ namespace NosSharp.Enums
     public class AdditionalTypes : BCardType
     {
         // 81-??
+        public enum DragonSkills : byte
+        {
+            Transformation = 11,
+            TransformationInverted = 12
+        }
+
         public enum AbsorbedSpirit : byte
         {
             ApplyEffectIfPresent = 11,

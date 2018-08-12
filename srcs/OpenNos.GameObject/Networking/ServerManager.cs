@@ -111,6 +111,14 @@ namespace OpenNos.GameObject.Networking
 
         public static ServerManager Instance => _instance ?? (_instance = new ServerManager());
 
+        public byte MaxCodeAttempts { get; set; }
+
+        public byte TimeBeforeAutoKick { get; set; }
+
+        public byte AutoKickInterval { get; set; }
+
+        public bool AntiBotEnabled { get; set; }
+
         public byte MaximumHomes { get; set; }
 
 		public bool Easter { get; set; }
@@ -1554,7 +1562,11 @@ namespace OpenNos.GameObject.Networking
 			Estival = bool.Parse(ConfigurationManager.AppSettings["Estival"]);
 			Halloween = bool.Parse(ConfigurationManager.AppSettings["Halloween"]);
 			Valentine = bool.Parse(ConfigurationManager.AppSettings["Valentine"]);
-			Schedules = ConfigurationManager.GetSection("eventScheduler") as List<Schedule>;
+            TimeBeforeAutoKick = byte.Parse(ConfigurationManager.AppSettings["TimeBeforeAutoKick"]);
+            AutoKickInterval = byte.Parse(ConfigurationManager.AppSettings["AutoKickInterval"]);
+            MaxCodeAttempts = byte.Parse(ConfigurationManager.AppSettings["MaxCodeAttempts"]);
+            AntiBotEnabled = bool.Parse(ConfigurationManager.AppSettings["AntiBotEnabled"]);
+            Schedules = ConfigurationManager.GetSection("eventScheduler") as List<Schedule>;
             Act4RaidStart = DateTime.Now;
             Act4AngelStat = new PercentBar();
             Act4DemonStat = new PercentBar();

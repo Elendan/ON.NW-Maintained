@@ -54,6 +54,37 @@ namespace OpenNos.Handler
 
         #region Methods
 
+        public void BotPacket(BotPacket packet)
+        {
+            if (Session.Character.AntiBotIdentificator == -1)
+            {
+                return;
+            }
+
+            if (packet.Identificator != Session.Character.AntiBotIdentificator && Session.Character.AntiBotCount > 0)
+            {
+                Session.Character.AntiBotCount--;
+
+                if (Session.Character.AntiBotCount == 0)
+                {
+                    LogHelper.Instance.InsertAntiBotLog(Session, false);
+                    Session?.Disconnect();
+                    CommunicationServiceClient.Instance.KickSession(Session.Account.AccountId, Session.SessionId);
+                    return;
+                }
+
+                Session.SendPacket(Session.Character.GenerateSay($"Les codes d'identification ne correspondent pas ! {Session.Character.AntiBotCount} essais restants !", 11));
+                return;
+            }
+
+            Session.SendPacket($"evnt 3 1 1800 1800");
+            Session.SendPacket(Session.Character.GenerateSay($"Vous pouvez continuer à jouer normalement", 12));
+            Session.Character.AntiBotIdentificator = -1;
+            Session.Character.AntiBotCount = ServerManager.Instance.MaxCodeAttempts;
+            Session.Character.AntiBotMessageInterval?.Dispose();
+            Session.Character.AntiBotObservable?.Dispose();
+        }
+
         public void Maintenance(MaintenancePacket packet)
         {
             LogHelper.Instance.InsertCommandLog(Session.Character.CharacterId, packet, Session.IpAddress);
@@ -380,8 +411,21 @@ namespace OpenNos.Handler
                 case "Resists":
                 case "resists":
                     break;
+                case "Martial":
+                case "martial":
+                    Session.Character.GiftAdd(4736, 1, rare: 8, upgrade: 10); // HERO 45 Weapon 
+                    Session.Character.GiftAdd(4754, 1, rare: 8, upgrade: 10); // HERO 48 Armor 
+                    Session.Character.GiftAdd(4486, 1, 0, 15, 15);
+                    break;
+                case "Fairy":
+                case "fairy":
+                    Session.Character.GiftAdd(4129, 1);
+                    Session.Character.GiftAdd(4130, 1);
+                    Session.Character.GiftAdd(4131, 1);
+                    Session.Character.GiftAdd(4132, 1);
+                    break;
                 default:
-                    Session.SendPacket(Session.Character.GenerateSay("Use : \"Archer\", \"Sword\" \"Mage\" or \"Mount\"", 10));
+                    Session.SendPacket(Session.Character.GenerateSay("Use : \"Archer\", \"Sword\", \"Mage\", \"Martial\", \"Fairy\" or \"Mount\"", 10));
                     break;
             }
 

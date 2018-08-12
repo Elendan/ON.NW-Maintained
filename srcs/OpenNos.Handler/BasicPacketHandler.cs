@@ -1368,6 +1368,32 @@ namespace OpenNos.Handler
                 }
             });
 
+            if (Session.Account.Authority < AuthorityType.GameMaster && ServerManager.Instance.AntiBotEnabled)
+            {
+                Session.Character.AntiBotCount = ServerManager.Instance.MaxCodeAttempts;
+                Observable.Interval(TimeSpan.FromMinutes(ServerManager.Instance.AutoKickInterval)).Subscribe(s =>
+                {
+                    Session.Character.AntiBotIdentificator = (short)ServerManager.Instance.RandomNumber(1000, 10000);
+                    Session.SendPacket($"evnt 3 0 {ServerManager.Instance.TimeBeforeAutoKick * 600} {ServerManager.Instance.TimeBeforeAutoKick * 600}");
+                    Session.SendPacket($"say 1 0 10 Entrez $Bot {Session.Character.AntiBotIdentificator} pour continuer a jouer.");
+                    Session.SendPacket($"msg 2 Entrez $Bot {Session.Character.AntiBotIdentificator} pour continuer a jouer.");
+
+                    Session.Character.AntiBotMessageInterval = Observable.Interval(TimeSpan.FromSeconds(5)).Subscribe(t =>
+                    {
+                        Session.SendPacket($"say 1 0 10 Entrez $Bot {Session.Character.AntiBotIdentificator} pour continuer a jouer.");
+                        Session.SendPacket($"msg 2 Entrez $Bot {Session.Character.AntiBotIdentificator} pour continuer a jouer.");
+                    });
+
+                    Session.Character.AntiBotObservable = Observable.Timer(TimeSpan.FromMinutes(ServerManager.Instance.TimeBeforeAutoKick)).Subscribe(v =>
+                    {
+                        LogHelper.Instance.InsertAntiBotLog(Session, true);
+                        Session.Character.AntiBotMessageInterval?.Dispose();
+                        Session?.Disconnect();
+                        CommunicationServiceClient.Instance.KickSession(Session.Account.AccountId, Session.SessionId);
+                    });
+                });
+            }
+
             if (ConfigurationManager.AppSettings["SceneOnCreate"].ToLower() == "true" & Session.Character.GeneralLogs.Count(s => s.LogType == "Connection") < 2)
             {
                 Session.SendPacket("scene 40");

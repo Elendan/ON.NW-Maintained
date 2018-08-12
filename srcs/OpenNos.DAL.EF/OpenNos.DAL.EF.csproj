@@ -170,6 +170,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AntiBotLogDAO.cs" />
     <Compile Include="Base\MappingBaseDAO.cs" />
     <Compile Include="Base\SynchronizableBaseDAO.cs" />
     <Compile Include="BazaarItemDAO.cs" />
@@ -177,6 +178,7 @@
     <Compile Include="CardDAO.cs" />
     <Compile Include="CharacterHomeDAO.cs" />
     <Compile Include="CharacterQuestDAO.cs" />
+    <Compile Include="Entities\AntiBotLog.cs" />
     <Compile Include="Entities\CharacterHome.cs" />
     <Compile Include="Entities\CharacterQuest.cs" />
     <Compile Include="Entities\ExchangeLog.cs" />
@@ -455,6 +457,10 @@
     <Compile Include="Migrations\201807092046177_Aphrodite118.cs" />
     <Compile Include="Migrations\201807092046177_Aphrodite118.Designer.cs">
       <DependentUpon>201807092046177_Aphrodite118.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808121817329_Aphrodite119.cs" />
+    <Compile Include="Migrations\201808121817329_Aphrodite119.Designer.cs">
+      <DependentUpon>201808121817329_Aphrodite119.cs</DependentUpon>
     </Compile>
     <Compile Include="QuestDAO.cs" />
     <Compile Include="QuestLogDAO.cs" />
@@ -1161,6 +1167,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201807092046177_Aphrodite118.resx">
       <DependentUpon>201807092046177_Aphrodite118.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808121817329_Aphrodite119.resx">
+      <DependentUpon>201808121817329_Aphrodite119.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

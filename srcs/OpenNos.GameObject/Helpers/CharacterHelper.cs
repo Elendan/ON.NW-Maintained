@@ -777,20 +777,23 @@ namespace OpenNos.GameObject.Helpers
                 HpData[(int)ClassType.Archer, i] = hp;
             }
 
-            // Archer HP
+            // Martial artist HP
             for (int i = 0; i < HpData.GetLength(1); i++)
             {
-                int hp = 680;
-                int inc = 35;
                 int j = 16;
+                int hp = 946;
+                int inc = 85;
                 while (j <= i)
                 {
-                    hp += inc;
-                    ++inc;
-                    if ((j % 10) == 1 || (j % 10) == 5 || (j % 10) == 8)
+                    if ((j % 5) == 2)
+                    {
+                        hp += inc / 2;
+                        inc += 2;
+                    }
+                    else
                     {
                         hp += inc;
-                        ++inc;
+                        inc += 4;
                     }
 
                     ++j;
@@ -807,7 +810,7 @@ namespace OpenNos.GameObject.Helpers
             HpHealth[(int)ClassType.Adventurer] = 30;
             HpHealth[(int)ClassType.Swordman] = 90;
             HpHealth[(int)ClassType.Magician] = 30;
-            HpHealth[(int)ClassType.Wrestler] = 80;
+            HpHealth[(int)ClassType.Wrestler] = 90;
         }
 
         private void LoadHpHealthStand()
@@ -817,7 +820,7 @@ namespace OpenNos.GameObject.Helpers
             HpHealthStand[(int)ClassType.Adventurer] = 25;
             HpHealthStand[(int)ClassType.Swordman] = 26;
             HpHealthStand[(int)ClassType.Magician] = 20;
-            HpHealthStand[(int)ClassType.Wrestler] = 20;
+            HpHealthStand[(int)ClassType.Wrestler] = 26;
         }
 
         private void LoadJobXpData()
@@ -898,7 +901,7 @@ namespace OpenNos.GameObject.Helpers
             MpHealth[(int)ClassType.Swordman] = 30;
             MpHealth[(int)ClassType.Archer] = 50;
             MpHealth[(int)ClassType.Magician] = 80;
-            MpHealth[(int)ClassType.Wrestler] = 80;
+            MpHealth[(int)ClassType.Wrestler] = 30;
         }
 
         private void LoadMpHealthStand()
@@ -908,7 +911,7 @@ namespace OpenNos.GameObject.Helpers
             MpHealthStand[(int)ClassType.Swordman] = 16;
             MpHealthStand[(int)ClassType.Archer] = 28;
             MpHealthStand[(int)ClassType.Magician] = 40;
-            MpHealthStand[(int)ClassType.Wrestler] = 50;
+            MpHealthStand[(int)ClassType.Wrestler] = 16;
         }
 
         private void LoadSpeedData()
@@ -918,7 +921,7 @@ namespace OpenNos.GameObject.Helpers
             SpeedData[(int)ClassType.Swordman] = 11;
             SpeedData[(int)ClassType.Archer] = 12;
             SpeedData[(int)ClassType.Magician] = 10;
-            SpeedData[(int)ClassType.Wrestler] = 12;
+            SpeedData[(int)ClassType.Wrestler] = 11;
         }
 
         private void LoadSpxpData()
@@ -1037,23 +1040,21 @@ namespace OpenNos.GameObject.Helpers
                 _distDef[(int)ClassType.Archer, i] = i; // approx
 
                 // Wrestler
-                _criticalHitRate[(int)ClassType.Wrestler, i] = 0; // sure
-                _criticalHit[(int)ClassType.Wrestler, i] = 0; // sure
-                _criticalDistRate[(int)ClassType.Wrestler, i] = 0; // sure
-                _criticalDist[(int)ClassType.Wrestler, i] = 0; // sure
+                _criticalHitRate[(int)ClassType.Wrestler, i] = 0; // approx
+                _criticalHit[(int)ClassType.Wrestler, i] = 0; // approx
+                _criticalDist[(int)ClassType.Wrestler, i] = 0; // approx
+                _criticalDistRate[(int)ClassType.Wrestler, i] = 0; // approx
+                _minDist[(int)ClassType.Wrestler, i] = i + 12; // approx
+                _maxDist[(int)ClassType.Wrestler, i] = i + 12; // approx
+                _distRate[(int)ClassType.Wrestler, i] = 2 * (i + 12); // approx
+                _hitDodge[(int)ClassType.Wrestler, i] = i + 12; // approx
+                _distDodge[(int)ClassType.Wrestler, i] = i + 12; // approx
+                _magicalDef[(int)ClassType.Wrestler, i] = (i + 9) / 2; // approx
+                _hitRate[(int)ClassType.Wrestler, i] = i + 27; // approx
+                _hitDef[(int)ClassType.Wrestler, i] = i + 2; // approx
 
-                _minHit[(int)ClassType.Wrestler, i] = 9 + i * 3; // approx
-                _maxHit[(int)ClassType.Wrestler, i] = 9 + i * 3; // approx
-                _hitRate[(int)ClassType.Wrestler, 1] = 41;
-                _hitRate[(int)ClassType.Wrestler, i] = _hitRate[(int)ClassType.Archer, i] + add; // approx
-                _minDist[(int)ClassType.Wrestler, i] = 2 * i; // approx
-                _maxDist[(int)ClassType.Wrestler, i] = 2 * i; // approx
-
-                _distRate[(int)ClassType.Wrestler, i] = 20 + 2 * i; // approx
-                _hitDef[(int)ClassType.Wrestler, i] = i; // approx
-                _magicalDef[(int)ClassType.Wrestler, i] = i + 2; // approx
-                _hitDodge[(int)ClassType.Wrestler, i] = 41 + i; // approx
-                _distDodge[(int)ClassType.Wrestler, i] = i + 2; // approx
+                _minHit[(int)ClassType.Wrestler, i] = 2 * i + 5; // approx Numbers n such that 10n+9 is prime.
+                _maxHit[(int)ClassType.Wrestler, i] = 2 * i + 5; // approx Numbers n such that 10n+9 is prime.
                 _distDef[(int)ClassType.Wrestler, i] = i; // approx
             }
         }

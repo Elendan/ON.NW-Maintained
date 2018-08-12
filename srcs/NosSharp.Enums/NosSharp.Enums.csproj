@@ -147,6 +147,7 @@
     <Compile Include="AttackType.cs" />
     <Compile Include="BankActionType.cs" />
     <Compile Include="BazaarListType.cs" />
+    <Compile Include="BrawlerMorphType.cs" />
     <Compile Include="CancelType.cs" />
     <Compile Include="ChatType.cs" />
     <Compile Include="EntityType.cs" />

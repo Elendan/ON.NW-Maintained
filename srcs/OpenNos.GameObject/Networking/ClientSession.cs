@@ -202,6 +202,8 @@ namespace OpenNos.GameObject.Networking
 
         public void Disconnect()
         {
+            Character?.AntiBotMessageInterval?.Dispose();
+            Character?.AntiBotObservable?.Dispose();
             Character?.SaveObs?.Dispose();
             _client.Disconnect();
         }

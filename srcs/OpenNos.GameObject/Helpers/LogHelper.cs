@@ -121,6 +121,18 @@ namespace OpenNos.GameObject.Helpers
             DaoFactory.ExchangeLogDao.InsertOrUpdate(ref log);
         }
 
+        public void InsertAntiBotLog(ClientSession session, bool timeout)
+        {
+            var log = new AntiBotLogDTO
+            {
+                CharacterId = session.Character.CharacterId,
+                CharacterName = session.Character.Name,
+                DateTime = DateTime.Now,
+                Timeout = timeout
+            };
+            DaoFactory.AntiBotLogDao.InsertOrUpdate(ref log);
+        }
+
         #region Properties
 
         public List<QuestLogDTO> QuestLogList;
