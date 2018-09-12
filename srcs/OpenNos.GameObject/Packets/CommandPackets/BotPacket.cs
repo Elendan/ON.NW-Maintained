@@ -12,6 +12,6 @@ namespace OpenNos.GameObject.Packets.CommandPackets
     public class BotPacket : PacketDefinition
     {
         [PacketIndex(0)]
-        public short Identificator { get; set; }
+        public long Identificator { get; set; }
     }
 }
